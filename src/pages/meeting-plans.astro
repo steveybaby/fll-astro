@@ -39,7 +39,7 @@ const futureMeetings = sortedMeetings.filter(m => m._date >= now);
 const pastMeetings = sortedMeetings.filter(m => m._date < now).reverse(); // Most recent first for past
 
 const nextMeeting = futureMeetings[0] || null;
-const upcomingMeetings = futureMeetings.slice(1); // All future meetings except the next one
+const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meetings after the next one
 ---
 
 <Layout title="Team Meetings" description="Documentation of our FLL Challenge team meetings, including agendas, notes, and photos.">

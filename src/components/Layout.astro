@@ -96,8 +96,12 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
   }
 
   .sidebar {
-    order: -1;
+    order: 1;
     padding-top: calc(var(--grid-unit) * 3);
+  }
+
+  .content {
+    order: 0;
   }
 
   @media (min-width: 1024px) {
@@ -108,6 +112,10 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
     .sidebar {
       order: 0;
       padding-top: calc(var(--grid-unit) * 3);
+    }
+
+    .content {
+      order: 1;
     }
   }
 </style>

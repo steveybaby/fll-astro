@@ -8,13 +8,29 @@ import { formatMeetingTime } from '../../utils/meeting-time.ts';
 export async function getStaticPaths() {
   const meetings = await getCollection('meetings');
   
-  return meetings.map((meeting) => ({
-    params: { slug: meeting.slug },
-    props: { meeting },
-  }));
+  // Sort meetings chronologically for navigation
+  const sortedMeetings = meetings.sort((a, b) => {
+    const dateA = a.data.date instanceof Date ? a.data.date : new Date(`${a.data.date}T00:00:00Z`);
+    const dateB = b.data.date instanceof Date ? b.data.date : new Date(`${b.data.date}T00:00:00Z`);
+    return dateA.getTime() - dateB.getTime();
+  });
+  
+  return sortedMeetings.map((meeting, index) => {
+    const prevMeeting = index > 0 ? sortedMeetings[index - 1] : null;
+    const nextMeeting = index < sortedMeetings.length - 1 ? sortedMeetings[index + 1] : null;
+    
+    return {
+      params: { slug: meeting.slug },
+      props: { 
+        meeting,
+        prevMeeting,
+        nextMeeting
+      },
+    };
+  });
 }
 
-const { meeting } = Astro.props;
+const { meeting, prevMeeting, nextMeeting } = Astro.props;
 const { Content } = await meeting.render();
 const { data } = meeting;
 /** data.date can be a Date or a 'YYYY-MM-DD' string */
@@ -36,21 +52,24 @@ const display = new Intl.DateTimeFormat('en-US', {
   <article class="meeting-article">
     <header class="meeting-header">
       <h1>Meeting: {data.title}</h1>
-      <div class="meeting-datetime">
-        <time datetime={isoDate}>{display}</time>
-        {data.startTime && (
-          <span class="meeting-start-time">{formatMeetingTime(data.startTime, data.duration)}</span>
-        )}
+      <div class="meeting-header-info">
+        <div class="meeting-datetime">
+          <time datetime={isoDate}>{display}</time>
+          {data.startTime && (
+            <span class="meeting-start-time">{formatMeetingTime(data.startTime, data.duration)}</span>
+          )}
+        </div>
+        
+        <div class="meeting-actions">
+          <button 
+            class="calendar-button"
+            id="calendar-subscribe-btn"
+            title="Subscribe to FLL Llamas meeting calendar"
+          >
+            📅 Subscribe to Team Calendar
+          </button>
+        </div>
       </div>
-      
-      <div class="meeting-actions">
-        <button 
-          class="calendar-button"
-          id="calendar-subscribe-btn"
-          title="Subscribe to FLL Llamas meeting calendar"
-        >
-          📅 Subscribe to Team Calendar
-        </button>
         
         <div id="calendar-subscription-popup" class="calendar-popup" style="display: none;">
           <div class="calendar-popup-content">
@@ -94,6 +113,20 @@ const display = new Intl.DateTimeFormat('en-US', {
       </time> -->
     </header>
 
+    <!-- Quick Navigation Links -->
+    <div class="quicklinks">
+      {prevMeeting && (
+        <a href={`/meetings/${prevMeeting.slug}/`} class="quicklink prev-quicklink" title={`Previous: ${prevMeeting.data.title}`}>
+          ← Previous
+        </a>
+      )}
+      {nextMeeting && (
+        <a href={`/meetings/${nextMeeting.slug}/`} class="quicklink next-quicklink" title={`Next: ${nextMeeting.data.title}`}>
+          Next →
+        </a>
+      )}
+    </div>
+
     <div class="meeting-content">
       <Content />
     </div>
@@ -111,6 +144,36 @@ const display = new Intl.DateTimeFormat('en-US', {
   </article>
 
   <nav class="meeting-nav">
+    <div class="meeting-pagination">
+      {prevMeeting && (
+        <a href={`/meetings/${prevMeeting.slug}/`} class="nav-link prev-meeting">
+          <span class="nav-label">← Previous Meeting</span>
+          <span class="nav-title">{prevMeeting.data.title}</span>
+          <span class="nav-date">
+            {new Date(prevMeeting.data.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            })}
+          </span>
+        </a>
+      )}
+      
+      {nextMeeting && (
+        <a href={`/meetings/${nextMeeting.slug}/`} class="nav-link next-meeting">
+          <span class="nav-label">Next Meeting →</span>
+          <span class="nav-title">{nextMeeting.data.title}</span>
+          <span class="nav-date">
+            {new Date(nextMeeting.data.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            })}
+          </span>
+        </a>
+      )}
+    </div>
+    
     <a href="/meeting-plans/" class="back-link">← Back to All Meetings</a>
   </nav>
 </Layout>
@@ -146,11 +209,19 @@ const display = new Intl.DateTimeFormat('en-US', {
     display: block;
   }
 
+  .meeting-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: calc(var(--grid-unit) * 2);
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
   .meeting-datetime {
     display: flex;
     flex-direction: column;
     gap: calc(var(--grid-unit) / 2);
-    margin-bottom: calc(var(--grid-unit) * 2);
+    flex: 1;
   }
 
   .meeting-start-time {
@@ -162,8 +233,42 @@ const display = new Intl.DateTimeFormat('en-US', {
     letter-spacing: 0.05em;
   }
 
+  .quicklinks {
+    display: flex;
+    justify-content: space-between;
+    margin: calc(var(--grid-unit) * 2) 0 calc(var(--grid-unit) * 4) 0;
+    padding: 0 calc(var(--grid-unit) * 2);
+  }
+
+  .quicklink {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .quicklink:hover {
+    color: var(--color-accent);
+    background-color: var(--color-surface);
+  }
+
+  .prev-quicklink {
+    margin-right: auto;
+  }
+
+  .next-quicklink {
+    margin-left: auto;
+  }
+
   .meeting-actions {
-    margin-bottom: calc(var(--grid-unit) * 4);
+    position: relative;
+    flex-shrink: 0;
   }
 
   .calendar-button {
@@ -414,6 +519,73 @@ const display = new Intl.DateTimeFormat('en-US', {
     margin-top: calc(var(--grid-unit) * 6);
   }
 
+  .meeting-pagination {
+    display: flex;
+    justify-content: space-between;
+    gap: calc(var(--grid-unit) * 2);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .nav-link {
+    flex: 1;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 2);
+    padding: calc(var(--grid-unit) * 2);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .nav-link:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .prev-meeting {
+    text-align: left;
+  }
+
+  .next-meeting {
+    text-align: right;
+    margin-left: auto;
+  }
+
+  .nav-label {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .nav-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+  }
+
+  .nav-link:hover .nav-title {
+    color: var(--color-accent);
+  }
+
+  .nav-date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
   .back-link {
     font-family: var(--font-heading-secondary);
     font-weight: 700;
@@ -455,10 +627,48 @@ const display = new Intl.DateTimeFormat('en-US', {
     .meeting-content :global(h3) {
       font-size: 1.25rem;
     }
-  }
-  
-  .meeting-actions {
-    position: relative;
+
+    .meeting-pagination {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) * 1.5);
+    }
+
+    .nav-link {
+      max-width: none;
+    }
+
+    .next-meeting {
+      margin-left: 0;
+    }
+
+    .nav-title {
+      font-size: 0.9rem;
+    }
+
+    .quicklinks {
+      margin: calc(var(--grid-unit) * 1.5) 0 calc(var(--grid-unit) * 3) 0;
+      padding: 0 calc(var(--grid-unit));
+    }
+
+    .quicklink {
+      font-size: 0.8rem;
+      padding: calc(var(--grid-unit) / 2);
+    }
+
+    .meeting-header-info {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) * 1.5);
+      align-items: flex-start;
+    }
+
+    .meeting-actions {
+      align-self: stretch;
+    }
+
+    .calendar-button {
+      width: 100%;
+      text-align: center;
+    }
   }
 
   @media (max-width: 768px) {
