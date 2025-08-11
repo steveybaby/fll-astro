@@ -63,6 +63,24 @@
           "type": "datetime"
         },
         {
+          "title": "Start Time",
+          "name": "startTime",
+          "type": "string",
+          "description": "Meeting start time in 24-hour format (e.g., '16:30' for 4:30 PM)"
+        },
+        {
+          "title": "Duration (hours)",
+          "name": "duration", 
+          "type": "number",
+          "description": "Meeting duration in hours (e.g., 1.5 for 1 hour 30 minutes)"
+        },
+        {
+          "title": "Location",
+          "name": "location",
+          "type": "string",
+          "description": "Meeting location (e.g., 'Piedmont Makers Club', 'Conference Room A')"
+        },
+        {
           "title": "Agenda",
           "name": "agenda",
           "type": "list",

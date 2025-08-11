@@ -27,7 +27,18 @@ const meetings = meetingsRaw.map((m) => {
   };
 });
 
-const sortedMeetings = meetings.sort((a, b) => b._date.getTime() - a._date.getTime());
+// Get current time for comparison
+const now = new Date();
+
+// Sort meetings chronologically
+const sortedMeetings = meetings.sort((a, b) => a._date.getTime() - b._date.getTime());
+
+// Separate meetings into categories
+const futureMeetings = sortedMeetings.filter(m => m._date >= now);
+const pastMeetings = sortedMeetings.filter(m => m._date < now).reverse(); // Most recent first for past
+
+const nextMeeting = futureMeetings[0] || null;
+const upcomingMeetings = futureMeetings.slice(1); // All future meetings except the next one
 ---
 
 <Layout title="Team Meetings" description="Documentation of our FLL Challenge team meetings, including agendas, notes, and photos.">
@@ -35,53 +46,145 @@ const sortedMeetings = meetings.sort((a, b) => b._date.getTime() - a._date.getTi
     <header class="page-header">
       <h1>📅 Team Meetings</h1>
       <p>Documentation of our FLL Challenge team meetings, including agendas, notes, and photos.</p>
+      
+      <div class="calendar-subscription">
+        <button id="main-calendar-btn" class="calendar-subscribe-button" title="Subscribe to FLL Llamas meeting calendar">
+          📅 Subscribe to Team Calendar
+        </button>
+        <p class="subscription-note">Add our meeting schedule to your calendar app</p>
+        
+        <div id="main-calendar-popup" class="main-calendar-popup" style="display: none;">
+          <div class="calendar-popup-content">
+            <h4>Subscribe to FLL Llamas Calendar</h4>
+            <p>Copy this URL and add it to your calendar app:</p>
+            
+            <div class="url-copy-container">
+              <input 
+                type="text" 
+                id="main-calendar-url" 
+                value="webcal://localhost:4321/calendar.ics" 
+                readonly
+                class="calendar-url-input"
+              />
+              <button id="main-copy-btn" class="copy-button">Copy</button>
+            </div>
+            
+            <div class="calendar-instructions">
+              <h5>Instructions:</h5>
+              <ul>
+                <li><strong>Google Calendar:</strong> Settings → Add calendar → From URL</li>
+                <li><strong>Apple Calendar:</strong> File → New Calendar Subscription</li>
+                <li><strong>Outlook:</strong> Add calendar → Subscribe from web</li>
+              </ul>
+            </div>
+            
+            <div class="popup-actions">
+              <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+              <button id="main-close-btn" class="close-button">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <div class="meetings-list">
-      {sortedMeetings.map((meeting) => (
-        <article class="meeting-card">
+    <!-- Next Meeting Section -->
+    {nextMeeting && (
+      <section class="next-meeting-section">
+        <h2 class="section-title">🎯 Next Meeting</h2>
+        <article class="meeting-card next-meeting-card">
           <div class="meeting-card-content">
             <header class="meeting-card-header">
-              <h2>
-                <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
-              </h2>
-              <time datetime={meeting._iso}>{meeting._display}</time>
+              <h3>
+                <a href={`/meetings/${nextMeeting.slug}/`}>{nextMeeting.data.title}</a>
+              </h3>
+              <time datetime={nextMeeting._iso}>{nextMeeting._display}</time>
             </header>
 
-            {meeting.data.agenda && meeting.data.agenda.length > 0 && (
+            {nextMeeting.data.agenda && nextMeeting.data.agenda.length > 0 && (
               <div class="meeting-preview">
-                <h4>Agenda Highlights:</h4>
+                <h4>Agenda:</h4>
                 <ul class="agenda-preview">
-                  {meeting.data.agenda.slice(0, 3).map((item) => (
+                  {nextMeeting.data.agenda.map((item) => (
                     <li>{item}</li>
                   ))}
-                  {meeting.data.agenda.length > 3 && (
-                    <li class="more-items">+ {meeting.data.agenda.length - 3} more items</li>
-                  )}
                 </ul>
               </div>
             )}
 
             <div class="meeting-meta">
-              {meeting.data.assignments && (
+              {nextMeeting.data.assignments && (
                 <span class="meta-item">
-                  🔧 {meeting.data.assignments.length} assignment{meeting.data.assignments.length !== 1 ? 's' : ''}
+                  🔧 {nextMeeting.data.assignments.length} assignment{nextMeeting.data.assignments.length !== 1 ? 's' : ''}
                 </span>
               )}
-              {meeting.data.photos && meeting.data.photos.length > 0 && (
+              {nextMeeting.data.photos && nextMeeting.data.photos.length > 0 && (
                 <span class="meta-item">
-                  📷 {meeting.data.photos.length} photo{meeting.data.photos.length !== 1 ? 's' : ''}
+                  📷 {nextMeeting.data.photos.length} photo{nextMeeting.data.photos.length !== 1 ? 's' : ''}
                 </span>
               )}
             </div>
 
-            <a href={`/meetings/${meeting.slug}/`} class="read-more">
-              Read Full Meeting Notes →
+            <a href={`/meetings/${nextMeeting.slug}/`} class="read-more primary">
+              View Meeting Details →
             </a>
           </div>
         </article>
-      ))}
-    </div>
+      </section>
+    )}
+
+    <!-- Upcoming Meetings Section -->
+    {upcomingMeetings.length > 0 && (
+      <section class="upcoming-meetings-section">
+        <h2 class="section-title">📅 Upcoming Meetings</h2>
+        <div class="meetings-list upcoming">
+          {upcomingMeetings.map((meeting) => (
+            <article class="meeting-card compact-card">
+              <header class="compact-header">
+                <h3>
+                  <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
+                </h3>
+                <time datetime={meeting._iso}>{meeting._display}</time>
+              </header>
+              <div class="compact-meta">
+                {meeting.data.agenda && meeting.data.agenda.length > 0 && (
+                  <span class="meta-item">📋 {meeting.data.agenda.length} agenda items</span>
+                )}
+                {meeting.data.assignments && meeting.data.assignments.length > 0 && (
+                  <span class="meta-item">🔧 {meeting.data.assignments.length} assignments</span>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- Past Meetings Section -->
+    {pastMeetings.length > 0 && (
+      <section class="past-meetings-section">
+        <h2 class="section-title">📚 Past Meetings</h2>
+        <div class="meetings-list past">
+          {pastMeetings.map((meeting) => (
+            <article class="meeting-card compact-card past-card">
+              <header class="compact-header">
+                <h3>
+                  <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
+                </h3>
+                <time datetime={meeting._iso}>{meeting._display}</time>
+              </header>
+              <div class="compact-meta">
+                {meeting.data.assignments && meeting.data.assignments.length > 0 && (
+                  <span class="meta-item">🔧 {meeting.data.assignments.length} assignments</span>
+                )}
+                {meeting.data.photos && meeting.data.photos.length > 0 && (
+                  <span class="meta-item">📷 {meeting.data.photos.length} photos</span>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
 
     {meetings.length === 0 && (
       <div class="no-meetings">
@@ -120,12 +223,218 @@ const sortedMeetings = meetings.sort((a, b) => b._date.getTime() - a._date.getTi
     font-size: 1.25rem;
     line-height: 1.5;
     font-style: italic;
+    margin: 0 0 calc(var(--grid-unit) * 4) 0;
+  }
+
+  .calendar-subscription {
+    margin-top: calc(var(--grid-unit) * 4);
+  }
+
+  .calendar-subscribe-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: white;
+    background-color: var(--color-accent);
+    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    cursor: pointer;
+    display: inline-block;
+  }
+
+  .calendar-subscribe-button:hover,
+  .calendar-subscribe-button:focus {
+    background-color: transparent;
+    color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .subscription-note {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: calc(var(--grid-unit)) 0 0 0;
+    font-style: normal !important;
+  }
+
+  .calendar-subscription {
+    position: relative;
+  }
+
+  .main-calendar-popup {
+    position: absolute;
+    top: calc(100% + calc(var(--grid-unit) * 2));
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border: 2px solid var(--color-accent);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .calendar-popup-content {
+    padding: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-popup-content h4 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .calendar-popup-content p {
+    color: var(--color-text-secondary);
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    line-height: 1.5;
+  }
+
+  .url-copy-container {
+    display: flex;
+    gap: calc(var(--grid-unit));
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-url-input {
+    flex: 1;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    background: var(--color-background);
+    color: var(--color-text-primary);
+  }
+
+  .copy-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+  }
+
+  .copy-button:hover,
+  .copy-button:focus {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .calendar-instructions {
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-instructions h5 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit)) 0;
+  }
+
+  .calendar-instructions ul {
     margin: 0;
+    padding-left: calc(var(--grid-unit) * 3);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .calendar-instructions li {
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .popup-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .download-fallback {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    text-decoration: underline;
+  }
+
+  .download-fallback:hover {
+    color: var(--color-accent);
+  }
+
+  .close-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit) * 1.5);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+  }
+
+  .close-button:hover,
+  .close-button:focus {
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
   }
 
   .meetings-list {
     display: grid;
     gap: calc(var(--grid-unit) * 4);
+  }
+
+  .meetings-list.upcoming {
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .meetings-list.past {
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .section-title {
+    font-family: var(--font-heading-primary);
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin: calc(var(--grid-unit) * 8) 0 calc(var(--grid-unit) * 4) 0;
+    text-align: center;
+  }
+
+  .section-title:first-child {
+    margin-top: 0;
+  }
+
+  .next-meeting-section,
+  .upcoming-meetings-section,
+  .past-meetings-section {
+    margin-bottom: calc(var(--grid-unit) * 8);
   }
 
   .meeting-card {
@@ -143,11 +452,87 @@ const sortedMeetings = meetings.sort((a, b) => b._date.getTime() - a._date.getTi
     border-color: var(--color-accent);
   }
 
+  /* Next Meeting Highlight */
+  .next-meeting-card {
+    background: linear-gradient(135deg, var(--color-surface) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border-left: 8px solid var(--color-accent);
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+  }
+
+  .next-meeting-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.25);
+  }
+
+  /* Compact Cards */
+  .compact-card {
+    padding: calc(var(--grid-unit) * 2.5);
+    border-left-width: 2px;
+  }
+
+  .compact-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: calc(var(--grid-unit) * 1.5);
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .compact-header h3 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    flex: 1;
+  }
+
+  .compact-header a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .compact-header a:hover {
+    color: var(--color-accent);
+  }
+
+  .compact-header time {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .compact-meta {
+    display: flex;
+    gap: calc(var(--grid-unit) * 2);
+    flex-wrap: wrap;
+  }
+
+  .compact-meta .meta-item {
+    font-size: 0.8rem;
+  }
+
+  /* Past Meeting Cards */
+  .past-card {
+    opacity: 0.8;
+  }
+
+  .past-card:hover {
+    opacity: 1;
+  }
+
   .meeting-card-header {
     margin-bottom: calc(var(--grid-unit) * 3);
   }
 
-  .meeting-card-header h2 {
+  .meeting-card-header h2,
+  .meeting-card-header h3 {
     font-family: var(--font-heading-secondary);
     font-size: 1.75rem;
     font-weight: 700;
@@ -254,6 +639,19 @@ const sortedMeetings = meetings.sort((a, b) => b._date.getTime() - a._date.getTi
     text-decoration: none;
   }
 
+  .read-more.primary {
+    background-color: var(--color-accent);
+    color: white;
+    font-size: 1rem;
+    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
+  }
+
+  .read-more.primary:hover {
+    background-color: transparent;
+    color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
   .no-meetings {
     text-align: center;
     padding: calc(var(--grid-unit) * 8) calc(var(--grid-unit) * 3);
@@ -271,21 +669,120 @@ const sortedMeetings = meetings.sort((a, b) => b._date.getTime() - a._date.getTi
       font-size: 2.25rem;
     }
     
+    .section-title {
+      font-size: 2rem;
+      margin: calc(var(--grid-unit) * 6) 0 calc(var(--grid-unit) * 3) 0;
+    }
+    
     .meeting-card {
       padding: calc(var(--grid-unit) * 3);
     }
     
-    .meeting-card-header h2 {
+    .compact-card {
+      padding: calc(var(--grid-unit) * 2);
+    }
+    
+    .meeting-card-header h2,
+    .meeting-card-header h3 {
       font-size: 1.5rem;
     }
     
-    .meeting-meta {
+    .compact-header {
       flex-direction: column;
-      gap: calc(var(--grid-unit) * 2);
+      gap: calc(var(--grid-unit));
+      align-items: flex-start;
+    }
+    
+    .compact-header h3 {
+      font-size: 1.1rem;
+    }
+    
+    .compact-header time {
+      order: -1;
+      font-size: 0.75rem;
+    }
+    
+    .meeting-meta,
+    .compact-meta {
+      flex-direction: column;
+      gap: calc(var(--grid-unit));
     }
     
     .page-header p {
       font-size: 1.1rem;
     }
+    
+    .main-calendar-popup {
+      left: calc(var(--grid-unit) * -2);
+      right: calc(var(--grid-unit) * -2);
+      max-width: none;
+    }
+    
+    .url-copy-container {
+      flex-direction: column;
+    }
+    
+    .popup-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: calc(var(--grid-unit));
+    }
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const mainBtn = document.getElementById('main-calendar-btn');
+    const mainPopup = document.getElementById('main-calendar-popup');
+    const mainCloseBtn = document.getElementById('main-close-btn');
+    const mainCopyBtn = document.getElementById('main-copy-btn');
+    const mainUrlInput = document.getElementById('main-calendar-url');
+    
+    // Set the correct URL based on current domain
+    if (mainUrlInput) {
+      mainUrlInput.value = `webcal://${window.location.host}/calendar.ics`;
+    }
+    
+    // Show popup
+    if (mainBtn && mainPopup) {
+      mainBtn.addEventListener('click', function() {
+        mainPopup.style.display = mainPopup.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+    
+    // Hide popup
+    if (mainCloseBtn && mainPopup) {
+      mainCloseBtn.addEventListener('click', function() {
+        mainPopup.style.display = 'none';
+      });
+    }
+    
+    // Copy URL to clipboard
+    if (mainCopyBtn && mainUrlInput) {
+      mainCopyBtn.addEventListener('click', async function() {
+        try {
+          await navigator.clipboard.writeText(mainUrlInput.value);
+          mainCopyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            mainCopyBtn.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          // Fallback for older browsers
+          mainUrlInput.select();
+          document.execCommand('copy');
+          mainCopyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            mainCopyBtn.textContent = 'Copy';
+          }, 2000);
+        }
+      });
+    }
+    
+    // Hide popup when clicking outside
+    document.addEventListener('click', function(event) {
+      if (mainPopup && !mainPopup.contains(event.target) && !mainBtn.contains(event.target)) {
+        mainPopup.style.display = 'none';
+      }
+    });
+  });
+</script>

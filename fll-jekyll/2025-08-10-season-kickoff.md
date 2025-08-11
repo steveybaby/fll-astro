@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Season Kickoff Meeting - August 10, 2025"
+title: "Season Kickoff Meeting"
 date: 2025-08-10
 ---
 

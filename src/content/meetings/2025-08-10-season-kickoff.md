@@ -1,6 +1,9 @@
 ---
-title: "Season Kickoff Meeting - August 10, 2025"
+title: "Season Kickoff Meeting"
 date: 2025-08-10
+startTime: "14:00" # 2:00 PM
+duration: 2 # 2 hours
+location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:
   - "Watch the Videos"
   - "Assemble the Challenges"

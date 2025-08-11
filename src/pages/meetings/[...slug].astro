@@ -34,8 +34,50 @@ const display = new Intl.DateTimeFormat('en-US', {
 <Layout title={data.title} description={`Meeting notes from ${display}`} type="article" publishedTime={isoDate}>
   <article class="meeting-article">
     <header class="meeting-header">
-      <h1>{data.title}</h1>
+      <h1>Meeting: {data.title}</h1>
       <time datetime={isoDate}>{display}</time>
+      
+      <div class="meeting-actions">
+        <button 
+          class="calendar-button"
+          id="calendar-subscribe-btn"
+          title="Subscribe to FLL Llamas meeting calendar"
+        >
+          📅 Subscribe to Team Calendar
+        </button>
+        
+        <div id="calendar-subscription-popup" class="calendar-popup" style="display: none;">
+          <div class="calendar-popup-content">
+            <h4>Subscribe to FLL Llamas Calendar</h4>
+            <p>Copy this URL and add it to your calendar app:</p>
+            
+            <div class="url-copy-container">
+              <input 
+                type="text" 
+                id="calendar-url" 
+                value="webcal://localhost:4321/calendar.ics" 
+                readonly
+                class="calendar-url-input"
+              />
+              <button id="copy-url-btn" class="copy-button">Copy</button>
+            </div>
+            
+            <div class="calendar-instructions">
+              <h5>Instructions:</h5>
+              <ul>
+                <li><strong>Google Calendar:</strong> Settings → Add calendar → From URL</li>
+                <li><strong>Apple Calendar:</strong> File → New Calendar Subscription</li>
+                <li><strong>Outlook:</strong> Add calendar → Subscribe from web</li>
+              </ul>
+            </div>
+            
+            <div class="popup-actions">
+              <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+              <button id="close-popup-btn" class="close-button">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- <time datetime={data.date.toISOString()}>
         {data.date.toLocaleDateString('en-US', { 
@@ -94,8 +136,167 @@ const display = new Intl.DateTimeFormat('en-US', {
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: calc(var(--grid-unit) * 4);
+    margin-bottom: calc(var(--grid-unit) * 2);
     display: block;
+  }
+
+  .meeting-actions {
+    margin-bottom: calc(var(--grid-unit) * 4);
+  }
+
+  .calendar-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    background-color: transparent;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .calendar-button:hover,
+  .calendar-button:focus {
+    background-color: var(--color-accent);
+    color: white;
+  }
+
+  .calendar-popup {
+    position: absolute;
+    top: calc(100% + calc(var(--grid-unit)));
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border: 2px solid var(--color-accent);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-width: 500px;
+  }
+
+  .calendar-popup-content {
+    padding: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-popup h4 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .calendar-popup p {
+    color: var(--color-text-secondary);
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    line-height: 1.5;
+  }
+
+  .url-copy-container {
+    display: flex;
+    gap: calc(var(--grid-unit));
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-url-input {
+    flex: 1;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    background: var(--color-background);
+    color: var(--color-text-primary);
+  }
+
+  .copy-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+  }
+
+  .copy-button:hover,
+  .copy-button:focus {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .calendar-instructions {
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-instructions h5 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit)) 0;
+  }
+
+  .calendar-instructions ul {
+    margin: 0;
+    padding-left: calc(var(--grid-unit) * 3);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .calendar-instructions li {
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .popup-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .download-fallback {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    text-decoration: underline;
+  }
+
+  .download-fallback:hover {
+    color: var(--color-accent);
+  }
+
+  .close-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit) * 1.5);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+  }
+
+  .close-button:hover,
+  .close-button:focus {
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
   }
 
   /* Monumental Blood Red Rule */
@@ -233,4 +434,84 @@ const display = new Intl.DateTimeFormat('en-US', {
       font-size: 1.25rem;
     }
   }
+  
+  .meeting-actions {
+    position: relative;
+  }
+
+  @media (max-width: 768px) {
+    .calendar-popup {
+      left: calc(var(--grid-unit) * -2);
+      right: calc(var(--grid-unit) * -2);
+      max-width: none;
+    }
+    
+    .url-copy-container {
+      flex-direction: column;
+    }
+    
+    .popup-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: calc(var(--grid-unit));
+    }
+  }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const subscribeBtn = document.getElementById('calendar-subscribe-btn');
+    const popup = document.getElementById('calendar-subscription-popup');
+    const closeBtn = document.getElementById('close-popup-btn');
+    const copyBtn = document.getElementById('copy-url-btn');
+    const urlInput = document.getElementById('calendar-url');
+    
+    // Set the correct URL based on current domain
+    if (urlInput) {
+      const currentDomain = window.location.origin;
+      urlInput.value = `webcal://${window.location.host}/calendar.ics`;
+    }
+    
+    // Show popup
+    if (subscribeBtn && popup) {
+      subscribeBtn.addEventListener('click', function() {
+        popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+    
+    // Hide popup
+    if (closeBtn && popup) {
+      closeBtn.addEventListener('click', function() {
+        popup.style.display = 'none';
+      });
+    }
+    
+    // Copy URL to clipboard
+    if (copyBtn && urlInput) {
+      copyBtn.addEventListener('click', async function() {
+        try {
+          await navigator.clipboard.writeText(urlInput.value);
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          // Fallback for older browsers
+          urlInput.select();
+          document.execCommand('copy');
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy';
+          }, 2000);
+        }
+      });
+    }
+    
+    // Hide popup when clicking outside
+    document.addEventListener('click', function(event) {
+      if (popup && !popup.contains(event.target) && !subscribeBtn.contains(event.target)) {
+        popup.style.display = 'none';
+      }
+    });
+  });
+</script>

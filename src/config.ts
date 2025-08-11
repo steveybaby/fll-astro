@@ -17,7 +17,7 @@ export interface SiteConfig {
 }
 
 export const config: SiteConfig = {
-  title: "FLL Astro",
+  title: "FLL Llamas",
   description: "FIRST Lego League team blog and meeting documentation",
   author: {
     name: "FLL Team",

@@ -2,16 +2,29 @@
 import Layout from '../components/Layout.astro';
 import { getCollection } from 'astro:content';
 
-const blogPosts = await getCollection('blog');
+const blogPosts = await getCollection('blog', ({ data }) => {
+  return data.draft !== true;
+});
 const meetings = await getCollection('meetings');
 
-const sortedPosts = blogPosts
-  .sort((a: any, b: any) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
-  .slice(0, 2);
+// Combine both blog posts and meetings, adding a type field
+const allContent = [
+  ...blogPosts.map(post => ({
+    ...post,
+    type: 'blog',
+    url: `/blog/${post.slug}/`
+  })),
+  ...meetings.map(meeting => ({
+    ...meeting,
+    type: 'meeting',
+    url: `/meetings/${meeting.slug}/`
+  }))
+];
 
-const sortedMeetings = meetings
+// Sort by date and take the most recent 4 items
+const recentContent = allContent
   .sort((a: any, b: any) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
-  .slice(0, 2);
+  .slice(0, 4);
 ---
 
 <Layout title="Piedmont Makers Club FLL Challenge Team" description="Welcome to our FIRST Lego League team website! Follow our journey through the FLL UNEARTHED™ season with meeting notes, robot builds, and competition preparations." showSidebar={false}>
@@ -19,7 +32,7 @@ const sortedMeetings = meetings
     <!-- Hero Section -->
     <section class="hero">
       <div class="hero-content">
-        <h1 class="hero-title">FLL ASTRO</h1>
+        <h1 class="hero-title">FLL LLAMAS</h1>
         <p class="hero-subtitle">Piedmont Makers Club</p>
         <p class="hero-description">
           Welcome to our FIRST Lego League Challenge Team website! Follow our journey 
@@ -42,70 +55,44 @@ const sortedMeetings = meetings
           recent meeting notes, blog posts, and important announcements.
         </p>
         
-        <div class="updates-grid">
-          <div class="updates-column">
-            <h3 class="column-title">Recent Blog Posts</h3>
-            {sortedPosts.length > 0 && (
-              <div class="demo-posts">
-                {sortedPosts.map(post => (
-                  <article class="demo-post-card">
-                    <h4 class="demo-post-title">
-                      <a href={`/blog/${post.slug}/`}>{post.data.title}</a>
-                    </h4>
-                    
-                    <div class="demo-post-meta">
-                      <time class="demo-post-date" datetime={post.data.date}>
-                        {new Date(post.data.date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </time>
-                    </div>
-                    
-                    {post.data.description && (
-                      <p class="demo-post-excerpt">{post.data.description}</p>
+        {recentContent.length > 0 && (
+          <div class="recent-content-grid">
+            {recentContent.map(item => (
+              <article class="demo-post-card">
+                <div class="content-type-badge">
+                  {item.type === 'blog' ? '📝 Blog Post' : '📅 Meeting Notes'}
+                </div>
+                
+                <h3 class="demo-post-title">
+                  <a href={item.url}>{item.data.title}</a>
+                </h3>
+                
+                <div class="demo-post-meta">
+                  <time class="demo-post-date" datetime={item.data.date}>
+                    {new Date(item.data.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </time>
+                </div>
+                
+                {item.data.description && (
+                  <p class="demo-post-excerpt">{item.data.description}</p>
+                )}
+                
+                {item.type === 'meeting' && item.data.agenda && (
+                  <div class="meeting-preview">
+                    <p class="agenda-count">📅 {item.data.agenda.length} agenda items</p>
+                    {item.data.photos && item.data.photos.length > 0 && (
+                      <p class="photo-count">📷 {item.data.photos.length} photos</p>
                     )}
-                  </article>
-                ))}
-              </div>
-            )}
+                  </div>
+                )}
+              </article>
+            ))}
           </div>
-
-          <div class="updates-column">
-            <h3 class="column-title">Recent Meetings</h3>
-            {sortedMeetings.length > 0 && (
-              <div class="demo-posts">
-                {sortedMeetings.map(meeting => (
-                  <article class="demo-post-card">
-                    <h4 class="demo-post-title">
-                      <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
-                    </h4>
-                    
-                    <div class="demo-post-meta">
-                      <time class="demo-post-date" datetime={meeting.data.date}>
-                        {new Date(meeting.data.date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </time>
-                    </div>
-                    
-                    {meeting.data.agenda && (
-                      <div class="meeting-preview">
-                        <p class="agenda-count">📅 {meeting.data.agenda.length} agenda items</p>
-                        {meeting.data.photos && meeting.data.photos.length > 0 && (
-                          <p class="photo-count">📷 {meeting.data.photos.length} photos</p>
-                        )}
-                      </div>
-                    )}
-                  </article>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        )}
         
         <div class="demo-actions">
           <a href="/blog" class="btn btn-primary">View All Posts</a>
@@ -541,28 +528,22 @@ const sortedMeetings = meetings
     flex-wrap: wrap;
   }
 
-  /* Updates Grid Layout */
-  .updates-grid {
+  /* Recent Content Grid Layout */
+  .recent-content-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: calc(var(--grid-unit) * 6);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: calc(var(--grid-unit) * 4);
     margin-bottom: calc(var(--grid-unit) * 6);
   }
 
-  .updates-column {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .column-title {
-    font-family: var(--font-heading-secondary);
-    font-size: 1.5rem;
-    font-weight: 700;
+  .content-type-badge {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
     color: var(--color-accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: calc(var(--grid-unit) * 3);
-    text-align: center;
+    margin-bottom: calc(var(--grid-unit) * 2);
+    font-weight: 600;
   }
 
   .meeting-preview {
@@ -582,9 +563,9 @@ const sortedMeetings = meetings
   }
 
   @media (max-width: 768px) {
-    .updates-grid {
+    .recent-content-grid {
       grid-template-columns: 1fr;
-      gap: calc(var(--grid-unit) * 4);
+      gap: calc(var(--grid-unit) * 3);
     }
     
     .demo-actions {
