@@ -55,7 +55,7 @@ const display = new Intl.DateTimeFormat('en-US', {
               <input 
                 type="text" 
                 id="calendar-url" 
-                value="webcal://localhost:4321/calendar.ics" 
+                value="https://localhost:4321/calendar.ics" 
                 readonly
                 class="calendar-url-input"
               />
@@ -469,7 +469,7 @@ const display = new Intl.DateTimeFormat('en-US', {
     // Set the correct URL based on current domain
     if (urlInput) {
       const currentDomain = window.location.origin;
-      urlInput.value = `webcal://${window.location.host}/calendar.ics`;
+      urlInput.value = `https://${window.location.host}/calendar.ics`;
     }
     
     // Show popup

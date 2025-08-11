@@ -62,7 +62,7 @@ const upcomingMeetings = futureMeetings.slice(1); // All future meetings except 
               <input 
                 type="text" 
                 id="main-calendar-url" 
-                value="webcal://localhost:4321/calendar.ics" 
+                value="https://fll-astro.sharpers.com:4321/calendar.ics"
                 readonly
                 class="calendar-url-input"
               />
@@ -740,7 +740,7 @@ const upcomingMeetings = futureMeetings.slice(1); // All future meetings except 
     
     // Set the correct URL based on current domain
     if (mainUrlInput) {
-      mainUrlInput.value = `webcal://${window.location.host}/calendar.ics`;
+      mainUrlInput.value = `https://${window.location.host}/calendar.ics`;
     }
     
     // Show popup
