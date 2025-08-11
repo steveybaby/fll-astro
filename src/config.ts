@@ -22,7 +22,7 @@ export const config: SiteConfig = {
   author: {
     name: "FLL Team",
     bio: "FIRST Lego League robotics team sharing our journey, meetings, and progress throughout the season.",
-    // avatar: "/images/avatar.jpg" // Uncomment and add your avatar image to public/images/
+    avatar: "/images/avatar.jpg"
   },
   social: {
     // github: "https://github.com/yourusername",
