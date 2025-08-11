@@ -37,10 +37,11 @@ export async function GET() {
       };
       
       const uid = `meeting-${meeting.slug}@fll-llamas.com`;
-      const summary = meeting.data.title;
+      const meetingUrl = `${import.meta.env.SITE}/meetings/${meeting.slug}/`;
+      const summary = `${meeting.data.title} - ${meetingUrl}`;
       const description = meeting.data.agenda 
-        ? `Agenda:\\n${meeting.data.agenda.map(item => `• ${item}`).join('\\n')}\\n\\nView full details: ${import.meta.env.SITE}/meetings/${meeting.slug}/`
-        : `View full details: ${import.meta.env.SITE}/meetings/${meeting.slug}/`;
+        ? `FLL Llamas Team Meeting\\n\\nAgenda:\\n${meeting.data.agenda.map(item => `• ${item}`).join('\\n')}\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`
+        : `FLL Llamas Team Meeting\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`;
       const location = meeting.data.location || 'Piedmont Makers Club';
       
       return [

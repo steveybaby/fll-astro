@@ -35,13 +35,13 @@ const nextMeeting = futureMeetings[0] || null;
 ---
 
 {nextMeeting && (
-  <div class="next-meeting-banner">
+  <a href={`/meetings/${nextMeeting.slug}/`} class="next-meeting-banner">
     <div class="banner-content">
       <div class="banner-icon">📅</div>
       <div class="banner-info">
         <div class="banner-label">Next Meeting</div>
         <h3 class="banner-title">
-          <a href={`/meetings/${nextMeeting.slug}/`}>{nextMeeting.data.title}</a>
+          {nextMeeting.data.title}
         </h3>
         <div class="banner-datetime">
           <time datetime={nextMeeting._iso}>{nextMeeting._display}</time>
@@ -52,11 +52,13 @@ const nextMeeting = futureMeetings[0] || null;
       </div>
       <div class="banner-arrow">→</div>
     </div>
-  </div>
+  </a>
 )}
 
 <style>
   .next-meeting-banner {
+    display: block;
+    text-decoration: none;
     background: linear-gradient(135deg, var(--color-surface) 0%, rgba(220, 38, 38, 0.08) 100%);
     border: 2px solid var(--color-accent);
     border-radius: 8px;
@@ -111,14 +113,7 @@ const nextMeeting = futureMeetings[0] || null;
     line-height: 1.2;
   }
 
-  .banner-title a {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-
-  .banner-title a:hover,
-  .next-meeting-banner:hover .banner-title a {
+  .next-meeting-banner:hover .banner-title {
     color: var(--color-accent);
   }
 
