@@ -1,0 +1,291 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../components/Layout.astro';
+
+const meetingsRaw = await getCollection('meetings');
+
+// Reuse formatters (faster than creating inside .map)
+const fmtISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' }); // YYYY-MM-DD
+const fmtDisplay = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+// Normalize each item's date
+const meetings = meetingsRaw.map((m) => {
+  const raw = m.data.date instanceof Date
+    ? m.data.date
+    : new Date(`${m.data.date}T00:00:00Z`); // handle 'YYYY-MM-DD' strings too
+
+  return {
+    ...m,
+    _date: raw,                       // actual Date (UTC midnight)
+    _iso: fmtISO.format(raw),         // 'YYYY-MM-DD' for datetime=
+    _display: fmtDisplay.format(raw), // human format, pinned to UTC
+  };
+});
+
+const sortedMeetings = meetings.sort((a, b) => b._date.getTime() - a._date.getTime());
+---
+
+<Layout title="Team Meetings" description="Documentation of our FLL Challenge team meetings, including agendas, notes, and photos.">
+  <div class="meetings-page">
+    <header class="page-header">
+      <h1>📅 Team Meetings</h1>
+      <p>Documentation of our FLL Challenge team meetings, including agendas, notes, and photos.</p>
+    </header>
+
+    <div class="meetings-list">
+      {sortedMeetings.map((meeting) => (
+        <article class="meeting-card">
+          <div class="meeting-card-content">
+            <header class="meeting-card-header">
+              <h2>
+                <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
+              </h2>
+              <time datetime={meeting._iso}>{meeting._display}</time>
+            </header>
+
+            {meeting.data.agenda && meeting.data.agenda.length > 0 && (
+              <div class="meeting-preview">
+                <h4>Agenda Highlights:</h4>
+                <ul class="agenda-preview">
+                  {meeting.data.agenda.slice(0, 3).map((item) => (
+                    <li>{item}</li>
+                  ))}
+                  {meeting.data.agenda.length > 3 && (
+                    <li class="more-items">+ {meeting.data.agenda.length - 3} more items</li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            <div class="meeting-meta">
+              {meeting.data.assignments && (
+                <span class="meta-item">
+                  🔧 {meeting.data.assignments.length} assignment{meeting.data.assignments.length !== 1 ? 's' : ''}
+                </span>
+              )}
+              {meeting.data.photos && meeting.data.photos.length > 0 && (
+                <span class="meta-item">
+                  📷 {meeting.data.photos.length} photo{meeting.data.photos.length !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+
+            <a href={`/meetings/${meeting.slug}/`} class="read-more">
+              Read Full Meeting Notes →
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    {meetings.length === 0 && (
+      <div class="no-meetings">
+        <p>🗓️ Meeting documentation will appear here as we progress through the season!</p>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .meetings-page {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: calc(var(--grid-unit) * 6);
+    padding-bottom: calc(var(--grid-unit) * 3);
+    border-bottom: 6px solid var(--color-accent);
+  }
+
+  .page-header h1 {
+    font-family: var(--font-heading-primary);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+  }
+
+  .page-header p {
+    color: var(--color-text-secondary);
+    font-size: 1.25rem;
+    line-height: 1.5;
+    font-style: italic;
+    margin: 0;
+  }
+
+  .meetings-list {
+    display: grid;
+    gap: calc(var(--grid-unit) * 4);
+  }
+
+  .meeting-card {
+    background: var(--color-surface);
+    border-radius: 8px;
+    padding: calc(var(--grid-unit) * 4);
+    border-left: 4px solid var(--color-accent);
+    border: 2px solid var(--color-border);
+    transition: all 0.2s;
+  }
+
+  .meeting-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-accent);
+  }
+
+  .meeting-card-header {
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .meeting-card-header h2 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 calc(var(--grid-unit)) 0;
+  }
+
+  .meeting-card-header a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .meeting-card-header a:hover {
+    color: var(--color-accent);
+  }
+
+  .meeting-card-header time {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .meeting-preview {
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .meeting-preview h4 {
+    font-family: var(--font-heading-secondary);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .agenda-preview {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .agenda-preview li {
+    padding-left: calc(var(--grid-unit) * 3);
+    margin-bottom: calc(var(--grid-unit));
+    position: relative;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .agenda-preview li:before {
+    content: "•";
+    color: var(--color-accent);
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+  }
+
+  .agenda-preview .more-items {
+    font-style: italic;
+    color: var(--color-text-muted);
+  }
+
+  .meeting-meta {
+    display: flex;
+    gap: calc(var(--grid-unit) * 3);
+    margin-bottom: calc(var(--grid-unit) * 3);
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    font-family: var(--font-mono);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .read-more {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: inline-block;
+    text-decoration: none;
+  }
+
+  .read-more:hover {
+    background-color: var(--color-accent);
+    color: white;
+    text-decoration: none;
+  }
+
+  .no-meetings {
+    text-align: center;
+    padding: calc(var(--grid-unit) * 8) calc(var(--grid-unit) * 3);
+    color: var(--color-text-muted);
+  }
+
+  .no-meetings p {
+    margin: 0;
+    font-size: 1.2rem;
+    font-style: italic;
+  }
+
+  @media (max-width: 768px) {
+    .page-header h1 {
+      font-size: 2.25rem;
+    }
+    
+    .meeting-card {
+      padding: calc(var(--grid-unit) * 3);
+    }
+    
+    .meeting-card-header h2 {
+      font-size: 1.5rem;
+    }
+    
+    .meeting-meta {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) * 2);
+    }
+    
+    .page-header p {
+      font-size: 1.1rem;
+    }
+  }
+</style>

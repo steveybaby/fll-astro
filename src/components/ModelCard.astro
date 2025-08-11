@@ -1,0 +1,136 @@
+---
+export interface Assignment {
+  name: string;
+  assignee: string;
+  completed: boolean;
+}
+
+export interface Props {
+  assignments: Assignment[];
+}
+
+const { assignments } = Astro.props;
+---
+
+<div class="model-assignments">
+  <h3>🔧 Model Building Assignments</h3>
+  <div class="assignment-grid">
+    {assignments.map((assignment) => (
+      <div class={`assignment-card ${assignment.completed ? 'completed' : 'pending'}`}>
+        <div class="assignment-header">
+          <h4>{assignment.name}</h4>
+          <span class={`status-badge ${assignment.completed ? 'status-completed' : 'status-pending'}`}>
+            {assignment.completed ? '✅ Complete' : '⏳ In Progress'}
+          </span>
+        </div>
+        <div class="assignee-info">
+          <span class="assignee-badge">{assignment.assignee}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .model-assignments {
+    margin: 30px 0;
+  }
+
+  .model-assignments h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.3em;
+  }
+
+  .assignment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .assignment-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 4px solid #ddd;
+    transition: all 0.2s;
+  }
+
+  .assignment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .assignment-card.completed {
+    border-left-color: #28a745;
+    background: #f8fff9;
+  }
+
+  .assignment-card.pending {
+    border-left-color: #007acc;
+  }
+
+  .assignment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .assignment-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 1.1em;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .status-badge {
+    font-size: 0.8em;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .status-completed {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .status-pending {
+    background: #cce7ff;
+    color: #004085;
+  }
+
+  .assignee-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .assignee-badge {
+    background: #007acc;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.9em;
+    font-weight: 500;
+  }
+
+  @media (max-width: 600px) {
+    .assignment-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .assignment-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .status-badge {
+      align-self: flex-end;
+    }
+  }
+</style>

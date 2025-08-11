@@ -1,0 +1,122 @@
+{
+  "$schema": "https://frontmatter.codes/frontmatter.schema.json",
+  "frontMatter.framework.id": "astro",
+  "frontMatter.preview.host": "http://localhost:4321",
+  "frontMatter.content.publicFolder": "public",
+  "frontMatter.content.pageFolders": [
+    {
+      "title": "Blog Posts",
+      "path": "[[workspace]]/src/content/blog",
+      "contentTypes": ["blog"]
+    },
+    {
+      "title": "Meeting Notes",
+      "path": "[[workspace]]/src/content/meetings",
+      "contentTypes": ["meeting"]
+    },
+    {
+      "title": "Pages",
+      "path": "[[workspace]]/src/pages",
+      "contentTypes": ["page"]
+    }
+  ],
+  "frontMatter.taxonomy.contentTypes": [
+    {
+      "name": "blog",
+      "pageBundle": false,
+      "previewPath": "blog",
+      "filePrefix": null,
+      "clearEmpty": true,
+      "fields": [
+        {
+          "title": "Title",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "title": "Date",
+          "name": "date",
+          "type": "datetime"
+        },
+        {
+          "title": "Description",
+          "name": "description",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "meeting",
+      "pageBundle": false,
+      "previewPath": "meetings",
+      "filePrefix": null,
+      "clearEmpty": true,
+      "fields": [
+        {
+          "title": "Title",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "title": "Date",
+          "name": "date",
+          "type": "datetime"
+        },
+        {
+          "title": "Agenda",
+          "name": "agenda",
+          "type": "list",
+          "listType": "string"
+        },
+        {
+          "title": "Assignments",
+          "name": "assignments",
+          "type": "list",
+          "listType": "object",
+          "fields": [
+            {
+              "title": "Task",
+              "name": "task",
+              "type": "string"
+            },
+            {
+              "title": "Assignee",
+              "name": "assignee",
+              "type": "string"
+            },
+            {
+              "title": "Due Date",
+              "name": "due",
+              "type": "datetime"
+            }
+          ]
+        },
+        {
+          "title": "Photos",
+          "name": "photos",
+          "type": "list",
+          "listType": "string"
+        }
+      ]
+    },
+    {
+      "name": "page",
+      "pageBundle": false,
+      "previewPath": null,
+      "filePrefix": null,
+      "clearEmpty": true,
+      "fields": [
+        {
+          "title": "Title",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "title": "Description",
+          "name": "description",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,683 @@
+---
+import Layout from '../components/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const blogPosts = await getCollection('blog');
+const meetings = await getCollection('meetings');
+
+const sortedPosts = blogPosts
+  .sort((a: any, b: any) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .slice(0, 2);
+
+const sortedMeetings = meetings
+  .sort((a: any, b: any) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .slice(0, 2);
+---
+
+<Layout title="Piedmont Makers Club FLL Challenge Team" description="Welcome to our FIRST Lego League team website! Follow our journey through the FLL UNEARTHED™ season with meeting notes, robot builds, and competition preparations." showSidebar={false}>
+  <div class="landing-page">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">FLL ASTRO</h1>
+        <p class="hero-subtitle">Piedmont Makers Club</p>
+        <p class="hero-description">
+          Welcome to our FIRST Lego League Challenge Team website! Follow our journey 
+          through the FLL UNEARTHED™ season as we build, code, and compete.
+        </p>
+        <hr class="hero-rule" />
+        <div class="hero-actions">
+          <a href="#latest" class="btn btn-primary">Latest Updates</a>
+          <a href="/meeting-plans" class="btn btn-secondary">View Meetings</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Latest Updates Section -->
+    <section class="demo-section" id="latest">
+      <div class="container">
+        <h2 class="section-title">Latest Updates</h2>
+        <p class="demo-description">
+          Stay up-to-date with our team's progress through the FLL season, including 
+          recent meeting notes, blog posts, and important announcements.
+        </p>
+        
+        <div class="updates-grid">
+          <div class="updates-column">
+            <h3 class="column-title">Recent Blog Posts</h3>
+            {sortedPosts.length > 0 && (
+              <div class="demo-posts">
+                {sortedPosts.map(post => (
+                  <article class="demo-post-card">
+                    <h4 class="demo-post-title">
+                      <a href={`/blog/${post.slug}/`}>{post.data.title}</a>
+                    </h4>
+                    
+                    <div class="demo-post-meta">
+                      <time class="demo-post-date" datetime={post.data.date}>
+                        {new Date(post.data.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </time>
+                    </div>
+                    
+                    {post.data.description && (
+                      <p class="demo-post-excerpt">{post.data.description}</p>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div class="updates-column">
+            <h3 class="column-title">Recent Meetings</h3>
+            {sortedMeetings.length > 0 && (
+              <div class="demo-posts">
+                {sortedMeetings.map(meeting => (
+                  <article class="demo-post-card">
+                    <h4 class="demo-post-title">
+                      <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
+                    </h4>
+                    
+                    <div class="demo-post-meta">
+                      <time class="demo-post-date" datetime={meeting.data.date}>
+                        {new Date(meeting.data.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </time>
+                    </div>
+                    
+                    {meeting.data.agenda && (
+                      <div class="meeting-preview">
+                        <p class="agenda-count">📅 {meeting.data.agenda.length} agenda items</p>
+                        {meeting.data.photos && meeting.data.photos.length > 0 && (
+                          <p class="photo-count">📷 {meeting.data.photos.length} photos</p>
+                        )}
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div class="demo-actions">
+          <a href="/blog" class="btn btn-primary">View All Posts</a>
+          <a href="/meeting-plans" class="btn btn-secondary">All Meetings</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Our Team Section -->
+    <section class="features" id="features">
+      <div class="container">
+        <h2 class="section-title">About Our Team</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3 class="feature-title">FLL UNEARTHED™</h3>
+            <p class="feature-description">This season's challenge focuses on energy exploration and innovation. We'll design solutions to power the future.</p>
+          </div>
+          <div class="feature-card">
+            <h3 class="feature-title">Robot Design</h3>
+            <p class="feature-description">Building and programming LEGO robots to complete challenging missions on the FLL game board.</p>
+          </div>
+          <div class="feature-card">
+            <h3 class="feature-title">Innovation Project</h3>
+            <p class="feature-description">Researching and developing solutions to real-world energy challenges facing our community.</p>
+          </div>
+          <div class="feature-card">
+            <h3 class="feature-title">Core Values</h3>
+            <p class="feature-description">Discovery, Innovation, Impact, Inclusion, Teamwork, and Fun - the foundation of everything we do.</p>
+          </div>
+          <div class="feature-card">
+            <h3 class="feature-title">Competition Ready</h3>
+            <p class="feature-description">Preparing for regional tournaments with strategy, practice, and teamwork every step of the way.</p>
+          </div>
+          <div class="feature-card">
+            <h3 class="feature-title">Learning Together</h3>
+            <p class="feature-description">Developing STEM skills, leadership abilities, and lifelong friendships through hands-on challenges.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</Layout>
+
+<style>
+  .landing-page {
+    width: 100%;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--content-padding);
+  }
+
+  .hero {
+    text-align: center;
+    padding: calc(var(--grid-unit) * 12) 0 calc(var(--grid-unit) * 8);
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+  }
+
+  .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--content-padding);
+  }
+
+  .hero-title {
+    font-family: var(--font-heading-primary);
+    font-size: 4.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    line-height: 0.9;
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .hero-subtitle {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .hero-description {
+    font-size: 1.375rem;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    margin-bottom: calc(var(--grid-unit) * 4);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-rule {
+    height: 6px;
+    background-color: var(--color-accent);
+    border: none;
+    width: 150px;
+    margin: 0 auto calc(var(--grid-unit) * 4);
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: calc(var(--grid-unit) * 2);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.95rem;
+  }
+
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: white;
+    border: 2px solid var(--color-accent);
+  }
+
+  .btn-primary:hover,
+  .btn-primary:focus {
+    background-color: transparent;
+    color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-border);
+  }
+
+  .btn-secondary:hover,
+  .btn-secondary:focus {
+    background-color: var(--color-text-primary);
+    color: var(--color-background);
+    transform: translateY(-2px);
+  }
+
+  /* Dark mode button styles */
+  :global([data-theme="dark"]) .btn-primary {
+    background-color: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
+  }
+
+  :global([data-theme="dark"]) .btn-primary:hover,
+  :global([data-theme="dark"]) .btn-primary:focus {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+
+  :global([data-theme="dark"]) .btn-secondary {
+    background-color: transparent;
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+  }
+
+  :global([data-theme="dark"]) .btn-secondary:hover,
+  :global([data-theme="dark"]) .btn-secondary:focus {
+    background-color: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
+  }
+
+  .features {
+    padding: calc(var(--grid-unit) * 8) 0;
+  }
+
+  .section-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: calc(var(--grid-unit) * 6);
+    text-align: center;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: calc(var(--grid-unit) * 4);
+  }
+
+  .feature-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: calc(var(--grid-unit) * 4);
+    text-align: center;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-accent);
+  }
+
+  .feature-icon {
+    font-size: 3rem;
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .feature-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: calc(var(--grid-unit) * 1.5);
+  }
+
+  .feature-description {
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Typography Showcase */
+  .typography-showcase {
+    padding: calc(var(--grid-unit) * 8) 0;
+    background-color: var(--color-surface);
+  }
+
+  .typography-description {
+    text-align: center;
+    font-size: 1.125rem;
+    color: var(--color-text-secondary);
+    margin-bottom: calc(var(--grid-unit) * 6);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .typography-samples {
+    display: grid;
+    gap: calc(var(--grid-unit) * 6);
+  }
+
+  .type-sample {
+    text-align: center;
+    padding: calc(var(--grid-unit) * 4);
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+  }
+
+  .sample-h1 {
+    font-family: var(--font-heading-primary);
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    line-height: 1.1;
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .sample-h2 {
+    font-family: var(--font-heading-secondary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .sample-body {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    margin-bottom: calc(var(--grid-unit) * 2);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .sample-code {
+    font-family: var(--font-mono);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: calc(var(--grid-unit) * 2);
+    color: var(--color-text-primary);
+  }
+
+  .type-meta {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+
+  .demo-section {
+    padding: calc(var(--grid-unit) * 8) 0;
+  }
+
+  .demo-description {
+    text-align: center;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin-bottom: calc(var(--grid-unit) * 6);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .demo-posts {
+    display: grid;
+    gap: calc(var(--grid-unit) * 4);
+    margin-bottom: calc(var(--grid-unit) * 6);
+  }
+
+  .demo-post-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: calc(var(--grid-unit) * 3);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .demo-post-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-accent);
+  }
+
+  .demo-post-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: calc(var(--grid-unit));
+  }
+
+  .demo-post-title a {
+    color: var(--color-text-primary);
+    text-decoration: none;
+  }
+
+  .demo-post-title a:hover,
+  .demo-post-title a:focus {
+    color: var(--color-accent);
+  }
+
+  .demo-post-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: calc(var(--grid-unit));
+    margin-bottom: calc(var(--grid-unit) * 1.5);
+  }
+
+  .demo-post-date {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .demo-post-reading-time {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .demo-post-reading-time::before {
+    content: "•";
+    margin: 0 calc(var(--grid-unit) / 2);
+    color: var(--color-border);
+  }
+
+  .demo-post-excerpt {
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .demo-post-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--grid-unit) / 2);
+  }
+
+  .demo-category {
+    background-color: var(--color-text-primary);
+    color: white;
+    padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 2px;
+  }
+
+  /* Dark mode demo category styles */
+  :global([data-theme="dark"]) .demo-category {
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+  }
+
+  .demo-actions {
+    text-align: center;
+    gap: calc(var(--grid-unit) * 2);
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Updates Grid Layout */
+  .updates-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(var(--grid-unit) * 6);
+    margin-bottom: calc(var(--grid-unit) * 6);
+  }
+
+  .updates-column {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .column-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: calc(var(--grid-unit) * 3);
+    text-align: center;
+  }
+
+  .meeting-preview {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 2);
+  }
+
+  .agenda-count,
+  .photo-count {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .updates-grid {
+      grid-template-columns: 1fr;
+      gap: calc(var(--grid-unit) * 4);
+    }
+    
+    .demo-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+
+  .installation {
+    padding: calc(var(--grid-unit) * 8) 0;
+    background-color: var(--color-surface);
+  }
+
+  .install-steps {
+    display: grid;
+    gap: calc(var(--grid-unit) * 4);
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: calc(var(--grid-unit) * 2);
+    align-items: start;
+  }
+
+  .step-number {
+    font-family: var(--font-heading-primary);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    margin: 0;
+  }
+
+  .step-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .step-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: calc(var(--grid-unit));
+  }
+
+  .code-block {
+    background-color: var(--color-text-primary);
+    color: var(--color-background);
+    padding: calc(var(--grid-unit) * 2);
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 0;
+  }
+
+  .code-block code {
+    font-family: var(--font-mono);
+    background: none;
+    border: none;
+    color: inherit;
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 3rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+    }
+
+    .hero-description {
+      font-size: 1.125rem;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .step {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .step-number {
+      font-size: 2rem;
+    }
+  }
+</style>
