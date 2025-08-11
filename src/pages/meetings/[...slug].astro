@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Layout from '../../components/Layout.astro';
 import PhotoGallery from '../../components/PhotoGallery.astro';
 import ModelCard from '../../components/ModelCard.astro';
+import { formatMeetingTime } from '../../utils/meeting-time.ts';
 
 export async function getStaticPaths() {
   const meetings = await getCollection('meetings');
@@ -35,7 +36,12 @@ const display = new Intl.DateTimeFormat('en-US', {
   <article class="meeting-article">
     <header class="meeting-header">
       <h1>Meeting: {data.title}</h1>
-      <time datetime={isoDate}>{display}</time>
+      <div class="meeting-datetime">
+        <time datetime={isoDate}>{display}</time>
+        {data.startTime && (
+          <span class="meeting-start-time">{formatMeetingTime(data.startTime, data.duration)}</span>
+        )}
+      </div>
       
       <div class="meeting-actions">
         <button 
@@ -138,6 +144,22 @@ const display = new Intl.DateTimeFormat('en-US', {
     letter-spacing: 0.05em;
     margin-bottom: calc(var(--grid-unit) * 2);
     display: block;
+  }
+
+  .meeting-datetime {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 2);
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .meeting-start-time {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .meeting-actions {

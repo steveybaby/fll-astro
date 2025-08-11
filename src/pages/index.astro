@@ -1,5 +1,6 @@
 ---
 import Layout from '../components/Layout.astro';
+import NextMeetingBanner from '../components/NextMeetingBanner.astro';
 import { getCollection } from 'astro:content';
 
 const blogPosts = await getCollection('blog', ({ data }) => {
@@ -29,6 +30,9 @@ const recentContent = allContent
 
 <Layout title="Piedmont Makers Club FLL Challenge Team" description="Welcome to our FIRST Lego League team website! Follow our journey through the FLL UNEARTHED™ season with meeting notes, robot builds, and competition preparations." showSidebar={false}>
   <div class="landing-page">
+    <!-- Next Meeting Banner -->
+    <NextMeetingBanner />
+    
     <!-- Hero Section -->
     <section class="hero">
       <div class="hero-content">
@@ -40,8 +44,8 @@ const recentContent = allContent
         </p>
         <hr class="hero-rule" />
         <div class="hero-actions">
-          <a href="#latest" class="btn btn-primary">Latest Updates</a>
-          <a href="/meeting-plans" class="btn btn-secondary">View Meetings</a>
+          <a href="/resources" class="btn btn-primary">Resources</a>
+          <a href="/meeting-plans" class="btn btn-secondary">Meetings</a>
         </div>
       </div>
     </section>

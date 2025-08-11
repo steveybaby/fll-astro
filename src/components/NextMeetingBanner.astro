@@ -1,0 +1,181 @@
+---
+import { getCollection } from 'astro:content';
+import { formatMeetingTime } from '../utils/meeting-time.ts';
+
+const meetingsRaw = await getCollection('meetings');
+
+// Process meetings similar to meeting-plans page
+const fmtISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' });
+const fmtDisplay = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+const meetings = meetingsRaw.map((m) => {
+  const raw = m.data.date instanceof Date
+    ? m.data.date
+    : new Date(`${m.data.date}T00:00:00Z`);
+
+  return {
+    ...m,
+    _date: raw,
+    _iso: fmtISO.format(raw),
+    _display: fmtDisplay.format(raw),
+  };
+});
+
+const now = new Date();
+const futureMeetings = meetings
+  .filter(m => m._date >= now)
+  .sort((a, b) => a._date.getTime() - b._date.getTime());
+
+const nextMeeting = futureMeetings[0] || null;
+---
+
+{nextMeeting && (
+  <div class="next-meeting-banner">
+    <div class="banner-content">
+      <div class="banner-icon">📅</div>
+      <div class="banner-info">
+        <div class="banner-label">Next Meeting</div>
+        <h3 class="banner-title">
+          <a href={`/meetings/${nextMeeting.slug}/`}>{nextMeeting.data.title}</a>
+        </h3>
+        <div class="banner-datetime">
+          <time datetime={nextMeeting._iso}>{nextMeeting._display}</time>
+          {nextMeeting.data.startTime && (
+            <span class="banner-time">{formatMeetingTime(nextMeeting.data.startTime, nextMeeting.data.duration)}</span>
+          )}
+        </div>
+      </div>
+      <div class="banner-arrow">→</div>
+    </div>
+  </div>
+)}
+
+<style>
+  .next-meeting-banner {
+    background: linear-gradient(135deg, var(--color-surface) 0%, rgba(220, 38, 38, 0.08) 100%);
+    border: 2px solid var(--color-accent);
+    border-radius: 8px;
+    margin-bottom: calc(var(--grid-unit) * 4);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .next-meeting-banner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.15);
+    border-color: var(--color-accent);
+  }
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    padding: calc(var(--grid-unit) * 3);
+    gap: calc(var(--grid-unit) * 2);
+    text-decoration: none;
+  }
+
+  .banner-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  .banner-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 2);
+  }
+
+  .banner-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+
+  .banner-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .banner-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .banner-title a:hover,
+  .next-meeting-banner:hover .banner-title a {
+    color: var(--color-accent);
+  }
+
+  .banner-datetime {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 4);
+  }
+
+  .banner-datetime time {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .banner-time {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .banner-arrow {
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  .next-meeting-banner:hover .banner-arrow {
+    transform: translateX(4px);
+  }
+
+  @media (max-width: 768px) {
+    .banner-content {
+      padding: calc(var(--grid-unit) * 2);
+      gap: calc(var(--grid-unit) * 1.5);
+    }
+
+    .banner-icon {
+      font-size: 1.5rem;
+    }
+
+    .banner-title {
+      font-size: 1.25rem;
+    }
+
+    .banner-datetime time {
+      font-size: 0.8rem;
+    }
+
+    .banner-time {
+      font-size: 0.85rem;
+    }
+  }
+</style>

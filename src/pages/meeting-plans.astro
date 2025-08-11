@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../components/Layout.astro';
+import { formatMeetingTime } from '../utils/meeting-time.ts';
 
 const meetingsRaw = await getCollection('meetings');
 
@@ -97,7 +98,12 @@ const upcomingMeetings = futureMeetings.slice(1); // All future meetings except 
               <h3>
                 <a href={`/meetings/${nextMeeting.slug}/`}>{nextMeeting.data.title}</a>
               </h3>
-              <time datetime={nextMeeting._iso}>{nextMeeting._display}</time>
+              <div class="meeting-time-info">
+                <time datetime={nextMeeting._iso}>{nextMeeting._display}</time>
+                {nextMeeting.data.startTime && (
+                  <span class="start-time">{formatMeetingTime(nextMeeting.data.startTime, nextMeeting.data.duration)}</span>
+                )}
+              </div>
             </header>
 
             {nextMeeting.data.agenda && nextMeeting.data.agenda.length > 0 && (
@@ -143,7 +149,12 @@ const upcomingMeetings = futureMeetings.slice(1); // All future meetings except 
                 <h3>
                   <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
                 </h3>
-                <time datetime={meeting._iso}>{meeting._display}</time>
+                <div class="compact-time-info">
+                  <time datetime={meeting._iso}>{meeting._display}</time>
+                  {meeting.data.startTime && (
+                    <span class="compact-start-time">{formatMeetingTime(meeting.data.startTime, meeting.data.duration)}</span>
+                  )}
+                </div>
               </header>
               <div class="compact-meta">
                 {meeting.data.agenda && meeting.data.agenda.length > 0 && (
@@ -170,7 +181,12 @@ const upcomingMeetings = futureMeetings.slice(1); // All future meetings except 
                 <h3>
                   <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
                 </h3>
-                <time datetime={meeting._iso}>{meeting._display}</time>
+                <div class="compact-time-info">
+                  <time datetime={meeting._iso}>{meeting._display}</time>
+                  {meeting.data.startTime && (
+                    <span class="compact-start-time">{formatMeetingTime(meeting.data.startTime, meeting.data.duration)}</span>
+                  )}
+                </div>
               </header>
               <div class="compact-meta">
                 {meeting.data.assignments && meeting.data.assignments.length > 0 && (
@@ -508,6 +524,10 @@ const upcomingMeetings = futureMeetings.slice(1); // All future meetings except 
     flex-shrink: 0;
   }
 
+  .compact-header .compact-time-info {
+    flex-shrink: 0;
+  }
+
   .compact-meta {
     display: flex;
     gap: calc(var(--grid-unit) * 2);
@@ -556,6 +576,37 @@ const upcomingMeetings = futureMeetings.slice(1); // All future meetings except 
     font-family: var(--font-mono);
     font-size: 0.9rem;
     color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .meeting-time-info {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 2);
+  }
+
+  .start-time {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .compact-time-info {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 4);
+    align-items: flex-end;
+  }
+
+  .compact-start-time {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
