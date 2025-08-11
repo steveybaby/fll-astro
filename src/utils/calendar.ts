@@ -34,24 +34,43 @@ export function generateICSFile(event: CalendarEvent): string {
 }
 
 export function getMeetingDateTime(meetingDate: Date, startTime?: string, duration?: number): { date: Date; duration: number } {
-  const meetingDateTime = new Date(meetingDate);
+  // Get the date string in YYYY-MM-DD format
+  const dateStr = meetingDate.toISOString().split('T')[0];
   
+  let timeStr: string;
   if (startTime) {
-    // Parse startTime in format "HH:MM" (24-hour format)
-    const [hours, minutes] = startTime.split(':').map(Number);
-    meetingDateTime.setHours(hours, minutes, 0, 0);
+    timeStr = startTime;
   } else {
     // Fallback to day-of-week logic if no startTime provided
     const dayOfWeek = meetingDate.getDay();
-    if (dayOfWeek === 0) { // Sunday
-      meetingDateTime.setHours(16, 30, 0, 0); // 4:30 PM
-    } else if (dayOfWeek === 4) { // Thursday
-      meetingDateTime.setHours(17, 0, 0, 0); // 5:00 PM
-    } else {
-      // Default to Thursday schedule for other days
-      meetingDateTime.setHours(17, 0, 0, 0);
-    }
+    timeStr = dayOfWeek === 0 ? '16:30' : '17:00'; // Sunday: 4:30 PM, others: 5:00 PM
   }
+  
+  // Create the meeting datetime by combining date and time, treating as Pacific timezone
+  // We'll create this as a localized date string that represents Pacific time
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  
+  // Create a new Date object for the specific date
+  const meetingDateTime = new Date(meetingDate);
+  meetingDateTime.setUTCFullYear(meetingDate.getUTCFullYear(), meetingDate.getUTCMonth(), meetingDate.getUTCDate());
+  
+  // Set the time in Pacific timezone by calculating the UTC equivalent
+  // Pacific is UTC-8 (PST) or UTC-7 (PDT)
+  const now = new Date();
+  const year = meetingDate.getFullYear();
+  
+  // Determine if date is in PDT (Daylight Saving Time)
+  // DST in US: second Sunday in March to first Sunday in November
+  const march2nd = new Date(year, 2, 8); // March 8th
+  const march2ndSunday = new Date(march2nd.getTime() + (7 - march2nd.getDay()) * 24 * 60 * 60 * 1000);
+  const nov1st = new Date(year, 10, 1); // November 1st
+  const nov1stSunday = new Date(nov1st.getTime() + (7 - nov1st.getDay()) % 7 * 24 * 60 * 60 * 1000);
+  
+  const isDST = meetingDate >= march2ndSunday && meetingDate < nov1stSunday;
+  const utcOffset = isDST ? 7 : 8; // PDT is UTC-7, PST is UTC-8
+  
+  // Set the UTC time that corresponds to the Pacific time
+  meetingDateTime.setUTCHours(hours + utcOffset, minutes, 0, 0);
   
   // Use provided duration or fallback to day-of-week logic
   const meetingDuration = duration !== undefined ? duration : 

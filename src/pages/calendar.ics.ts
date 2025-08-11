@@ -15,15 +15,25 @@ export async function GET() {
       const endDateTime = new Date(meetingDateTime.getTime() + duration * 60 * 60 * 1000);
       
       const formatDate = (date: Date): string => {
-        // Convert to Pacific timezone for ICS format
-        const pacificDate = new Date(date.toLocaleString("en-US", {timeZone: "America/Los_Angeles"}));
-        const year = pacificDate.getFullYear();
-        const month = String(pacificDate.getMonth() + 1).padStart(2, '0');
-        const day = String(pacificDate.getDate()).padStart(2, '0');
-        const hours = String(pacificDate.getHours()).padStart(2, '0');
-        const minutes = String(pacificDate.getMinutes()).padStart(2, '0');
-        const seconds = String(pacificDate.getSeconds()).padStart(2, '0');
-        return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+        // Convert UTC date to Pacific timezone display
+        const pacificTimeString = date.toLocaleString("en-US", {
+          timeZone: "America/Los_Angeles",
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+        
+        // Parse the localized string to get Pacific timezone values
+        // Format will be: "MM/DD/YYYY, HH:MM:SS"
+        const [datePart, timePart] = pacificTimeString.split(', ');
+        const [month, day, year] = datePart.split('/');
+        const [hours, minutes, seconds] = timePart.split(':');
+        
+        return `${year}${month.padStart(2, '0')}${day.padStart(2, '0')}T${hours}${minutes}${seconds}`;
       };
       
       const uid = `meeting-${meeting.slug}@fll-llamas.com`;
