@@ -80,7 +80,7 @@ const display = new Intl.DateTimeFormat('en-US', {
               <input 
                 type="text" 
                 id="calendar-url" 
-                value="https://fll.sharpers.com:4321/calendar.ics" 
+                value="https://fll.sharpers.com/calendar.ics" 
                 readonly
                 class="calendar-url-input"
               />
@@ -700,8 +700,7 @@ const display = new Intl.DateTimeFormat('en-US', {
     
     // Set the correct URL based on current domain
     if (urlInput) {
-      const currentDomain = window.location.origin;
-      urlInput.value = `https://${window.location.host}/calendar.ics`;
+      urlInput.value = `${window.location.origin}/calendar.ics`;
     }
     
     // Show popup
