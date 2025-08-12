@@ -1,0 +1,5 @@
+---
+// Redirect to the dynamic calendar route for the current month
+const now = new Date();
+return Astro.redirect(`/calendar/${now.getFullYear()}/${now.getMonth()}`);
+---
