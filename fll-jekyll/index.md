@@ -5,7 +5,7 @@ title: Home
 
 <div style="background-color: #007acc; color: white; padding: 20px; margin-bottom: 30px; text-align: center; border-radius: 8px;">
   <h2 style="margin: 0; font-size: 1.5em;">
-    🔗 <a href="https://www.firstinspires.org/resource-library/fll/challenge/challenge-and-resources" style="color: white; text-decoration: none; font-weight: bold;">OFFICIAL FLL CHALLENGE & RESOURCES</a> 🔗
+    🔗 <a href="https://creations.mtdv.me/videos/fll-unearthed-video" style="color: white; text-decoration: none; font-weight: bold;">OFFICIAL FLL CHALLENGE & RESOURCES</a> 🔗
   </h2>
 </div>
 
