@@ -52,7 +52,6 @@ export async function GET() {
         `SUMMARY:${summary}`,
         `DESCRIPTION:${description}`,
         `LOCATION:${location}`,
-        `URL:${import.meta.env.SITE}/meetings/${meeting.slug}/`,
         'END:VEVENT'
       ].join('\r\n');
     });
