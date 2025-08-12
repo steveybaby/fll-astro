@@ -1,0 +1,59 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout title="Rickroll Test Page" description="Test page for rickroll mode">
+  <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+    <h1>🎵 Rickroll Mode Test Page</h1>
+    
+    <p>Add <code>?mode=rr</code> to the URL to activate rickroll mode, then try clicking the external links below:</p>
+    
+    <div style="margin: 2rem 0;">
+      <h2>External Links (should be rickrolled):</h2>
+      <ul style="line-height: 2;">
+        <li><a href="https://google.com" target="_blank">Google (External)</a></li>
+        <li><a href="https://github.com" target="_blank">GitHub (External)</a></li>
+        <li><a href="https://youtube.com" target="_blank">YouTube (External)</a></li>
+        <li><a href="https://reddit.com" target="_blank">Reddit (External)</a></li>
+      </ul>
+    </div>
+    
+    <div style="margin: 2rem 0;">
+      <h2>Internal Links (should work normally):</h2>
+      <ul style="line-height: 2;">
+        <li><a href="/">Home (Internal)</a></li>
+        <li><a href="/calendar">Calendar (Internal)</a></li>
+        <li><a href="/meeting-plans">Meetings (Internal)</a></li>
+        <li><a href="/about">About (Internal)</a></li>
+      </ul>
+    </div>
+    
+    <div style="background: #f0f0f0; padding: 1rem; border-radius: 8px; margin: 2rem 0;">
+      <h3>How to test:</h3>
+      <ol>
+        <li>Open browser console (F12)</li>
+        <li>Add <code>?mode=rr</code> to the URL</li>
+        <li>Refresh the page</li>
+        <li>Look for "🎵 RICKROLL MODE ACTIVATED 🎵" in console</li>
+        <li>Click any external link above</li>
+        <li>Should open the FLL rickroll video instead!</li>
+      </ol>
+    </div>
+    
+    <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin: 2rem 0;">
+      <h3>Current URL parameters:</h3>
+      <p id="url-params">Loading...</p>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Show current URL parameters for debugging
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramsElement = document.getElementById('url-params');
+    if (paramsElement) {
+      paramsElement.textContent = window.location.search || 'None';
+    }
+  });
+</script>
