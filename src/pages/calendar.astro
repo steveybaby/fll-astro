@@ -1,5 +1,1017 @@
 ---
-// Redirect to the dynamic calendar route for the current month
-const now = new Date();
-return Astro.redirect(`/calendar/${now.getFullYear()}/${now.getMonth()}`);
+import { getCollection } from 'astro:content';
+import Layout from '../components/Layout.astro';
+import { formatMeetingTime } from '../utils/meeting-time.ts';
+
+const meetings = await getCollection('meetings');
+
+// Process meetings with proper date formatting and pass to client
+const processedMeetings = meetings.map(meeting => {
+  const date = meeting.data.date instanceof Date 
+    ? meeting.data.date 
+    : new Date(`${meeting.data.date}T00:00:00Z`);
+  
+  return {
+    slug: meeting.slug,
+    title: meeting.data.title,
+    date: date.toISOString().split('T')[0], // YYYY-MM-DD
+    startTime: meeting.data.startTime,
+    duration: meeting.data.duration,
+    location: meeting.data.location,
+    agenda: meeting.data.agenda || []
+  };
+});
+
+// Sort meetings by date
+const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 ---
+
+<Layout title="Team Calendar" description="Full calendar view of FLL Llamas team meetings and events" showSidebar={false}>
+  <div class="calendar-page">
+    <header class="calendar-header">
+      <div class="header-content">
+        <h1>📅 Team Calendar</h1>
+        <p>FLL Llamas meeting schedule and events</p>
+      </div>
+      
+      <div class="calendar-subscribe">
+        <button id="calendar-subscribe-btn" class="subscribe-button" title="Subscribe to FLL Llamas meeting calendar">
+          📅 Subscribe to Team Calendar
+        </button>
+        
+        <div id="calendar-subscription-popup" class="calendar-popup" style="display: none;">
+          <div class="calendar-popup-content">
+            <h4>Subscribe to FLL Llamas Calendar</h4>
+            <p>Copy this URL and add it to your calendar app:</p>
+            
+            <div class="url-copy-container">
+              <input 
+                type="text" 
+                id="calendar-url" 
+                value="https://fll.sharpers.com/calendar.ics"
+                readonly
+                class="calendar-url-input"
+              />
+              <button id="copy-url-btn" class="copy-button">Copy</button>
+            </div>
+            
+            <div class="calendar-instructions">
+              <h5>Instructions:</h5>
+              <ul>
+                <li><strong>Google Calendar:</strong> Settings → Add calendar → From URL</li>
+                <li><strong>Apple Calendar:</strong> File → New Calendar Subscription</li>
+                <li><strong>Outlook:</strong> Add calendar → Subscribe from web</li>
+              </ul>
+            </div>
+            
+            <div class="popup-actions">
+              <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+              <button id="close-popup-btn" class="close-button">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="calendar-container">
+      <div class="calendar-main">
+        <div class="calendar-month-header">
+          <button id="prev-month" class="month-nav-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="visually-hidden">Previous Month</span>
+          </button>
+          <h2 id="current-month-label">Loading...</h2>
+          <button id="next-month" class="month-nav-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="visually-hidden">Next Month</span>
+          </button>
+        </div>
+        
+        <div class="calendar-grid">
+          <div class="calendar-weekdays">
+            <div class="weekday">Sun</div>
+            <div class="weekday">Mon</div>
+            <div class="weekday">Tue</div>
+            <div class="weekday">Wed</div>
+            <div class="weekday">Thu</div>
+            <div class="weekday">Fri</div>
+            <div class="weekday">Sat</div>
+          </div>
+          
+          <div id="calendar-days" class="calendar-days">
+            <!-- Days will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <aside class="calendar-sidebar">
+        <h3>Upcoming Meetings</h3>
+        <div id="upcoming-meetings">
+          <!-- Upcoming meetings will be populated by JavaScript -->
+        </div>
+        
+        <div class="sidebar-actions">
+          <a href="/meeting-plans/" class="action-link">All Meetings</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .calendar-page {
+    min-height: 100vh;
+    padding: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: calc(var(--grid-unit) * 4);
+    padding-bottom: calc(var(--grid-unit) * 3);
+    border-bottom: 3px solid var(--color-accent);
+  }
+
+  .header-content h1 {
+    font-family: var(--font-heading-primary);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit)) 0;
+  }
+
+  .header-content p {
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .calendar-subscribe {
+    position: relative;
+  }
+
+  .subscribe-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: white;
+    background-color: var(--color-accent);
+    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    cursor: pointer;
+    display: inline-block;
+  }
+
+  .subscribe-button:hover,
+  .subscribe-button:focus {
+    background-color: transparent;
+    color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .calendar-popup {
+    position: absolute;
+    top: calc(100% + calc(var(--grid-unit)));
+    right: 0;
+    background: var(--color-surface);
+    border: 2px solid var(--color-accent);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 400px;
+  }
+
+  .calendar-popup-content {
+    padding: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-popup h4 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .calendar-popup p {
+    color: var(--color-text-secondary);
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    line-height: 1.5;
+  }
+
+  .url-copy-container {
+    display: flex;
+    gap: calc(var(--grid-unit));
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-url-input {
+    flex: 1;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    background: var(--color-background);
+    color: var(--color-text-primary);
+  }
+
+  .copy-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+  }
+
+  .copy-button:hover,
+  .copy-button:focus {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .calendar-instructions {
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-instructions h5 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit)) 0;
+  }
+
+  .calendar-instructions ul {
+    margin: 0;
+    padding-left: calc(var(--grid-unit) * 3);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .calendar-instructions li {
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .popup-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .download-fallback {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    text-decoration: underline;
+  }
+
+  .download-fallback:hover {
+    color: var(--color-accent);
+  }
+
+  .close-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit) * 1.5);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+  }
+
+  .close-button:hover,
+  .close-button:focus {
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+  }
+
+  .calendar-container {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: calc(var(--grid-unit) * 4);
+    min-height: 70vh;
+  }
+
+  .calendar-main {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .calendar-month-header {
+    background: var(--color-accent);
+    color: white;
+    padding: calc(var(--grid-unit) * 2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .calendar-month-header h2 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    flex: 1;
+    text-align: center;
+    color: white !important;
+    background: rgba(0,0,0,0.1);
+    padding: calc(var(--grid-unit) / 2);
+    border-radius: 4px;
+  }
+
+  .month-nav-btn {
+    background: none;
+    border: none;
+    color: white;
+    padding: calc(var(--grid-unit) / 2);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+  }
+
+  .month-nav-btn:hover,
+  .month-nav-btn:focus {
+    background: rgba(255, 255, 255, 0.2);
+    outline: none;
+  }
+
+  .month-nav-btn:active {
+    transform: translateY(1px);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .calendar-grid {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .weekday {
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) / 2);
+    text-align: center;
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .weekday:last-child {
+    border-right: none;
+  }
+
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    flex: 1;
+  }
+
+  .calendar-day {
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: calc(var(--grid-unit) / 2);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: var(--color-surface);
+  }
+
+  .calendar-day:nth-child(7n) {
+    border-right: none;
+  }
+
+  .calendar-day.other-month {
+    background: var(--color-background);
+    opacity: 0.5;
+  }
+
+  .calendar-day.today {
+    background: rgba(220, 38, 38, 0.05);
+    border-color: var(--color-accent);
+  }
+
+  .calendar-day.has-meetings {
+    background: rgba(220, 38, 38, 0.02);
+  }
+
+  .day-number {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .today .day-number {
+    color: var(--color-accent);
+    font-size: 1.1rem;
+  }
+
+  .day-meetings {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 4);
+    flex: 1;
+  }
+
+  .meeting-event {
+    background: var(--color-accent);
+    color: white;
+    padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2);
+    border-radius: 3px;
+    text-decoration: none;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    transition: all 0.2s ease;
+  }
+
+  .meeting-event:hover {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .meeting-title {
+    font-weight: 600;
+    margin-bottom: calc(var(--grid-unit) / 8);
+  }
+
+  .meeting-time {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    opacity: 0.9;
+  }
+
+  /* Global styles for dynamically generated calendar content */
+  :global(.calendar-day) {
+    border-right: 1px solid var(--color-border) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    padding: calc(var(--grid-unit) / 2) !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    background: var(--color-surface) !important;
+  }
+
+  :global(.calendar-day:nth-child(7n)) {
+    border-right: none !important;
+  }
+
+  :global(.calendar-day.other-month) {
+    background: var(--color-background) !important;
+    opacity: 0.5 !important;
+  }
+
+  :global(.calendar-day.today) {
+    background: rgba(220, 38, 38, 0.05) !important;
+    border-color: var(--color-accent) !important;
+  }
+
+  :global(.calendar-day.has-meetings) {
+    background: rgba(220, 38, 38, 0.02) !important;
+  }
+
+  :global(.day-number) {
+    font-family: var(--font-heading-secondary) !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    color: var(--color-text-primary) !important;
+    margin-bottom: calc(var(--grid-unit) / 2) !important;
+  }
+
+  :global(.today .day-number) {
+    color: var(--color-accent) !important;
+    font-size: 1.1rem !important;
+  }
+
+  :global(.day-meetings) {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: calc(var(--grid-unit) / 4) !important;
+    flex: 1 !important;
+  }
+
+  :global(.meeting-event) {
+    background: var(--color-accent) !important;
+    color: white !important;
+    padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2) !important;
+    border-radius: 3px !important;
+    text-decoration: none !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    transition: all 0.2s ease !important;
+  }
+
+  :global(.meeting-event:hover) {
+    background: var(--color-text-primary) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  :global(.meeting-title) {
+    font-weight: 600 !important;
+    margin-bottom: calc(var(--grid-unit) / 8) !important;
+  }
+
+  :global(.meeting-time) {
+    font-family: var(--font-mono) !important;
+    font-size: 0.7rem !important;
+    opacity: 0.9 !important;
+  }
+
+  .calendar-sidebar {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    padding: calc(var(--grid-unit) * 3);
+    height: fit-content;
+  }
+
+  .calendar-sidebar h3 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    border-bottom: 2px solid var(--color-accent);
+    padding-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .upcoming-list {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) * 1.5);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  :global(.upcoming-list) {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: calc(var(--grid-unit) * 1.5) !important;
+    margin-bottom: calc(var(--grid-unit) * 3) !important;
+  }
+
+  .upcoming-meeting {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 4);
+    padding: calc(var(--grid-unit) * 1.5);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  /* Ensure styles work for dynamically generated content */
+  :global(.upcoming-meeting) {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: calc(var(--grid-unit) / 4) !important;
+    padding: calc(var(--grid-unit) * 1.5) !important;
+    background: var(--color-background) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 4px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+  }
+
+  :global(.upcoming-meeting:hover) {
+    border-color: var(--color-accent) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  :global(.upcoming-title) {
+    font-family: var(--font-heading-secondary) !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    color: var(--color-text-primary) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.2 !important;
+  }
+
+  :global(.upcoming-meeting:hover .upcoming-title) {
+    color: var(--color-accent) !important;
+  }
+
+  :global(.upcoming-date) {
+    font-family: var(--font-mono) !important;
+    font-size: 0.8rem !important;
+    color: var(--color-text-muted) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  :global(.upcoming-time) {
+    font-family: var(--font-mono) !important;
+    font-size: 0.75rem !important;
+    color: var(--color-accent) !important;
+    font-weight: 600 !important;
+  }
+
+  .upcoming-meeting:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-1px);
+  }
+
+  .upcoming-title {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+  }
+
+  .upcoming-meeting:hover .upcoming-title {
+    color: var(--color-accent);
+  }
+
+  .upcoming-date {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .upcoming-time {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .no-meetings {
+    color: var(--color-text-muted);
+    font-style: italic;
+    text-align: center;
+    margin: calc(var(--grid-unit) * 2) 0;
+  }
+
+  .sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit));
+    border-top: 1px solid var(--color-border);
+    padding-top: calc(var(--grid-unit) * 2);
+  }
+
+  .action-link {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+
+  .action-link:hover {
+    background-color: var(--color-accent);
+    color: white;
+  }
+
+  @media (max-width: 1024px) {
+    .calendar-container {
+      grid-template-columns: 1fr;
+      gap: calc(var(--grid-unit) * 3);
+    }
+
+    .calendar-sidebar {
+      order: -1;
+    }
+
+    .upcoming-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: calc(var(--grid-unit));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .calendar-header {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) * 2);
+      align-items: flex-start;
+    }
+
+    .calendar-month-header {
+      padding: calc(var(--grid-unit) * 1.5);
+    }
+
+    .calendar-month-header h2 {
+      font-size: 1.25rem;
+    }
+
+    .month-nav-btn {
+      min-width: 36px;
+      height: 36px;
+    }
+
+    .calendar-popup {
+      right: calc(var(--grid-unit) * -2);
+      left: calc(var(--grid-unit) * -2);
+      min-width: auto;
+    }
+
+    .url-copy-container {
+      flex-direction: column;
+    }
+
+    .popup-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: calc(var(--grid-unit));
+    }
+
+    .calendar-day {
+      min-height: 80px;
+    }
+
+    .meeting-event {
+      font-size: 0.7rem;
+    }
+
+    .meeting-time {
+      font-size: 0.65rem;
+    }
+  }
+</style>
+
+<script define:vars={{ meetings: sortedMeetings }}>
+  document.addEventListener('DOMContentLoaded', function() {
+    const subscribeBtn = document.getElementById('calendar-subscribe-btn');
+    const popup = document.getElementById('calendar-subscription-popup');
+    const closeBtn = document.getElementById('close-popup-btn');
+    const copyBtn = document.getElementById('copy-url-btn');
+    const urlInput = document.getElementById('calendar-url');
+    const prevBtn = document.getElementById('prev-month');
+    const nextBtn = document.getElementById('next-month');
+    const monthLabel = document.getElementById('current-month-label');
+    const calendarDays = document.getElementById('calendar-days');
+    const upcomingMeetings = document.getElementById('upcoming-meetings');
+    
+    // Set the correct URL based on current domain
+    if (urlInput) {
+      urlInput.value = `https://${window.location.host}/calendar.ics`;
+    }
+    
+    // Calendar state
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+    
+    // Utility functions
+    function formatMeetingTime(startTime, duration) {
+      if (!startTime) return '';
+      
+      // Parse 24-hour format time
+      const [hours, minutes] = startTime.split(':').map(num => parseInt(num));
+      const date = new Date();
+      date.setHours(hours, minutes, 0, 0);
+      
+      // Format to 12-hour with duration
+      const timeStr = date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      }).toLowerCase();
+      
+      const durationText = duration ? ` (${duration}${duration === 1 ? ' hour' : ' hours'})` : '';
+      return timeStr + durationText;
+    }
+    
+    function generateCalendarData(year, month) {
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDate = new Date(firstDay);
+      startDate.setDate(startDate.getDate() - firstDay.getDay()); // Start from Sunday
+      
+      const endDate = new Date(lastDay);
+      endDate.setDate(endDate.getDate() + (6 - lastDay.getDay())); // End on Saturday
+      
+      const days = [];
+      const currentDate = new Date(startDate);
+      const today = new Date();
+      
+      while (currentDate <= endDate) {
+        const dateKey = currentDate.toISOString().split('T')[0];
+        const meetingsOnDay = meetings.filter(meeting => meeting.date === dateKey);
+        
+        days.push({
+          date: new Date(currentDate),
+          dateKey,
+          isCurrentMonth: currentDate.getMonth() === month,
+          isToday: currentDate.toDateString() === today.toDateString(),
+          meetings: meetingsOnDay
+        });
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      return days;
+    }
+    
+    function updateCalendar() {
+      // Update month label
+      const monthName = new Intl.DateTimeFormat('en-US', { 
+        month: 'long', 
+        year: 'numeric' 
+      }).format(new Date(currentYear, currentMonth));
+      monthLabel.textContent = monthName;
+      
+      // Generate calendar days
+      const days = generateCalendarData(currentYear, currentMonth);
+      
+      // Update calendar grid
+      calendarDays.innerHTML = days.map(day => {
+        const classes = ['calendar-day'];
+        if (!day.isCurrentMonth) classes.push('other-month');
+        if (day.isToday) classes.push('today');
+        if (day.meetings.length > 0) classes.push('has-meetings');
+        
+        const meetingsHTML = day.meetings.length > 0 
+          ? `<div class="day-meetings">
+              ${day.meetings.map(meeting => `
+                <a href="/meetings/${meeting.slug}/" class="meeting-event">
+                  <div class="meeting-title">${meeting.title}</div>
+                  ${meeting.startTime ? `<div class="meeting-time">${formatMeetingTime(meeting.startTime, meeting.duration)}</div>` : ''}
+                </a>
+              `).join('')}
+            </div>`
+          : '';
+        
+        return `
+          <div class="${classes.join(' ')}">
+            <div class="day-number">${day.date.getDate()}</div>
+            ${meetingsHTML}
+          </div>
+        `;
+      }).join('');
+      
+      // Update upcoming meetings
+      const now = new Date();
+      const upcoming = meetings
+        .filter(meeting => new Date(meeting.date) >= now)
+        .slice(0, 3);
+      
+      if (upcoming.length > 0) {
+        upcomingMeetings.innerHTML = `
+          <div class="upcoming-list">
+            ${upcoming.map(meeting => {
+              const meetingDate = new Date(meeting.date);
+              const dateStr = meetingDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: meetingDate.getFullYear() !== currentYear ? 'numeric' : undefined
+              });
+              
+              return `
+                <a href="/meetings/${meeting.slug}/" class="upcoming-meeting">
+                  <div class="upcoming-title">${meeting.title}</div>
+                  <div class="upcoming-date">${dateStr}</div>
+                  ${meeting.startTime ? `<div class="upcoming-time">${formatMeetingTime(meeting.startTime, meeting.duration)}</div>` : ''}
+                </a>
+              `;
+            }).join('')}
+          </div>
+        `;
+      } else {
+        upcomingMeetings.innerHTML = '<p class="no-meetings">No upcoming meetings scheduled</p>';
+      }
+    }
+    
+    // Navigation handlers
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        currentMonth--;
+        if (currentMonth < 0) {
+          currentMonth = 11;
+          currentYear--;
+        }
+        updateCalendar();
+      });
+    }
+    
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        currentMonth++;
+        if (currentMonth > 11) {
+          currentMonth = 0;
+          currentYear++;
+        }
+        updateCalendar();
+      });
+    }
+    
+    // Subscription popup handlers
+    if (subscribeBtn && popup) {
+      subscribeBtn.addEventListener('click', function() {
+        popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+    
+    if (closeBtn && popup) {
+      closeBtn.addEventListener('click', function() {
+        popup.style.display = 'none';
+      });
+    }
+    
+    if (copyBtn && urlInput) {
+      copyBtn.addEventListener('click', async function() {
+        try {
+          await navigator.clipboard.writeText(urlInput.value);
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          // Fallback for older browsers
+          urlInput.select();
+          document.execCommand('copy');
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy';
+          }, 2000);
+        }
+      });
+    }
+    
+    // Hide popup when clicking outside
+    document.addEventListener('click', function(event) {
+      if (popup && !popup.contains(event.target) && !subscribeBtn.contains(event.target)) {
+        popup.style.display = 'none';
+      }
+    });
+    
+    // Initialize calendar
+    updateCalendar();
+  });
+</script>
