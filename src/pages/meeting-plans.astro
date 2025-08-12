@@ -7,6 +7,10 @@ const meetingsRaw = await getCollection('meetings');
 
 // Reuse formatters (faster than creating inside .map)
 const fmtISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' }); // YYYY-MM-DD
+const fmtDay = new Intl.DateTimeFormat('en-US', {
+  weekday: 'short',
+  timeZone: 'UTC',
+});
 const fmtDisplay = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
   month: 'long',
@@ -18,13 +22,13 @@ const fmtDisplay = new Intl.DateTimeFormat('en-US', {
 const meetings = meetingsRaw.map((m) => {
   const raw = m.data.date instanceof Date
     ? m.data.date
-    : new Date(`${m.data.date}T00:00:00Z`); // handle 'YYYY-MM-DD' strings too
+    : new Date(`${m.data.date}T12:00:00`); // Use noon to avoid timezone shifts
 
   return {
     ...m,
     _date: raw,                       // actual Date (UTC midnight)
     _iso: fmtISO.format(raw),         // 'YYYY-MM-DD' for datetime=
-    _display: fmtDisplay.format(raw), // human format, pinned to UTC
+    _display: `${fmtDay.format(raw)}, ${fmtDisplay.format(raw)}`, // day prefix + human format
   };
 });
 
@@ -63,7 +67,7 @@ const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meeting
               <input 
                 type="text" 
                 id="main-calendar-url" 
-                value="https://fll.sharpers.com:4321/calendar.ics"
+                value="https://fll.sharpers.com/calendar.ics"
                 readonly
                 class="calendar-url-input"
               />
@@ -791,7 +795,7 @@ const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meeting
     
     // Set the correct URL based on current domain
     if (mainUrlInput) {
-      mainUrlInput.value = `https://${window.location.host}/calendar.ics`;
+      mainUrlInput.value = `${window.location.origin}/calendar.ics`;
     }
     
     // Show popup

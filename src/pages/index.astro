@@ -74,7 +74,8 @@ const recentContent = allContent
                 
                 <div class="demo-post-meta">
                   <time class="demo-post-date" datetime={item.data.date}>
-                    {new Date(item.data.date).toLocaleDateString('en-US', {
+                    {new Date(`${item.data.date}T12:00:00`).toLocaleDateString('en-US', {
+                      weekday: 'short',
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'

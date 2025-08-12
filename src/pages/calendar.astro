@@ -9,7 +9,7 @@ const meetings = await getCollection('meetings');
 const processedMeetings = meetings.map(meeting => {
   const date = meeting.data.date instanceof Date 
     ? meeting.data.date 
-    : new Date(`${meeting.data.date}T00:00:00Z`);
+    : new Date(`${meeting.data.date}T12:00:00`); // Use noon to avoid timezone shifts
   
   return {
     slug: meeting.slug,
@@ -926,7 +926,8 @@ const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime
         upcomingMeetings.innerHTML = `
           <div class="upcoming-list">
             ${upcoming.map(meeting => {
-              const meetingDate = new Date(meeting.date);
+              const meetingDate = new Date(meeting.date + 'T12:00:00'); // Add time to avoid timezone shifts
+              const dayStr = meetingDate.toLocaleDateString('en-US', { weekday: 'short' });
               const dateStr = meetingDate.toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
@@ -936,7 +937,7 @@ const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime
               return `
                 <a href="/meetings/${meeting.slug}/" class="upcoming-meeting">
                   <div class="upcoming-title">${meeting.title}</div>
-                  <div class="upcoming-date">${dateStr}</div>
+                  <div class="upcoming-date">${dayStr}, ${dateStr}</div>
                   ${meeting.startTime ? `<div class="upcoming-time">${formatMeetingTime(meeting.startTime, meeting.duration)}</div>` : ''}
                 </a>
               `;

@@ -40,12 +40,19 @@ const raw = data.date instanceof Date ? data.date : new Date(`${data.date}T00:00
 const isoDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' }).format(raw); // e.g., 2025-08-10
 
 // Human-friendly, but still pinned to UTC
+const dayName = new Intl.DateTimeFormat('en-US', {
+  weekday: 'short',
+  timeZone: 'UTC',
+}).format(raw);
+
 const display = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
   timeZone: 'UTC',
 }).format(raw);
+
+const displayWithDay = `${dayName}, ${display}`;
 ---
 
 <Layout title={data.title} description={`Meeting notes from ${display}`} type="article" publishedTime={isoDate}>
@@ -54,7 +61,7 @@ const display = new Intl.DateTimeFormat('en-US', {
       <h1>Meeting: {data.title}</h1>
       <div class="meeting-header-info">
         <div class="meeting-datetime">
-          <time datetime={isoDate}>{display}</time>
+          <time datetime={isoDate}>{displayWithDay}</time>
           {data.startTime && (
             <span class="meeting-start-time">{formatMeetingTime(data.startTime, data.duration)}</span>
           )}
@@ -68,37 +75,36 @@ const display = new Intl.DateTimeFormat('en-US', {
           >
             📅 Subscribe to Team Calendar
           </button>
-        </div>
-      </div>
-        
-        <div id="calendar-subscription-popup" class="calendar-popup" style="display: none;">
-          <div class="calendar-popup-content">
-            <h4>Subscribe to FLL Llamas Calendar</h4>
-            <p>Copy this URL and add it to your calendar app:</p>
-            
-            <div class="url-copy-container">
-              <input 
-                type="text" 
-                id="calendar-url" 
-                value="https://fll.sharpers.com/calendar.ics" 
-                readonly
-                class="calendar-url-input"
-              />
-              <button id="copy-url-btn" class="copy-button">Copy</button>
-            </div>
-            
-            <div class="calendar-instructions">
-              <h5>Instructions:</h5>
-              <ul>
-                <li><strong>Google Calendar:</strong> Settings → Add calendar → From URL</li>
-                <li><strong>Apple Calendar:</strong> File → New Calendar Subscription</li>
-                <li><strong>Outlook:</strong> Add calendar → Subscribe from web</li>
-              </ul>
-            </div>
-            
-            <div class="popup-actions">
-              <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
-              <button id="close-popup-btn" class="close-button">Close</button>
+          
+          <div id="calendar-subscription-popup" class="calendar-popup" style="display: none;">
+            <div class="calendar-popup-content">
+              <h4>Subscribe to FLL Llamas Calendar</h4>
+              <p>Copy this URL and add it to your calendar app:</p>
+              
+              <div class="url-copy-container">
+                <input 
+                  type="text" 
+                  id="calendar-url" 
+                  value="https://fll.sharpers.com/calendar.ics" 
+                  readonly
+                  class="calendar-url-input"
+                />
+                <button id="copy-url-btn" class="copy-button">Copy</button>
+              </div>
+              
+              <div class="calendar-instructions">
+                <h5>Instructions:</h5>
+                <ul>
+                  <li><strong>Google Calendar:</strong> Settings → Add calendar → From URL</li>
+                  <li><strong>Apple Calendar:</strong> File → New Calendar Subscription</li>
+                  <li><strong>Outlook:</strong> Add calendar → Subscribe from web</li>
+                </ul>
+              </div>
+              
+              <div class="popup-actions">
+                <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+                <button id="close-popup-btn" class="close-button">Close</button>
+              </div>
             </div>
           </div>
         </div>
@@ -150,7 +156,8 @@ const display = new Intl.DateTimeFormat('en-US', {
           <span class="nav-label">← Previous Meeting</span>
           <span class="nav-title">{prevMeeting.data.title}</span>
           <span class="nav-date">
-            {new Date(prevMeeting.data.date).toLocaleDateString('en-US', {
+            {new Date(`${prevMeeting.data.date}T12:00:00`).toLocaleDateString('en-US', {
+              weekday: 'short',
               year: 'numeric',
               month: 'short',
               day: 'numeric'
@@ -164,7 +171,8 @@ const display = new Intl.DateTimeFormat('en-US', {
           <span class="nav-label">Next Meeting →</span>
           <span class="nav-title">{nextMeeting.data.title}</span>
           <span class="nav-date">
-            {new Date(nextMeeting.data.date).toLocaleDateString('en-US', {
+            {new Date(`${nextMeeting.data.date}T12:00:00`).toLocaleDateString('en-US', {
+              weekday: 'short',
               year: 'numeric',
               month: 'short',
               day: 'numeric'
