@@ -38,7 +38,7 @@ export async function GET() {
       
       const uid = `meeting-${meeting.slug}@fll-llamas.com`;
       const meetingUrl = `${import.meta.env.SITE}/meetings/${meeting.slug}/`;
-      const summary = `${meeting.data.title} - ${meetingUrl}`;
+      const summary = meeting.data.title;
       const description = meeting.data.agenda 
         ? `FLL Llamas Team Meeting\\n\\nAgenda:\\n${meeting.data.agenda.map(item => `• ${item}`).join('\\n')}\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`
         : `FLL Llamas Team Meeting\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`;

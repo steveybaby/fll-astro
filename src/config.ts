@@ -15,7 +15,7 @@ export interface SiteConfig {
   };
   siteUrl: string;
 }
-
+ 
 export const config: SiteConfig = {
   title: "FLL Llamas",
   description: "FIRST Lego League team blog and meeting documentation",
