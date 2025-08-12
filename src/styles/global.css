@@ -46,6 +46,23 @@
   --color-accent: #ff3333; /* Slightly brighter red for dark mode */
 }
 
+/* Llama Mode Theme */
+[data-theme="llama"] {
+  /* Llama-inspired warm palette */
+  --color-background: linear-gradient(135deg, #f4f1e8 0%, #e8ddc7 100%);
+  --color-surface: #faf8f3;
+  --color-text-primary: #4a3429;
+  --color-text-secondary: #6b4e37;
+  --color-text-muted: #8b6f47;
+  --color-border: #d4c4a8;
+  --color-accent: #cd853f; /* Warm Peru/llama color */
+}
+
+/* Override background for llama mode to use gradient */
+[data-theme="llama"] body {
+  background: var(--color-background);
+}
+
 /* Smooth theme transitions */
 html {
   transition: background-color 0.3s ease;
