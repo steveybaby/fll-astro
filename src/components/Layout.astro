@@ -50,6 +50,25 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
     />
   </head>
   <body>
+    <!-- Hidden Easter Egg - Click the invisible top right corner! -->
+    <div id="secret-easter-egg" class="secret-easter-egg" title="🎵"></div>
+    
+    <!-- Background Video Container (hidden by default) -->
+    <div id="rickroll-background" class="rickroll-background" style="display: none;">
+      <iframe 
+        id="rickroll-video"
+        width="560" 
+        height="315" 
+        src="" 
+        title="Enhanced FLL Content"
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        referrerpolicy="strict-origin-when-cross-origin" 
+        allowfullscreen>
+      </iframe>
+      <button id="close-rickroll" class="close-rickroll">×</button>
+    </div>
+    
     <div class="site-wrapper">
       <Header />
       
@@ -119,4 +138,158 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
       order: 1;
     }
   }
+
+  /* Hidden Easter Egg Styles */
+  .secret-easter-egg {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    cursor: pointer;
+    z-index: 10001;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .secret-easter-egg:hover {
+    opacity: 0.1;
+    background: radial-gradient(circle, rgba(220, 38, 38, 0.1) 0%, transparent 70%);
+  }
+
+  /* Rickroll Background Video Styles */
+  .rickroll-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+
+  .rickroll-background iframe {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .close-rickroll {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .close-rickroll:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+  }
+
+  @media (max-width: 768px) {
+    .rickroll-background iframe {
+      width: 95vw;
+      height: 56.25vw; /* 16:9 aspect ratio */
+      max-height: 80vh;
+    }
+    
+    .close-rickroll {
+      top: 10px;
+      right: 15px;
+      width: 45px;
+      height: 45px;
+      font-size: 30px;
+    }
+  }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const easterEgg = document.getElementById('secret-easter-egg');
+    const rickrollBg = document.getElementById('rickroll-background');
+    const rickrollVideo = document.getElementById('rickroll-video');
+    const closeBtn = document.getElementById('close-rickroll');
+    
+    // YouTube video ID for Never Gonna Give You Up
+    const YOUTUBE_VIDEO_ID = 'dQw4w9WgXcQ';
+    const YOUTUBE_EMBED_URL = `https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0`;
+    
+    let isRickrollActive = false;
+    
+    // Easter egg click handler
+    if (easterEgg) {
+      easterEgg.addEventListener('click', function() {
+        if (isRickrollActive) return;
+        
+        // Set the video source and show the overlay
+        rickrollVideo.src = YOUTUBE_EMBED_URL;
+        rickrollBg.style.display = 'flex';
+        isRickrollActive = true;
+        
+        // Prevent body scrolling
+        document.body.style.overflow = 'hidden';
+        
+        // Fade in animation
+        setTimeout(() => {
+          rickrollBg.style.opacity = '1';
+        }, 10);
+      });
+    }
+    
+    // Close button handler
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        closeRickroll();
+      });
+    }
+    
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && isRickrollActive) {
+        closeRickroll();
+      }
+    });
+    
+    // Close when clicking background (not the video)
+    if (rickrollBg) {
+      rickrollBg.addEventListener('click', function(e) {
+        if (e.target === rickrollBg) {
+          closeRickroll();
+        }
+      });
+    }
+    
+    function closeRickroll() {
+      if (!isRickrollActive) return;
+      
+      // Fade out animation
+      rickrollBg.style.opacity = '0';
+      
+      setTimeout(() => {
+        rickrollBg.style.display = 'none';
+        rickrollVideo.src = ''; // Stop the video
+        document.body.style.overflow = ''; // Restore scrolling
+        isRickrollActive = false;
+      }, 300);
+    }
+  });
+</script>
