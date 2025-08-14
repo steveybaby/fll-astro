@@ -50,8 +50,9 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
     />
   </head>
   <body>
-    <!-- Hidden Easter Egg - Click the invisible top right corner! -->
-    <div id="secret-easter-egg" class="secret-easter-egg" title="🎵"></div>
+    <!-- Hidden Easter Eggs - Click the invisible corners! -->
+    <!-- <div id="secret-easter-egg" class="secret-easter-egg"></div>
+    <div id="troll-easter-egg" class="troll-easter-egg"></div> -->
     
     <!-- Background Video Container (hidden by default) -->
     <div id="rickroll-background" class="rickroll-background" style="display: none;">
@@ -147,8 +148,8 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
     position: fixed;
     top: 0;
     right: 0;
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
     background: transparent;
     cursor: pointer;
     z-index: 10001;
@@ -160,6 +161,26 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
   .secret-easter-egg:hover {
     opacity: 0.3;
     background: radial-gradient(circle, rgba(220, 38, 38, 0.3) 0%, rgba(220, 38, 38, 0.1) 50%, transparent 70%);
+  }
+
+  /* Troll Easter Egg Styles */
+  .troll-easter-egg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    background: transparent;
+    cursor: pointer;
+    z-index: 10001;
+    opacity: 0.05;
+    transition: opacity 0.3s ease;
+    background: radial-gradient(circle, rgba(138, 43, 226, 0.05) 0%, transparent 70%);
+  }
+
+  .troll-easter-egg:hover {
+    opacity: 0.3;
+    background: radial-gradient(circle, rgba(138, 43, 226, 0.3) 0%, rgba(138, 43, 226, 0.1) 50%, transparent 70%);
   }
 
   /* Rickroll Background Video Styles */
@@ -286,6 +307,7 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const easterEgg = document.getElementById('secret-easter-egg');
+    const trollEgg = document.getElementById('troll-easter-egg');
     const rickrollBg = document.getElementById('rickroll-background');
     const rickrollVideo = document.getElementById('rickroll-video');
     const rickRain = document.getElementById('rick-rain');
@@ -294,6 +316,9 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
     // YouTube video ID for Never Gonna Give You Up
     const YOUTUBE_VIDEO_ID = 'dQw4w9WgXcQ';
     const YOUTUBE_EMBED_URL = `https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0`;
+    
+    // You've Been Trolled video URL
+    const TROLL_VIDEO_URL = 'https://www.youtube.com/watch?v=PXqcHi2fkXI';
     
     let isRickrollActive = false;
     let rickRainInterval = null;
@@ -361,6 +386,14 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
         startRickRain();
         
         isRickrollActive = true;
+      });
+    }
+    
+    // Troll easter egg click handler
+    if (trollEgg) {
+      trollEgg.addEventListener('click', function() {
+        // Open the "You've Been Trolled" video in a new tab
+        window.open(TROLL_VIDEO_URL, '_blank');
       });
     }
     
