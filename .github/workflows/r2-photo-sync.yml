@@ -1,0 +1,65 @@
+name: R2 Photo Sync
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'source-photos/**'
+      - 'scripts/process-photos-r2.js'
+  workflow_dispatch:
+  
+  # Optional: Run on a schedule (daily at 6 AM UTC)
+  # schedule:
+  #   - cron: '0 6 * * *'
+
+jobs:
+  sync-photos:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Process and upload photos to R2
+      env:
+        R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+        R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+      run: |
+        echo "Starting R2 photo processing..."
+        node scripts/process-photos-r2.js
+        
+    - name: Commit updated manifest
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        if [[ -n $(git status --porcelain) ]]; then
+          git add src/data/photo-manifest.json
+          git commit -m "Update photo manifest after R2 sync
+          
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push
+        else
+          echo "No changes to commit"
+        fi
+        
+    - name: Deploy to production (if configured)
+      # This step would trigger your Astro deployment
+      # Uncomment and configure based on your deployment setup
+      # run: |
+      #   echo "Triggering production deployment..."
+      #   # Add your deployment command here

@@ -1,13 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import PhotoGallery from '../components/PhotoGallery.astro';
-
-// Example photos for demonstration
-const sampleImages = [
-  'sample-1.jpg',
-  'sample-2.jpg', 
-  'sample-3.jpg'
-];
 ---
 
 <Layout title="Photos">
@@ -65,13 +57,24 @@ const sampleImages = [
       </section>
 
       <section class="photos-section">
-        <h2>🖼️ Sample Photo Gallery</h2>
-        <p>Here's how our photo galleries look and work:</p>
+        <h2>☁️ Photo Storage System</h2>
+        <p>Our photos are automatically stored and served from Cloudflare R2 for fast, reliable access:</p>
         
-        <PhotoGallery images={sampleImages} basePath="/images/sample" />
-        
-        <div class="gallery-note">
-          <p><strong>Note:</strong> This is a demo gallery. Actual meeting photos appear on individual meeting pages.</p>
+        <div class="photo-organization">
+          <div class="org-item">
+            <h3>🔄 Automatic Processing</h3>
+            <p>Photos are automatically resized, optimized, and organized by meeting date using EXIF data.</p>
+          </div>
+          
+          <div class="org-item">
+            <h3>🖼️ Smart Thumbnails</h3>
+            <p>4:3 aspect ratio thumbnails are generated for consistent gallery display with full-size images available.</p>
+          </div>
+          
+          <div class="org-item">
+            <h3>📱 Fast Loading</h3>
+            <p>Photos are served from Cloudflare's global CDN for lightning-fast loading on all devices.</p>
+          </div>
         </div>
       </section>
 

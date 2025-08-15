@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../../components/Layout.astro';
-import PhotoGallery from '../../components/PhotoGallery.astro';
+import R2PhotoGallery from '../../components/R2PhotoGallery.astro';
 import ModelCard from '../../components/ModelCard.astro';
 import { formatMeetingTime } from '../../utils/meeting-time.ts';
 
@@ -141,12 +141,12 @@ const displayWithDay = `${dayName}, ${display}`;
       <ModelCard assignments={data.assignments} />
     )}
 
-    {data.photos && data.photos.length > 0 && (
-      <div class="meeting-photos">
-        <h3>📷 Meeting Photos</h3>
-        <PhotoGallery images={data.photos} basePath={`/images/meetings/${meeting.slug}`} />
-      </div>
-    )}
+    <!-- R2 Photo Gallery System -->
+    <R2PhotoGallery 
+      meetingDate={isoDate} 
+      meetingName={data.title}
+    />
+
   </article>
 
   <nav class="meeting-nav">

@@ -9,7 +9,6 @@ agenda:
   - "Mission Strategy Planning"
   - "Programming Session"
 assignments: []
-photos: []
 ---
 
 # Team Meeting

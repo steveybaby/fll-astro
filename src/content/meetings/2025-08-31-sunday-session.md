@@ -9,7 +9,6 @@ agenda:
   - "Advanced Robot Programming"
   - "Core Values Workshop"
 assignments: []
-photos: []
 ---
 
 # Sunday Session

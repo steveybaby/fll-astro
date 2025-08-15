@@ -9,16 +9,21 @@
     "astro": "astro",
     "check": "astro check",
     "lint": "eslint . --ext .js,.ts,.astro",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "process-photos": "node scripts/process-photos-r2.js"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",
     "@astrojs/rss": "^4.0.12",
+    "@aws-sdk/client-s3": "^3.864.0",
     "@fontsource/jetbrains-mono": "^5.0.0",
     "@fontsource/oswald": "^5.2.6",
     "@fontsource/roboto-condensed": "^5.2.6",
     "@fontsource/work-sans": "^5.2.6",
-    "astro": "^5.12.9"
+    "astro": "^5.12.9",
+    "dotenv": "^17.2.1",
+    "exifreader": "^4.31.1",
+    "sharp": "^0.34.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.3",

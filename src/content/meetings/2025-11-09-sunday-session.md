@@ -9,7 +9,6 @@ agenda:
   - "Elite Competition Strategies"
   - "Mentorship and Teaching"
 assignments: []
-photos: []
 ---
 
 # Advanced Sunday Workshop

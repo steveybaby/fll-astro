@@ -9,7 +9,6 @@ agenda:
   - "Equipment Check and Packing"
   - "Team Pep Talk and Strategy"
 assignments: []
-photos: []
 ---
 
 # Pre-Competition Meeting

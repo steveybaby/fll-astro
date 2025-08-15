@@ -9,7 +9,6 @@ agenda:
   - "Mission Score Optimization"
   - "Competition Logistics"
 assignments: []
-photos: []
 ---
 
 # Team Meeting

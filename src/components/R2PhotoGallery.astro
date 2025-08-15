@@ -1,0 +1,499 @@
+---
+export interface Props {
+  meetingDate: string;
+  meetingName?: string;
+}
+
+const { meetingDate, meetingName } = Astro.props;
+
+// Load photo manifest
+let photoManifest = null;
+let meetingPhotos = [];
+
+try {
+  // Try to load the photo manifest
+  const manifestPath = '/src/data/photo-manifest.json';
+  
+  if (import.meta.env.DEV) {
+    // In development, try to read from file system
+    try {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const manifestFile = path.join(process.cwd(), 'src', 'data', 'photo-manifest.json');
+      const manifestContent = await fs.readFile(manifestFile, 'utf-8');
+      photoManifest = JSON.parse(manifestContent);
+    } catch (devError) {
+      console.log('Photo manifest not found in development mode');
+    }
+  } else {
+    // In production, the manifest should be available
+    try {
+      photoManifest = await import('../data/photo-manifest.json');
+    } catch (prodError) {
+      console.log('Photo manifest not found in production mode');
+    }
+  }
+  
+  // Extract photos for this meeting
+  if (photoManifest && photoManifest.photosByMeeting && photoManifest.photosByMeeting[meetingDate]) {
+    meetingPhotos = photoManifest.photosByMeeting[meetingDate];
+  }
+} catch (error) {
+  console.error('Error loading photo manifest:', error);
+}
+
+const hasPhotos = meetingPhotos.length > 0;
+---
+
+{hasPhotos ? (
+  <div class="r2-photo-gallery-section">
+    <h3 class="photos-heading">
+      📸 Photos from {meetingName || meetingDate}
+      <span class="photo-count">({meetingPhotos.length} photos)</span>
+    </h3>
+    
+    <div class="photo-grid" id="r2-photo-grid">
+      {meetingPhotos.map((photo, index) => (
+        <div class="photo-item" data-index={index}>
+          <img 
+            src={photo.thumbnail}
+            alt={`Photo from ${meetingDate}`}
+            loading="lazy"
+            class="thumbnail-image"
+            onclick={`openR2Lightbox(${index})`}
+          />
+          <div class="photo-overlay">
+            <div class="photo-info">
+              <span class="photo-date">{new Date(photo.dateFound).toLocaleDateString()}</span>
+              <span class="r2-badge" title="Served from Cloudflare R2">☁️</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div id="r2-photo-lightbox" class="r2-photo-lightbox" onclick="closeR2Lightbox(event)">
+    <div class="lightbox-wrapper">
+      <span class="lightbox-close" onclick="closeR2Lightbox()">&times;</span>
+      <img id="r2-lightbox-photo" src="" alt="Meeting photo" />
+      <div class="lightbox-info">
+        <span id="r2-photo-counter">1 / {meetingPhotos.length}</span>
+        <span id="r2-photo-filename"></span>
+        <span class="r2-source">📡 Served from Cloudflare R2</span>
+      </div>
+      <div class="lightbox-controls">
+        <button id="r2-prev-photo" onclick="changeR2Photo(-1)" class="control-button" title="Previous photo">&#8249;</button>
+        <button id="r2-next-photo" onclick="changeR2Photo(1)" class="control-button" title="Next photo">&#8250;</button>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="no-photos-message">
+    <div class="no-photos-content">
+      <span class="camera-emoji">📷</span>
+      <h4>Photos Coming Soon!</h4>
+      <p>Photos from this meeting will be automatically processed and uploaded to Cloudflare R2.</p>
+      {photoManifest && (
+        <p class="last-updated">
+          Last photo sync: {new Date(photoManifest.lastUpdated).toLocaleDateString()}
+        </p>
+      )}
+    </div>
+  </div>
+)}
+
+<style>
+  .r2-photo-gallery-section {
+    margin: calc(var(--grid-unit) * 4) 0;
+    padding: calc(var(--grid-unit) * 3);
+    background: var(--color-surface);
+    border-radius: 8px;
+    border: 2px solid var(--color-border);
+  }
+
+  .photos-heading {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .photo-count {
+    font-size: 0.9rem;
+    font-weight: 400;
+    background: var(--color-accent);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-family: var(--font-body);
+  }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .photo-item {
+    position: relative;
+    aspect-ratio: 4/3;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: var(--color-background);
+  }
+
+  .photo-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .photo-item:hover .thumbnail-image {
+    transform: scale(1.05);
+  }
+
+  .photo-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    padding: calc(var(--grid-unit) * 2);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .photo-item:hover .photo-overlay {
+    opacity: 1;
+  }
+
+  .photo-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .photo-date {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .r2-badge {
+    font-size: 1rem;
+    opacity: 0.9;
+  }
+
+  /* No Photos Message */
+  .no-photos-message {
+    margin: calc(var(--grid-unit) * 4) 0;
+    padding: calc(var(--grid-unit) * 6);
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+    border-radius: 12px;
+    border: 2px dashed var(--color-border);
+    text-align: center;
+  }
+
+  .no-photos-content {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .camera-emoji {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: calc(var(--grid-unit) * 2);
+    opacity: 0.7;
+  }
+
+  .no-photos-content h4 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .no-photos-content p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 0 calc(var(--grid-unit) * 1) 0;
+  }
+
+  .last-updated {
+    font-size: 0.85rem !important;
+    opacity: 0.8;
+    font-style: italic;
+  }
+
+  /* Lightbox Styles */
+  .r2-photo-lightbox {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+  }
+
+  .lightbox-wrapper {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  #r2-lightbox-photo {
+    max-width: 90%;
+    max-height: 80%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10001;
+    transition: opacity 0.2s ease;
+    background: rgba(0, 0, 0, 0.5);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox-close:hover {
+    opacity: 0.7;
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .lightbox-info {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 12px 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .lightbox-info span {
+    display: block;
+    margin: 2px 0;
+  }
+
+  #r2-photo-counter {
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
+
+  #r2-photo-filename {
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+
+  .r2-source {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    color: #00d4ff;
+  }
+
+  .lightbox-controls {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: none;
+  }
+
+  .control-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+    backdrop-filter: blur(10px);
+  }
+
+  .control-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
+  }
+
+  .control-button:active {
+    transform: scale(0.95);
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .photo-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: calc(var(--grid-unit) * 1.5);
+    }
+
+    .photos-heading {
+      font-size: 1.3rem;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: calc(var(--grid-unit) * 1);
+    }
+
+    .lightbox-wrapper {
+      padding: 20px;
+    }
+
+    #r2-lightbox-photo {
+      max-width: 95%;
+      max-height: 75%;
+    }
+
+    .lightbox-close {
+      top: 15px;
+      right: 15px;
+      font-size: 30px;
+      width: 40px;
+      height: 40px;
+    }
+
+    .control-button {
+      font-size: 24px;
+      width: 50px;
+      height: 50px;
+    }
+
+    .lightbox-controls {
+      padding: 0 10px;
+    }
+
+    .camera-emoji {
+      font-size: 2rem;
+    }
+
+    .no-photos-content h4 {
+      font-size: 1.1rem;
+    }
+  }
+</style>
+
+<script define:vars={{ meetingPhotos, meetingDate }}>
+  let currentPhotoIndex = 0;
+
+  function openR2Lightbox(index) {
+    if (!meetingPhotos || meetingPhotos.length === 0) return;
+    
+    currentPhotoIndex = index;
+    const lightbox = document.getElementById('r2-photo-lightbox');
+    const photo = document.getElementById('r2-lightbox-photo');
+    const counter = document.getElementById('r2-photo-counter');
+    const filename = document.getElementById('r2-photo-filename');
+    
+    // Set photo source to full image URL
+    photo.src = meetingPhotos[index].fullImage;
+    
+    // Update info
+    counter.textContent = `${index + 1} / ${meetingPhotos.length}`;
+    filename.textContent = meetingPhotos[index].filename;
+    
+    // Show lightbox
+    lightbox.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeR2Lightbox(event) {
+    if (!event || event.target.id === 'r2-photo-lightbox' || event.target.classList.contains('lightbox-close')) {
+      const lightbox = document.getElementById('r2-photo-lightbox');
+      lightbox.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  function changeR2Photo(direction) {
+    if (!meetingPhotos || meetingPhotos.length === 0) return;
+    
+    currentPhotoIndex += direction;
+    
+    // Wrap around
+    if (currentPhotoIndex >= meetingPhotos.length) {
+      currentPhotoIndex = 0;
+    } else if (currentPhotoIndex < 0) {
+      currentPhotoIndex = meetingPhotos.length - 1;
+    }
+    
+    // Update photo and info
+    const photo = document.getElementById('r2-lightbox-photo');
+    const counter = document.getElementById('r2-photo-counter');
+    const filename = document.getElementById('r2-photo-filename');
+    
+    photo.src = meetingPhotos[currentPhotoIndex].fullImage;
+    counter.textContent = `${currentPhotoIndex + 1} / ${meetingPhotos.length}`;
+    filename.textContent = meetingPhotos[currentPhotoIndex].filename;
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(event) {
+    const lightbox = document.getElementById('r2-photo-lightbox');
+    if (lightbox && lightbox.style.display === 'block') {
+      switch(event.key) {
+        case 'Escape':
+          closeR2Lightbox();
+          break;
+        case 'ArrowLeft':
+          changeR2Photo(-1);
+          break;
+        case 'ArrowRight':
+          changeR2Photo(1);
+          break;
+      }
+    }
+  });
+
+  // Make functions globally available
+  if (typeof window !== 'undefined') {
+    window.openR2Lightbox = openR2Lightbox;
+    window.closeR2Lightbox = closeR2Lightbox;
+    window.changeR2Photo = changeR2Photo;
+  }
+</script>

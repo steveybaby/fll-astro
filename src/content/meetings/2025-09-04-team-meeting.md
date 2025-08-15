@@ -9,7 +9,6 @@ agenda:
   - "Robot Design Iteration"
   - "Mission Strategy Review"
 assignments: []
-photos: []
 ---
 
 # Team Meeting

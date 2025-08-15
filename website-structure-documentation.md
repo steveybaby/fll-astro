@@ -294,7 +294,6 @@ src/
 │   └── meetings/
 ├── components/
 │   ├── Navigation.astro
-│   ├── PhotoGallery.astro
 │   └── ModelCard.astro
 └── content/
     ├── blog/

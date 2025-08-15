@@ -9,7 +9,6 @@ agenda:
   - "Team Presentation Practice"
   - "Robot Programming Workshop"
 assignments: []
-photos: []
 ---
 
 # Sunday Session

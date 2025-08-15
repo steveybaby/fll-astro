@@ -9,7 +9,6 @@ agenda:
   - "Celebrate Achievements"
   - "Plan for Regional Championships"
 assignments: []
-photos: []
 ---
 
 # Post-Competition Debrief

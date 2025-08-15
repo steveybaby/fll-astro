@@ -9,7 +9,6 @@ agenda:
   - "Mission Run Practice"
   - "Competition Preparation"
 assignments: []
-photos: []
 ---
 
 # Team Meeting

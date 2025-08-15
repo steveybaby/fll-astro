@@ -9,7 +9,6 @@ agenda:
   - "Final Innovation Project"
   - "Team Presentation Practice"
 assignments: []
-photos: []
 ---
 
 # Sunday Session

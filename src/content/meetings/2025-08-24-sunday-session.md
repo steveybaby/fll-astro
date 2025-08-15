@@ -9,7 +9,6 @@ agenda:
   - "Innovation Project Research"
   - "Team Building Activities"
 assignments: []
-photos: []
 ---
 
 # Sunday Session

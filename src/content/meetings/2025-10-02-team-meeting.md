@@ -9,7 +9,6 @@ agenda:
   - "Robot Improvements"
   - "Presentation Refinement"
 assignments: []
-photos: []
 ---
 
 # October Preparation Meeting

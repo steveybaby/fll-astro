@@ -9,7 +9,6 @@ agenda:
   - "Season Highlights Presentation"
   - "Celebration and Team Bonding"
 assignments: []
-photos: []
 ---
 
 # Season Finale Celebration

@@ -9,7 +9,6 @@ agenda:
   - "Robot Reliability Testing"
   - "Competition Readiness Assessment"
 assignments: []
-photos: []
 ---
 
 # Team Meeting

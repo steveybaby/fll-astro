@@ -9,7 +9,6 @@ agenda:
   - "Team Achievements Review"
   - "Next Season Preparation"
 assignments: []
-photos: []
 ---
 
 # December Team Meeting

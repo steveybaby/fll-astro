@@ -9,7 +9,6 @@ agenda:
   - "Innovation Project Enhancement"
   - "Team Strategy Development"
 assignments: []
-photos: []
 ---
 
 # Sunday Workshop

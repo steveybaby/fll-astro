@@ -9,7 +9,6 @@ agenda:
   - "Competition Simulation"
   - "Team Bonding and Preparation"
 assignments: []
-photos: []
 ---
 
 # Sunday Session

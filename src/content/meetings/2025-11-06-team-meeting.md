@@ -9,7 +9,6 @@ agenda:
   - "State Championship Preparation"
   - "Team Goal Setting"
 assignments: []
-photos: []
 ---
 
 # November Team Meeting
