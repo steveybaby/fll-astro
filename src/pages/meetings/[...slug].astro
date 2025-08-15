@@ -156,12 +156,18 @@ const displayWithDay = `${dayName}, ${display}`;
           <span class="nav-label">← Previous Meeting</span>
           <span class="nav-title">{prevMeeting.data.title}</span>
           <span class="nav-date">
-            {new Date(`${prevMeeting.data.date}T12:00:00`).toLocaleDateString('en-US', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            })}
+            {(() => {
+              const prevDate = prevMeeting.data.date instanceof Date 
+                ? prevMeeting.data.date 
+                : new Date(`${prevMeeting.data.date}T00:00:00Z`);
+              return prevDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'UTC'
+              });
+            })()}
           </span>
         </a>
       )}
@@ -171,12 +177,18 @@ const displayWithDay = `${dayName}, ${display}`;
           <span class="nav-label">Next Meeting →</span>
           <span class="nav-title">{nextMeeting.data.title}</span>
           <span class="nav-date">
-            {new Date(`${nextMeeting.data.date}T12:00:00`).toLocaleDateString('en-US', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            })}
+            {(() => {
+              const nextDate = nextMeeting.data.date instanceof Date 
+                ? nextMeeting.data.date 
+                : new Date(`${nextMeeting.data.date}T00:00:00Z`);
+              return nextDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'UTC'
+              });
+            })()}
           </span>
         </a>
       )}
