@@ -1,0 +1,1075 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../components/Layout.astro';
+import { formatMeetingTime } from '../utils/meeting-time.ts';
+
+// Get all meetings and sort them chronologically
+const meetings = await getCollection('meetings');
+const sortedMeetings = meetings.sort((a, b) => {
+  const dateA = a.data.date instanceof Date ? a.data.date : new Date(`${a.data.date}T00:00:00Z`);
+  const dateB = b.data.date instanceof Date ? b.data.date : new Date(`${b.data.date}T00:00:00Z`);
+  return dateA.getTime() - dateB.getTime();
+});
+
+// Fixed list of coaches in specified order
+const coaches = ['Steve H', 'Steve S', 'Esther R'];
+
+// Coach initials for mobile display
+const coachInitials = {
+  'Steve H': 'SH',
+  'Steve S': 'SS', 
+  'Esther R': 'ER'
+};
+
+// API endpoint
+const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
+
+// Helper function to format meeting date
+const formatMeetingDisplay = (date) => {
+  const raw = date instanceof Date ? date : new Date(`${date}T00:00:00Z`);
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(raw);
+};
+
+const formatMeetingMobile = (date) => {
+  const raw = date instanceof Date ? date : new Date(`${date}T00:00:00Z`);
+  const month = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(raw);
+  const day = new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(raw);
+  return { month, day };
+};
+
+const formatMeetingTimeMobile = (startTime, duration) => {
+  if (!startTime) {
+    return { time: '', duration: '' };
+  }
+  
+  const [hours, minutes] = startTime.split(':').map(Number);
+  const period = hours >= 12 ? 'pm' : 'am';
+  const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  const displayMinutes = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : '';
+  
+  const timeString = `${displayHour}${displayMinutes}${period}`;
+  const durationText = duration ? (duration === 1 ? '1hr' : `${duration}hrs`) : '';
+  
+  return { time: timeString, duration: durationText };
+};
+
+const formatMeetingISO = (date) => {
+  const raw = date instanceof Date ? date : new Date(`${date}T00:00:00Z`);
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' }).format(raw);
+};
+---
+
+<Layout title="Coach RSVPs - Team Overview" description="Coach attendance management for all FLL team meetings">
+  <div class="rsvp-page-container">
+    <header class="rsvp-header">
+      <h1>👥 Coach RSVPs</h1>
+      <p>Manage coach attendance for all team meetings</p>
+      
+      <div class="rsvp-updating-global" id="rsvp-updating-global" style="display: none;">
+        <div class="updating-spinner-global"></div>
+        <span>Saving...</span>
+      </div>
+    </header>
+
+    <div class="rsvp-loading-global" id="rsvp-loading-global">
+      <div class="loading-spinner-global"></div>
+      <span>Loading RSVP data from Google Sheets...</span>
+    </div>
+
+    <div class="rsvp-error-global" id="rsvp-error-global" style="display: none;">
+      <p id="rsvp-error-message-global">Unable to load RSVP data</p>
+      <button id="rsvp-retry-global" class="retry-button">Try Again</button>
+    </div>
+
+    <div class="rsvp-grid-container" id="rsvp-grid-container" style="display: none;">
+      <div class="rsvp-grid">
+        <!-- Header row with coach names -->
+        <div class="grid-header">
+          <div class="meeting-header-cell">
+            <span class="desktop-meeting-header">Meeting</span>
+            <span class="mobile-meeting-header">Date</span>
+          </div>
+          {coaches.map((coach) => (
+            <div class="child-header-cell" title={coach}>
+              <span class="desktop-child-name">{coach}</span>
+              <span class="mobile-child-initials">{coachInitials[coach]}</span>
+            </div>
+          ))}
+        </div>
+
+        <!-- Meeting rows -->
+        {sortedMeetings.map((meeting) => {
+          const isoDate = formatMeetingISO(meeting.data.date);
+          const displayDate = formatMeetingDisplay(meeting.data.date);
+          const mobileDate = formatMeetingMobile(meeting.data.date);
+          const meetingTime = formatMeetingTime(meeting.data.startTime, meeting.data.duration);
+          const mobileTime = formatMeetingTimeMobile(meeting.data.startTime, meeting.data.duration);
+          
+          return (
+            <div class="grid-row" data-meeting-date={isoDate}>
+              <div class="meeting-cell" title={meeting.data.title}>
+                <div class="meeting-info desktop-meeting-info">
+                  <a href={`/meetings/${meeting.slug}/`} class="meeting-link">
+                    {meeting.data.title}
+                  </a>
+                  <div class="meeting-date">{displayDate}</div>
+                  {meetingTime && <div class="meeting-time">{meetingTime}</div>}
+                </div>
+                <div class="meeting-info mobile-meeting-info">
+                  <a href={`/meetings/${meeting.slug}/`} class="mobile-meeting-link">
+                    <div class="mobile-month">{mobileDate.month}</div>
+                    <div class="mobile-day">{mobileDate.day}</div>
+                    {mobileTime.time && (
+                      <div class="mobile-time-container">
+                        <div class="mobile-time">{mobileTime.time}</div>
+                        {mobileTime.duration && <div class="mobile-duration">{mobileTime.duration}</div>}
+                      </div>
+                    )}
+                  </a>
+                </div>
+              </div>
+              {coaches.map((coach) => (
+                <div class="rsvp-cell" data-child={coach} data-meeting-date={isoDate}>
+                  <div class="cell-status" id={`status-${isoDate}-${coach}`}>❓</div>
+                  <div class="cell-buttons">
+                    <button 
+                      class="cell-btn cell-yes" 
+                      data-child={coach} 
+                      data-meeting-date={isoDate}
+                      data-status="👍"
+                      aria-label={`Mark ${coach} as attending ${meeting.data.title}`}
+                    >
+                      👍
+                    </button>
+                    <button 
+                      class="cell-btn cell-no" 
+                      data-child={coach} 
+                      data-meeting-date={isoDate}
+                      data-status="👎"
+                      aria-label={`Mark ${coach} as not attending ${meeting.data.title}`}
+                    >
+                      👎
+                    </button>
+                  </div>
+                  <div class="cell-hover-option">
+                    <button class="cell-btn cell-hover-btn" aria-label="Change response">
+                      ❓
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .rsvp-page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: calc(var(--grid-unit) * 3);
+  }
+
+  .rsvp-header {
+    text-align: center;
+    margin-bottom: calc(var(--grid-unit) * 4);
+    position: relative;
+  }
+
+  .rsvp-header h1 {
+    font-family: var(--font-heading-primary);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .rsvp-header p {
+    font-size: 1.125rem;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .rsvp-updating-global {
+    position: absolute;
+    top: calc(var(--grid-unit) * 2);
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit) / 2);
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    background: rgba(34, 197, 94, 0.95);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  .rsvp-loading-global {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--grid-unit));
+    padding: calc(var(--grid-unit) * 4);
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .loading-spinner-global,
+  .updating-spinner-global {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-border);
+    border-top: 2px solid var(--color-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .updating-spinner-global {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .rsvp-error-global {
+    text-align: center;
+    padding: calc(var(--grid-unit) * 3);
+    color: var(--color-accent);
+  }
+
+  .retry-button {
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-heading-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: calc(var(--grid-unit));
+    transition: all 0.2s ease;
+  }
+
+  .retry-button:hover {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .rsvp-grid-container {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    padding: calc(var(--grid-unit) * 3);
+    overflow-x: auto;
+  }
+
+  .rsvp-grid {
+    display: grid;
+    grid-template-columns: 1fr repeat(3, 1fr);
+    gap: 1px;
+    background: var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .grid-header {
+    display: contents;
+  }
+
+  .meeting-header-cell,
+  .child-header-cell {
+    background: var(--color-accent);
+    color: white;
+    padding: calc(var(--grid-unit) * 2);
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .meeting-header-cell {
+    text-align: left;
+  }
+
+  .mobile-meeting-header,
+  .mobile-child-initials,
+  .mobile-meeting-info {
+    display: none;
+  }
+
+  .desktop-meeting-header,
+  .desktop-child-name,
+  .desktop-meeting-info {
+    display: block;
+  }
+
+  .grid-row {
+    display: contents;
+  }
+
+  .meeting-cell {
+    background: var(--color-background);
+    padding: calc(var(--grid-unit) * 2);
+    display: flex;
+    align-items: center;
+  }
+
+  .meeting-info {
+    width: 100%;
+  }
+
+  .meeting-link {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    display: block;
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .meeting-link:hover {
+    color: var(--color-accent);
+  }
+
+  .meeting-date {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .meeting-time {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: calc(var(--grid-unit) * 1.5);
+  }
+
+  .mobile-meeting-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--color-text-primary);
+    gap: calc(var(--grid-unit) / 4);
+  }
+
+  .mobile-month {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .mobile-day {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .mobile-time-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--grid-unit) / 8);
+    margin-top: calc(var(--grid-unit) / 6);
+  }
+
+  .mobile-time {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .mobile-duration {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.4rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .mobile-meeting-link:hover .mobile-month {
+    color: var(--color-accent);
+  }
+
+  .rsvp-cell {
+    background: var(--color-background);
+    padding: calc(var(--grid-unit) * 1.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--grid-unit));
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .rsvp-cell.status-attending {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(34, 197, 94, 0.15) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+  }
+
+  .rsvp-cell.status-not-attending {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.15) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+
+  .cell-status {
+    font-size: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .cell-buttons {
+    display: flex;
+    gap: calc(var(--grid-unit) / 2);
+  }
+
+  .cell-hover-option {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    display: none;
+  }
+
+  /* Show buttons when no answer is selected (default state) */
+  .rsvp-cell:not(.has-answer) .cell-buttons {
+    display: flex;
+  }
+
+  .rsvp-cell:not(.has-answer) .cell-status {
+    display: none;
+  }
+
+  .rsvp-cell:not(.has-answer) .cell-hover-option {
+    display: none;
+  }
+
+  /* Hide buttons and show status when answer is selected */
+  .rsvp-cell.has-answer .cell-buttons {
+    display: none;
+  }
+
+  .rsvp-cell.has-answer .cell-status {
+    display: block;
+  }
+
+  .rsvp-cell.has-answer .cell-hover-option {
+    display: none;
+  }
+
+  /* Show hover option when hovering over answered cell (but not while saving) */
+  .rsvp-cell.has-answer:hover:not(.saving) .cell-status {
+    display: none;
+  }
+
+  .rsvp-cell.has-answer:hover:not(.saving) .cell-hover-option {
+    display: block;
+  }
+
+  /* Ensure status stays visible while saving */
+  .rsvp-cell.saving .cell-status {
+    display: block !important;
+  }
+
+  .rsvp-cell.saving .cell-hover-option {
+    display: none !important;
+  }
+
+  .cell-btn {
+    background: transparent;
+    border: 2px solid var(--color-border);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cell-btn:hover {
+    transform: scale(1.1);
+    border-color: var(--color-accent);
+  }
+
+  .cell-btn:active {
+    transform: scale(0.95);
+  }
+
+  .cell-btn.active {
+    border-color: var(--color-accent);
+    background: rgba(220, 38, 38, 0.1);
+  }
+
+  .cell-btn.active[data-status="👍"] {
+    border-color: #16a34a;
+    background: rgba(34, 197, 94, 0.15);
+  }
+
+  .cell-btn.active[data-status="👎"] {
+    border-color: #dc2626;
+    background: rgba(239, 68, 68, 0.15);
+  }
+
+  .cell-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (max-width: 1024px) {
+    .rsvp-page-container {
+      padding: calc(var(--grid-unit) * 2);
+    }
+
+    .rsvp-header h1 {
+      font-size: 2.5rem;
+    }
+
+    .meeting-header-cell,
+    .child-header-cell {
+      padding: calc(var(--grid-unit) * 1.5);
+      font-size: 0.8rem;
+    }
+
+    .meeting-cell {
+      padding: calc(var(--grid-unit) * 1.5);
+    }
+
+    .meeting-link {
+      font-size: 0.85rem;
+    }
+
+    .meeting-date {
+      font-size: 0.75rem;
+    }
+
+    .meeting-time {
+      font-size: 0.7rem;
+    }
+
+    .rsvp-cell {
+      padding: calc(var(--grid-unit));
+    }
+
+    .cell-btn {
+      width: 28px;
+      height: 28px;
+      font-size: 0.9rem;
+    }
+
+    .cell-status {
+      font-size: 1.3rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .rsvp-page-container {
+      padding: calc(var(--grid-unit));
+    }
+
+    .rsvp-header h1 {
+      font-size: 2rem;
+    }
+
+    .rsvp-grid-container {
+      overflow-x: auto;
+      padding: 0;
+    }
+
+    .rsvp-grid {
+      width: 100%;
+      grid-template-columns: minmax(45px, 1fr) repeat(3, minmax(30px, 1fr));
+    }
+
+    /* Switch to mobile layout */
+    .desktop-meeting-header,
+    .desktop-child-name,
+    .desktop-meeting-info {
+      display: none;
+    }
+
+    .mobile-meeting-header,
+    .mobile-child-initials,
+    .mobile-meeting-info {
+      display: block;
+    }
+
+    .meeting-header-cell,
+    .child-header-cell {
+      padding: calc(var(--grid-unit) * 0.25) calc(var(--grid-unit) * 0.0625);
+      font-size: 0.6rem;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .meeting-cell {
+      padding: calc(var(--grid-unit) * 0.5) calc(var(--grid-unit) * 0.0625);
+    }
+
+    .meeting-link {
+      font-size: 0.7rem;
+      line-height: 1.2;
+    }
+
+    .meeting-date {
+      font-size: 0.6rem;
+    }
+
+    .meeting-time {
+      font-size: 0.55rem;
+    }
+
+    .rsvp-cell {
+      padding: calc(var(--grid-unit) * 0.25) calc(var(--grid-unit) * 0.03125);
+      gap: calc(var(--grid-unit) / 3);
+      min-height: 50px;
+    }
+
+    .cell-buttons {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) / 2);
+    }
+
+    .cell-btn {
+      width: 24px;
+      height: 24px;
+      font-size: 0.8rem;
+      border-width: 1px;
+    }
+
+    .cell-status {
+      font-size: 0.9rem;
+    }
+
+    .rsvp-updating-global {
+      position: fixed;
+      top: calc(var(--grid-unit) * 2);
+      right: calc(var(--grid-unit) * 2);
+      margin-top: 0;
+      z-index: 1000;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .rsvp-page-container {
+      padding: calc(var(--grid-unit) * 0.5);
+    }
+
+    .rsvp-grid {
+      grid-template-columns: minmax(35px, 1fr) repeat(3, minmax(25px, 1fr));
+    }
+
+    .meeting-header-cell,
+    .child-header-cell {
+      padding: calc(var(--grid-unit) * 0.125) 0;
+      font-size: 0.45rem;
+    }
+
+    .mobile-month {
+      font-size: 0.55rem;
+    }
+
+    .mobile-day {
+      font-size: 0.45rem;
+    }
+
+    .meeting-link {
+      font-size: 0.6rem;
+    }
+
+    .meeting-date {
+      font-size: 0.5rem;
+    }
+
+    .meeting-time {
+      font-size: 0.45rem;
+    }
+
+    .mobile-time {
+      font-size: 0.35rem;
+    }
+
+    .mobile-duration {
+      font-size: 0.3rem;
+    }
+
+    .cell-buttons {
+      gap: calc(var(--grid-unit) / 3);
+    }
+
+    .cell-btn {
+      width: 20px;
+      height: 20px;
+      font-size: 0.65rem;
+    }
+
+    .cell-status {
+      font-size: 0.7rem;
+    }
+
+    .rsvp-cell {
+      min-height: 50px;
+      padding: calc(var(--grid-unit) * 0.25) 0;
+    }
+  }
+</style>
+
+<script define:vars={{ RSVP_API_URL, coaches }}>
+  // Global Coach RSVP Grid JavaScript
+  class CoachRSVPGrid {
+    constructor() {
+      this.apiUrl = RSVP_API_URL;
+      this.coaches = coaches;
+      this.currentData = null;
+      
+      this.init();
+    }
+
+    async init() {
+      this.bindEvents();
+      await this.loadAllRSVPData();
+    }
+
+    bindEvents() {
+      // Retry button
+      const retryBtn = document.getElementById('rsvp-retry-global');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => this.loadAllRSVPData());
+      }
+
+      // RSVP cell buttons
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('cell-btn') || e.target.classList.contains('cell-hover-btn')) {
+          const coach = e.target.dataset.child;
+          const meetingDate = e.target.dataset.meetingDate;
+          let status = e.target.dataset.status;
+          
+          // Handle hover button clicks - clear selection (tri-state)
+          if (e.target.classList.contains('cell-hover-btn')) {
+            status = ''; // Clear the selection
+          }
+          
+          this.updateRSVP(meetingDate, coach, status);
+        }
+      });
+      
+      // Handle status clicks for answered cells (tri-state cycling)
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('cell-status')) {
+          const rsvpCell = e.target.closest('.rsvp-cell');
+          if (rsvpCell && rsvpCell.classList.contains('has-answer')) {
+            const coach = rsvpCell.dataset.child;
+            const meetingDate = rsvpCell.dataset.meetingDate;
+            const currentStatus = e.target.textContent;
+            
+            // Tri-state cycling: 👍 → 👎 → unselected → 👍
+            let newStatus;
+            if (currentStatus === '👍') {
+              newStatus = '👎';
+            } else if (currentStatus === '👎') {
+              newStatus = ''; // Clear selection
+            } else {
+              newStatus = '👍'; // This shouldn't happen in current flow
+            }
+            
+            this.updateRSVP(meetingDate, coach, newStatus);
+          }
+        }
+      });
+    }
+
+    async loadAllRSVPData() {
+      this.showLoading();
+      
+      try {
+        console.log('Loading all coach RSVP data');
+        const response = await fetch(this.apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('API response:', data);
+        this.currentData = data;
+        
+        this.renderAllRSVPData(data);
+        this.showContent();
+        
+      } catch (error) {
+        console.error('Failed to load RSVP data:', error);
+        this.showError('Unable to load RSVP data');
+      }
+    }
+
+    async updateRSVP(meetingDate, coachName, status) {
+      // Update UI immediately (optimistically) and disable buttons
+      this.updateCellOptimistically(meetingDate, coachName, status);
+      this.setCellButtonsDisabled(meetingDate, coachName, true);
+      this.showUpdating();
+      
+      try {
+        console.log('Updating coach RSVP:', { meetingDate, kidName: coachName, status });
+        
+        // Try the real API call
+        const updateUrl = new URL(this.apiUrl);
+        updateUrl.searchParams.set('action', 'update');
+        updateUrl.searchParams.set('meetingDate', meetingDate);
+        updateUrl.searchParams.set('kidName', coachName);
+        updateUrl.searchParams.set('status', status);
+
+        const response = await fetch(updateUrl.toString());
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            // Real API call succeeded - no need to reload, UI is already updated
+            this.hideUpdating();
+            return;
+          }
+        }
+        
+        // If API call failed, UI is already updated optimistically
+        console.warn('API call failed, keeping optimistic update');
+        this.hideUpdating();
+        
+      } catch (error) {
+        console.error('Failed to update RSVP:', error);
+        // UI is already updated optimistically
+        this.hideUpdating();
+      } finally {
+        this.setCellButtonsDisabled(meetingDate, coachName, false);
+      }
+    }
+
+    updateCellOptimistically(meetingDate, coachName, status) {
+      // Update the status display
+      const statusElement = document.getElementById(`status-${meetingDate}-${coachName}`);
+      if (statusElement) {
+        statusElement.textContent = status || '❓';
+      }
+
+      // Update button states
+      const buttons = document.querySelectorAll(`[data-child="${coachName}"][data-meeting-date="${meetingDate}"]`);
+      buttons.forEach(btn => {
+        if (btn.classList.contains('cell-btn')) {
+          btn.classList.remove('active');
+          if (btn.dataset.status === status) {
+            btn.classList.add('active');
+          }
+        }
+      });
+      
+      // Update cell background and interaction state
+      const rsvpCell = document.querySelector(`[data-child="${coachName}"][data-meeting-date="${meetingDate}"].rsvp-cell`);
+      if (rsvpCell) {
+        // Remove existing status classes
+        rsvpCell.classList.remove('status-attending', 'status-not-attending', 'has-answer');
+        
+        // Add appropriate status class and has-answer class
+        if (status === '👍') {
+          rsvpCell.classList.add('status-attending', 'has-answer');
+        } else if (status === '👎') {
+          rsvpCell.classList.add('status-not-attending', 'has-answer');
+        } else if (status === '') {
+          // No status - back to unselected state (show buttons)
+          // has-answer class removed above
+        }
+        
+        // Update hover button to show clear option for selected states
+        const hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
+        if (hoverBtn && status) {
+          hoverBtn.textContent = '❌'; // Show clear option
+          hoverBtn.dataset.child = coachName;
+          hoverBtn.dataset.meetingDate = meetingDate;
+        }
+        
+        // Add a saving class to prevent hover effects during save
+        rsvpCell.classList.add('saving');
+      }
+    }
+
+    renderAllRSVPData(allData) {
+      // Create a lookup map for quick access
+      const dataMap = new Map();
+      allData.forEach(meetingData => {
+        const meetingDate = meetingData.meetingDate;
+        // Convert API date to YYYY-MM-DD format for comparison
+        const apiDateOnly = meetingDate.includes('T') ? meetingDate.split('T')[0] : meetingDate;
+        
+        const coachesMap = new Map();
+        meetingData.kids.forEach(person => {
+          coachesMap.set(person.name, person.status || '');
+        });
+        dataMap.set(apiDateOnly, coachesMap);
+      });
+
+      // Update all cells
+      const gridRows = document.querySelectorAll('.grid-row');
+      gridRows.forEach(row => {
+        const meetingDate = row.dataset.meetingDate;
+        const meetingData = dataMap.get(meetingDate);
+        
+        this.coaches.forEach(coach => {
+          const statusElement = document.getElementById(`status-${meetingDate}-${coach}`);
+          const rsvpCell = document.querySelector(`[data-child="${coach}"][data-meeting-date="${meetingDate}"].rsvp-cell`);
+          
+          let status = '';
+          if (meetingData && meetingData.has(coach)) {
+            status = meetingData.get(coach);
+          }
+          
+          if (statusElement) {
+            statusElement.textContent = status || '❓';
+          }
+
+          // Update button states
+          const buttons = document.querySelectorAll(`[data-child="${coach}"][data-meeting-date="${meetingDate}"].cell-btn`);
+          buttons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.status === status) {
+              btn.classList.add('active');
+            }
+          });
+          
+          // Update cell background and interaction state
+          if (rsvpCell) {
+            rsvpCell.classList.remove('status-attending', 'status-not-attending', 'has-answer');
+            
+            if (status === '👍') {
+              rsvpCell.classList.add('status-attending', 'has-answer');
+            } else if (status === '👎') {
+              rsvpCell.classList.add('status-not-attending', 'has-answer');
+            }
+            
+            // Update hover button to show clear option for selected states
+            const hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
+            if (hoverBtn && (status === '👍' || status === '👎')) {
+              hoverBtn.textContent = '❌'; // Show clear option
+              hoverBtn.dataset.child = coach;
+              hoverBtn.dataset.meetingDate = meetingDate;
+            }
+          }
+        });
+      });
+    }
+
+    setCellButtonsDisabled(meetingDate, coachName, disabled) {
+      const buttons = document.querySelectorAll(`[data-child="${coachName}"][data-meeting-date="${meetingDate}"].cell-btn`);
+      buttons.forEach(btn => {
+        btn.disabled = disabled;
+      });
+      
+      // Remove saving class when re-enabling
+      if (!disabled) {
+        const rsvpCell = document.querySelector(`[data-child="${coachName}"][data-meeting-date="${meetingDate}"].rsvp-cell`);
+        if (rsvpCell) {
+          rsvpCell.classList.remove('saving');
+        }
+      }
+    }
+
+    showLoading() {
+      document.getElementById('rsvp-loading-global').style.display = 'flex';
+      document.getElementById('rsvp-error-global').style.display = 'none';
+      document.getElementById('rsvp-grid-container').style.display = 'none';
+    }
+
+    showError(message) {
+      document.getElementById('rsvp-error-message-global').textContent = message;
+      document.getElementById('rsvp-loading-global').style.display = 'none';
+      document.getElementById('rsvp-error-global').style.display = 'block';
+      document.getElementById('rsvp-grid-container').style.display = 'none';
+    }
+
+    showContent() {
+      document.getElementById('rsvp-loading-global').style.display = 'none';
+      document.getElementById('rsvp-error-global').style.display = 'none';
+      document.getElementById('rsvp-grid-container').style.display = 'block';
+    }
+
+    showUpdating() {
+      document.getElementById('rsvp-updating-global').style.display = 'flex';
+    }
+
+    hideUpdating() {
+      document.getElementById('rsvp-updating-global').style.display = 'none';
+    }
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    new CoachRSVPGrid();
+  });
+</script>
