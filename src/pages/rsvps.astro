@@ -13,6 +13,16 @@ const sortedMeetings = meetings.sort((a, b) => {
 // Fixed list of children in specified order
 const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
 
+// Child initials for mobile display
+const childInitials = {
+  'Jasper': 'JH',
+  'Asher': 'AO', 
+  'Kai': 'KP',
+  'Jeremiah': 'JR',
+  'Luca': 'LS',
+  'Ethan': 'EM'
+};
+
 // API endpoint
 const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
 
@@ -25,6 +35,19 @@ const formatMeetingDisplay = (date) => {
     day: 'numeric',
     timeZone: 'UTC',
   }).format(raw);
+};
+
+const formatMeetingMobile = (date) => {
+  const raw = date instanceof Date ? date : new Date(`${date}T00:00:00Z`);
+  const month = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(raw);
+  const day = new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(raw);
+  return { month, day };
 };
 
 const formatMeetingISO = (date) => {
@@ -59,9 +82,15 @@ const formatMeetingISO = (date) => {
       <div class="rsvp-grid">
         <!-- Header row with children names -->
         <div class="grid-header">
-          <div class="meeting-header-cell">Meeting</div>
+          <div class="meeting-header-cell">
+            <span class="desktop-meeting-header">Meeting</span>
+            <span class="mobile-meeting-header">Date</span>
+          </div>
           {children.map((child) => (
-            <div class="child-header-cell">{child}</div>
+            <div class="child-header-cell" title={child}>
+              <span class="desktop-child-name">{child}</span>
+              <span class="mobile-child-initials">{childInitials[child]}</span>
+            </div>
           ))}
         </div>
 
@@ -69,15 +98,22 @@ const formatMeetingISO = (date) => {
         {sortedMeetings.map((meeting) => {
           const isoDate = formatMeetingISO(meeting.data.date);
           const displayDate = formatMeetingDisplay(meeting.data.date);
+          const mobileDate = formatMeetingMobile(meeting.data.date);
           
           return (
             <div class="grid-row" data-meeting-date={isoDate}>
-              <div class="meeting-cell">
-                <div class="meeting-info">
+              <div class="meeting-cell" title={meeting.data.title}>
+                <div class="meeting-info desktop-meeting-info">
                   <a href={`/meetings/${meeting.slug}/`} class="meeting-link">
                     {meeting.data.title}
                   </a>
                   <div class="meeting-date">{displayDate}</div>
+                </div>
+                <div class="meeting-info mobile-meeting-info">
+                  <a href={`/meetings/${meeting.slug}/`} class="mobile-meeting-link">
+                    <div class="mobile-month">{mobileDate.month}</div>
+                    <div class="mobile-day">{mobileDate.day}</div>
+                  </a>
                 </div>
               </div>
               {children.map((child) => (
@@ -101,6 +137,11 @@ const formatMeetingISO = (date) => {
                       aria-label={`Mark ${child} as not attending ${meeting.data.title}`}
                     >
                       👎
+                    </button>
+                  </div>
+                  <div class="cell-hover-option">
+                    <button class="cell-btn cell-hover-btn" aria-label="Change response">
+                      ❓
                     </button>
                   </div>
                 </div>
@@ -243,12 +284,13 @@ const formatMeetingISO = (date) => {
 
   .rsvp-grid {
     display: grid;
-    grid-template-columns: 250px repeat(6, 120px);
+    grid-template-columns: 1fr repeat(6, 1fr);
     gap: 1px;
     background: var(--color-border);
     border-radius: 8px;
     overflow: hidden;
-    min-width: 970px;
+    width: 100%;
+    min-width: 100%;
   }
 
   .grid-header {
@@ -270,6 +312,18 @@ const formatMeetingISO = (date) => {
 
   .meeting-header-cell {
     text-align: left;
+  }
+
+  .mobile-meeting-header,
+  .mobile-child-initials,
+  .mobile-meeting-info {
+    display: none;
+  }
+
+  .desktop-meeting-header,
+  .desktop-child-name,
+  .desktop-meeting-info {
+    display: block;
   }
 
   .grid-row {
@@ -309,6 +363,39 @@ const formatMeetingISO = (date) => {
     letter-spacing: 0.05em;
   }
 
+  .mobile-meeting-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--color-text-primary);
+    gap: calc(var(--grid-unit) / 4);
+  }
+
+  .mobile-month {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .mobile-day {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .mobile-meeting-link:hover .mobile-month {
+    color: var(--color-accent);
+  }
+
   .rsvp-cell {
     background: var(--color-background);
     padding: calc(var(--grid-unit) * 1.5);
@@ -322,23 +409,68 @@ const formatMeetingISO = (date) => {
   }
 
   .rsvp-cell.status-attending {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.04) 100%);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(34, 197, 94, 0.15) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.4);
   }
 
   .rsvp-cell.status-not-attending {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.04) 100%);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.15) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.4);
   }
 
   .cell-status {
-    font-size: 1.1rem;
+    font-size: 1.5rem;
     text-align: center;
+    cursor: pointer;
   }
 
   .cell-buttons {
     display: flex;
     gap: calc(var(--grid-unit) / 2);
+  }
+
+  .cell-hover-option {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    display: none;
+  }
+
+  /* Show buttons when no answer is selected (default state) */
+  .rsvp-cell:not(.has-answer) .cell-buttons {
+    display: flex;
+  }
+
+  .rsvp-cell:not(.has-answer) .cell-status {
+    display: none;
+  }
+
+  .rsvp-cell:not(.has-answer) .cell-hover-option {
+    display: none;
+  }
+
+  /* Hide buttons and show status when answer is selected */
+  .rsvp-cell.has-answer .cell-buttons {
+    display: none;
+  }
+
+  .rsvp-cell.has-answer .cell-status {
+    display: block;
+  }
+
+  .rsvp-cell.has-answer .cell-hover-option {
+    display: none;
+  }
+
+  /* Show hover option when hovering over answered cell */
+  .rsvp-cell.has-answer:hover .cell-status {
+    display: none;
+  }
+
+  .rsvp-cell.has-answer:hover .cell-hover-option {
+    display: block;
   }
 
   .cell-btn {
@@ -394,11 +526,6 @@ const formatMeetingISO = (date) => {
       font-size: 2.5rem;
     }
 
-    .rsvp-grid {
-      grid-template-columns: 200px repeat(6, 100px);
-      min-width: 800px;
-    }
-
     .meeting-header-cell,
     .child-header-cell {
       padding: calc(var(--grid-unit) * 1.5);
@@ -426,38 +553,73 @@ const formatMeetingISO = (date) => {
       height: 28px;
       font-size: 0.9rem;
     }
+
+    .cell-status {
+      font-size: 1.3rem;
+    }
   }
 
   @media (max-width: 768px) {
+    .rsvp-page-container {
+      padding: calc(var(--grid-unit));
+    }
+
     .rsvp-header h1 {
       font-size: 2rem;
     }
 
+    .rsvp-grid-container {
+      overflow-x: auto;
+      padding: 0;
+    }
+
     .rsvp-grid {
-      grid-template-columns: 150px repeat(6, 80px);
-      min-width: 630px;
+      width: 100%;
+      grid-template-columns: minmax(45px, 1fr) repeat(6, minmax(30px, 1fr));
+    }
+
+    /* Switch to mobile layout */
+    .desktop-meeting-header,
+    .desktop-child-name,
+    .desktop-meeting-info {
+      display: none;
+    }
+
+    .mobile-meeting-header,
+    .mobile-child-initials,
+    .mobile-meeting-info {
+      display: block;
     }
 
     .meeting-header-cell,
     .child-header-cell {
-      padding: calc(var(--grid-unit));
-      font-size: 0.7rem;
+      padding: calc(var(--grid-unit) * 0.25) calc(var(--grid-unit) * 0.0625);
+      font-size: 0.6rem;
+      line-height: 1.2;
+      text-align: center;
     }
 
     .meeting-cell {
-      padding: calc(var(--grid-unit));
+      padding: calc(var(--grid-unit) * 0.5) calc(var(--grid-unit) * 0.0625);
     }
 
     .meeting-link {
-      font-size: 0.8rem;
+      font-size: 0.7rem;
+      line-height: 1.2;
     }
 
     .meeting-date {
-      font-size: 0.7rem;
+      font-size: 0.6rem;
     }
 
     .rsvp-cell {
-      padding: calc(var(--grid-unit) * 0.75);
+      padding: calc(var(--grid-unit) * 0.25) calc(var(--grid-unit) * 0.03125);
+      gap: calc(var(--grid-unit) / 3);
+      min-height: 50px;
+    }
+
+    .cell-buttons {
+      flex-direction: column;
       gap: calc(var(--grid-unit) / 2);
     }
 
@@ -465,16 +627,68 @@ const formatMeetingISO = (date) => {
       width: 24px;
       height: 24px;
       font-size: 0.8rem;
+      border-width: 1px;
     }
 
     .cell-status {
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
 
     .rsvp-updating-global {
       position: static;
       margin-top: calc(var(--grid-unit) * 2);
       align-self: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .rsvp-page-container {
+      padding: calc(var(--grid-unit) * 0.5);
+    }
+
+    .rsvp-grid {
+      grid-template-columns: minmax(35px, 1fr) repeat(6, minmax(25px, 1fr));
+    }
+
+    .meeting-header-cell,
+    .child-header-cell {
+      padding: calc(var(--grid-unit) * 0.125) 0;
+      font-size: 0.45rem;
+    }
+
+    .mobile-month {
+      font-size: 0.55rem;
+    }
+
+    .mobile-day {
+      font-size: 0.45rem;
+    }
+
+    .meeting-link {
+      font-size: 0.6rem;
+    }
+
+    .meeting-date {
+      font-size: 0.5rem;
+    }
+
+    .cell-buttons {
+      gap: calc(var(--grid-unit) / 3);
+    }
+
+    .cell-btn {
+      width: 20px;
+      height: 20px;
+      font-size: 0.65rem;
+    }
+
+    .cell-status {
+      font-size: 0.7rem;
+    }
+
+    .rsvp-cell {
+      min-height: 50px;
+      padding: calc(var(--grid-unit) * 0.25) 0;
     }
   }
 </style>
@@ -504,11 +718,34 @@ const formatMeetingISO = (date) => {
 
       // RSVP cell buttons
       document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('cell-btn')) {
+        if (e.target.classList.contains('cell-btn') || e.target.classList.contains('cell-hover-btn')) {
           const child = e.target.dataset.child;
           const meetingDate = e.target.dataset.meetingDate;
-          const status = e.target.dataset.status;
+          let status = e.target.dataset.status;
+          
+          // Handle hover button clicks - determine opposite status
+          if (e.target.classList.contains('cell-hover-btn')) {
+            const rsvpCell = e.target.closest('.rsvp-cell');
+            const statusElement = rsvpCell.querySelector('.cell-status');
+            const currentStatus = statusElement.textContent;
+            status = currentStatus === '👍' ? '👎' : '👍';
+          }
+          
           this.updateRSVP(meetingDate, child, status);
+        }
+      });
+      
+      // Handle status clicks for answered cells
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('cell-status')) {
+          const rsvpCell = e.target.closest('.rsvp-cell');
+          if (rsvpCell && rsvpCell.classList.contains('has-answer')) {
+            const child = rsvpCell.dataset.child;
+            const meetingDate = rsvpCell.dataset.meetingDate;
+            const currentStatus = e.target.textContent;
+            const newStatus = currentStatus === '👍' ? '👎' : '👍';
+            this.updateRSVP(meetingDate, child, newStatus);
+          }
         }
       });
     }
@@ -595,17 +832,25 @@ const formatMeetingISO = (date) => {
         }
       });
       
-      // Update cell background based on status
+      // Update cell background and interaction state
       const rsvpCell = document.querySelector(`[data-child="${childName}"][data-meeting-date="${meetingDate}"].rsvp-cell`);
       if (rsvpCell) {
         // Remove existing status classes
-        rsvpCell.classList.remove('status-attending', 'status-not-attending');
+        rsvpCell.classList.remove('status-attending', 'status-not-attending', 'has-answer');
         
-        // Add appropriate status class
+        // Add appropriate status class and has-answer class
         if (status === '👍') {
-          rsvpCell.classList.add('status-attending');
+          rsvpCell.classList.add('status-attending', 'has-answer');
         } else if (status === '👎') {
-          rsvpCell.classList.add('status-not-attending');
+          rsvpCell.classList.add('status-not-attending', 'has-answer');
+        }
+        
+        // Update hover button to show opposite option
+        const hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
+        if (hoverBtn) {
+          hoverBtn.textContent = status === '👍' ? '👎' : '👍';
+          hoverBtn.dataset.child = childName;
+          hoverBtn.dataset.meetingDate = meetingDate;
         }
       }
     }
@@ -620,7 +865,7 @@ const formatMeetingISO = (date) => {
         
         const kidsMap = new Map();
         meetingData.kids.forEach(kid => {
-          kidsMap.set(kid.name, kid.status || '❓');
+          kidsMap.set(kid.name, kid.status || '');
         });
         dataMap.set(apiDateOnly, kidsMap);
       });
@@ -635,13 +880,13 @@ const formatMeetingISO = (date) => {
           const statusElement = document.getElementById(`status-${meetingDate}-${child}`);
           const rsvpCell = document.querySelector(`[data-child="${child}"][data-meeting-date="${meetingDate}"].rsvp-cell`);
           
-          let status = '❓';
+          let status = '';
           if (meetingData && meetingData.has(child)) {
             status = meetingData.get(child);
           }
           
           if (statusElement) {
-            statusElement.textContent = status;
+            statusElement.textContent = status || '❓';
           }
 
           // Update button states
@@ -653,14 +898,22 @@ const formatMeetingISO = (date) => {
             }
           });
           
-          // Update cell background based on status
+          // Update cell background and interaction state
           if (rsvpCell) {
-            rsvpCell.classList.remove('status-attending', 'status-not-attending');
+            rsvpCell.classList.remove('status-attending', 'status-not-attending', 'has-answer');
             
             if (status === '👍') {
-              rsvpCell.classList.add('status-attending');
+              rsvpCell.classList.add('status-attending', 'has-answer');
             } else if (status === '👎') {
-              rsvpCell.classList.add('status-not-attending');
+              rsvpCell.classList.add('status-not-attending', 'has-answer');
+            }
+            
+            // Update hover button to show opposite option
+            const hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
+            if (hoverBtn && (status === '👍' || status === '👎')) {
+              hoverBtn.textContent = status === '👍' ? '👎' : '👍';
+              hoverBtn.dataset.child = child;
+              hoverBtn.dataset.meetingDate = meetingDate;
             }
           }
         });
