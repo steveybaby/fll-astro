@@ -57,6 +57,11 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
               👎
             </button>
           </div>
+          <div class="rsvp-hover-option">
+            <button class="rsvp-btn rsvp-hover-btn" aria-label="Change response">
+              ❓
+            </button>
+          </div>
         </div>
       ))}
     </div>
@@ -196,13 +201,13 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
   }
 
   .rsvp-item.status-attending {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.04) 100%);
-    border-color: rgba(34, 197, 94, 0.2);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(34, 197, 94, 0.15) 100%);
+    border-color: rgba(34, 197, 94, 0.4);
   }
 
   .rsvp-item.status-not-attending {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.04) 100%);
-    border-color: rgba(239, 68, 68, 0.2);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.15) 100%);
+    border-color: rgba(239, 68, 68, 0.4);
   }
 
   .rsvp-item.status-attending:hover {
@@ -230,14 +235,55 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
   }
 
   .child-status {
-    font-size: 1.2rem;
-    min-width: 24px;
+    font-size: 1.5rem;
+    min-width: 30px;
     text-align: center;
+    cursor: pointer;
   }
 
   .rsvp-buttons {
     display: flex;
     gap: calc(var(--grid-unit));
+  }
+
+  .rsvp-hover-option {
+    position: relative;
+    display: none;
+  }
+
+  /* Show buttons when no answer is selected (default state) */
+  .rsvp-item:not(.has-answer) .rsvp-buttons {
+    display: flex;
+  }
+
+  .rsvp-item:not(.has-answer) .child-status {
+    display: none;
+  }
+
+  .rsvp-item:not(.has-answer) .rsvp-hover-option {
+    display: none;
+  }
+
+  /* Hide buttons and show status when answer is selected */
+  .rsvp-item.has-answer .rsvp-buttons {
+    display: none;
+  }
+
+  .rsvp-item.has-answer .child-status {
+    display: block;
+  }
+
+  .rsvp-item.has-answer .rsvp-hover-option {
+    display: none;
+  }
+
+  /* Show hover option when hovering over answered item */
+  .rsvp-item.has-answer:hover .child-status {
+    display: none;
+  }
+
+  .rsvp-item.has-answer:hover .rsvp-hover-option {
+    display: block;
   }
 
   .rsvp-btn {
@@ -353,10 +399,32 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
 
       // RSVP buttons
       document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('rsvp-btn')) {
+        if (e.target.classList.contains('rsvp-btn') || e.target.classList.contains('rsvp-hover-btn')) {
           const child = e.target.dataset.child;
-          const status = e.target.dataset.status;
+          let status = e.target.dataset.status;
+          
+          // Handle hover button clicks - determine opposite status
+          if (e.target.classList.contains('rsvp-hover-btn')) {
+            const rsvpItem = e.target.closest('.rsvp-item');
+            const statusElement = rsvpItem.querySelector('.child-status');
+            const currentStatus = statusElement.textContent;
+            status = currentStatus === '👍' ? '👎' : '👍';
+          }
+          
           this.updateRSVP(child, status);
+        }
+      });
+      
+      // Handle status clicks for answered items
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('child-status')) {
+          const rsvpItem = e.target.closest('.rsvp-item');
+          if (rsvpItem && rsvpItem.classList.contains('has-answer')) {
+            const child = rsvpItem.dataset.child;
+            const currentStatus = e.target.textContent;
+            const newStatus = currentStatus === '👍' ? '👎' : '👍';
+            this.updateRSVP(child, newStatus);
+          }
         }
       });
     }
@@ -452,23 +520,32 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
       // Update button states
       const buttons = document.querySelectorAll(`[data-child="${childName}"]`);
       buttons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.status === status) {
-          btn.classList.add('active');
+        if (btn.classList.contains('rsvp-btn')) {
+          btn.classList.remove('active');
+          if (btn.dataset.status === status) {
+            btn.classList.add('active');
+          }
         }
       });
       
-      // Update row background based on status
+      // Update row background and interaction state
       const rsvpItem = document.querySelector(`[data-child="${childName}"]`).closest('.rsvp-item');
       if (rsvpItem) {
         // Remove existing status classes
-        rsvpItem.classList.remove('status-attending', 'status-not-attending');
+        rsvpItem.classList.remove('status-attending', 'status-not-attending', 'has-answer');
         
-        // Add appropriate status class
+        // Add appropriate status class and has-answer class
         if (status === '👍') {
-          rsvpItem.classList.add('status-attending');
+          rsvpItem.classList.add('status-attending', 'has-answer');
         } else if (status === '👎') {
-          rsvpItem.classList.add('status-not-attending');
+          rsvpItem.classList.add('status-not-attending', 'has-answer');
+        }
+        
+        // Update hover button to show opposite option
+        const hoverBtn = rsvpItem.querySelector('.rsvp-hover-btn');
+        if (hoverBtn) {
+          hoverBtn.textContent = status === '👍' ? '👎' : '👍';
+          hoverBtn.dataset.child = childName;
         }
       }
     }
@@ -500,29 +577,38 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
       kidsData.forEach(kid => {
         const statusElement = document.getElementById(`status-${kid.name}`);
         if (statusElement) {
-          statusElement.textContent = kid.status || '❓';
+          statusElement.textContent = kid.status || '';
         }
 
         // Update button states
         const buttons = document.querySelectorAll(`[data-child="${kid.name}"]`);
         buttons.forEach(btn => {
-          btn.classList.remove('active');
-          if (btn.dataset.status === kid.status) {
-            btn.classList.add('active');
+          if (btn.classList.contains('rsvp-btn')) {
+            btn.classList.remove('active');
+            if (btn.dataset.status === kid.status) {
+              btn.classList.add('active');
+            }
           }
         });
         
-        // Update row background based on status
+        // Update row background and interaction state
         const rsvpItem = document.querySelector(`[data-child="${kid.name}"]`).closest('.rsvp-item');
         if (rsvpItem) {
           // Remove existing status classes
-          rsvpItem.classList.remove('status-attending', 'status-not-attending');
+          rsvpItem.classList.remove('status-attending', 'status-not-attending', 'has-answer');
           
-          // Add appropriate status class
+          // Add appropriate status class and has-answer class
           if (kid.status === '👍') {
-            rsvpItem.classList.add('status-attending');
+            rsvpItem.classList.add('status-attending', 'has-answer');
           } else if (kid.status === '👎') {
-            rsvpItem.classList.add('status-not-attending');
+            rsvpItem.classList.add('status-not-attending', 'has-answer');
+          }
+          
+          // Update hover button to show opposite option
+          const hoverBtn = rsvpItem.querySelector('.rsvp-hover-btn');
+          if (hoverBtn && (kid.status === '👍' || kid.status === '👎')) {
+            hoverBtn.textContent = kid.status === '👍' ? '👎' : '👍';
+            hoverBtn.dataset.child = kid.name;
           }
         }
       });
