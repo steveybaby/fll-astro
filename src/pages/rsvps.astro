@@ -464,13 +464,22 @@ const formatMeetingISO = (date) => {
     display: none;
   }
 
-  /* Show hover option when hovering over answered cell */
-  .rsvp-cell.has-answer:hover .cell-status {
+  /* Show hover option when hovering over answered cell (but not while saving) */
+  .rsvp-cell.has-answer:hover:not(.saving) .cell-status {
     display: none;
   }
 
-  .rsvp-cell.has-answer:hover .cell-hover-option {
+  .rsvp-cell.has-answer:hover:not(.saving) .cell-hover-option {
     display: block;
+  }
+
+  /* Ensure status stays visible while saving */
+  .rsvp-cell.saving .cell-status {
+    display: block !important;
+  }
+
+  .rsvp-cell.saving .cell-hover-option {
+    display: none !important;
   }
 
   .cell-btn {
@@ -635,9 +644,11 @@ const formatMeetingISO = (date) => {
     }
 
     .rsvp-updating-global {
-      position: static;
-      margin-top: calc(var(--grid-unit) * 2);
-      align-self: center;
+      position: fixed;
+      top: calc(var(--grid-unit) * 2);
+      right: calc(var(--grid-unit) * 2);
+      margin-top: 0;
+      z-index: 1000;
     }
   }
 
@@ -852,6 +863,9 @@ const formatMeetingISO = (date) => {
           hoverBtn.dataset.child = childName;
           hoverBtn.dataset.meetingDate = meetingDate;
         }
+        
+        // Add a saving class to prevent hover effects during save
+        rsvpCell.classList.add('saving');
       }
     }
 
@@ -925,6 +939,14 @@ const formatMeetingISO = (date) => {
       buttons.forEach(btn => {
         btn.disabled = disabled;
       });
+      
+      // Remove saving class when re-enabling
+      if (!disabled) {
+        const rsvpCell = document.querySelector(`[data-child="${childName}"][data-meeting-date="${meetingDate}"].rsvp-cell`);
+        if (rsvpCell) {
+          rsvpCell.classList.remove('saving');
+        }
+      }
     }
 
     showLoading() {
