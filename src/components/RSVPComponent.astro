@@ -277,13 +277,22 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
     display: none;
   }
 
-  /* Show hover option when hovering over answered item */
-  .rsvp-item.has-answer:hover .child-status {
+  /* Show hover option when hovering over answered item (but not while saving) */
+  .rsvp-item.has-answer:hover:not(.saving) .child-status {
     display: none;
   }
 
-  .rsvp-item.has-answer:hover .rsvp-hover-option {
+  .rsvp-item.has-answer:hover:not(.saving) .rsvp-hover-option {
     display: block;
+  }
+
+  /* Ensure status stays visible while saving */
+  .rsvp-item.saving .child-status {
+    display: block !important;
+  }
+
+  .rsvp-item.saving .rsvp-hover-option {
+    display: none !important;
   }
 
   .rsvp-btn {
@@ -547,6 +556,9 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
           hoverBtn.textContent = status === '👍' ? '👎' : '👍';
           hoverBtn.dataset.child = childName;
         }
+        
+        // Add a saving class to prevent hover effects during save
+        rsvpItem.classList.add('saving');
       }
     }
     
@@ -619,6 +631,14 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
       buttons.forEach(btn => {
         btn.disabled = disabled;
       });
+      
+      // Remove saving class when re-enabling
+      if (!disabled) {
+        const rsvpItems = document.querySelectorAll('.rsvp-item');
+        rsvpItems.forEach(item => {
+          item.classList.remove('saving');
+        });
+      }
     }
 
     showLoading() {
