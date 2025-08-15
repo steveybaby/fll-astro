@@ -1,0 +1,574 @@
+---
+// RSVP Component for FLL Meeting Pages
+export interface Props {
+  meetingDate: string; // YYYY-MM-DD format
+}
+
+const { meetingDate } = Astro.props;
+
+// Fixed list of children in specified order
+const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
+
+// API endpoint
+const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
+---
+
+<div class="rsvp-container">
+  <h3 class="rsvp-title">📋 RSVP for This Meeting</h3>
+  
+  <div class="rsvp-loading" id="rsvp-loading">
+    <div class="loading-spinner"></div>
+    <span>Loading RSVP data from Google Sheets...</span>
+  </div>
+  
+  <div class="rsvp-error" id="rsvp-error" style="display: none;">
+    <p id="rsvp-error-message">Unable to load RSVP data</p>
+    <button id="rsvp-retry" class="retry-button">Try Again</button>
+  </div>
+  
+  <div class="rsvp-content" id="rsvp-content" style="display: none;">
+    <div class="rsvp-updating" id="rsvp-updating" style="display: none;">
+      <div class="updating-spinner"></div>
+      <span>Saving...</span>
+    </div>
+    
+    <div class="rsvp-list" id="rsvp-list">
+      {children.map((child) => (
+        <div class="rsvp-item" data-child={child}>
+          <div class="child-info">
+            <span class="child-name">{child}</span>
+            <span class="child-status" id={`status-${child}`}>❓</span>
+          </div>
+          <div class="rsvp-buttons">
+            <button 
+              class="rsvp-btn rsvp-yes" 
+              data-child={child} 
+              data-status="👍"
+              aria-label={`Mark ${child} as attending`}
+            >
+              👍
+            </button>
+            <button 
+              class="rsvp-btn rsvp-no" 
+              data-child={child} 
+              data-status="👎"
+              aria-label={`Mark ${child} as not attending`}
+            >
+              👎
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .rsvp-container {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    padding: calc(var(--grid-unit) * 3);
+    margin: calc(var(--grid-unit) * 4) 0;
+    position: relative;
+  }
+
+  .rsvp-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+  }
+
+  .rsvp-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--grid-unit));
+    padding: calc(var(--grid-unit) * 3);
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .rsvp-updating {
+    position: absolute;
+    top: calc(var(--grid-unit) * 2);
+    right: calc(var(--grid-unit) * 2);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit) / 2);
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    background: rgba(34, 197, 94, 0.95);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  .loading-spinner,
+  .updating-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-border);
+    border-top: 2px solid var(--color-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .updating-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .rsvp-error {
+    text-align: center;
+    padding: calc(var(--grid-unit) * 2);
+    color: var(--color-accent);
+  }
+
+  .retry-button {
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-heading-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: calc(var(--grid-unit));
+    transition: all 0.2s ease;
+  }
+
+  .retry-button:hover {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .rsvp-list {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) * 1.5);
+  }
+
+  .rsvp-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--grid-unit) * 1.5);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+  }
+
+  .rsvp-item:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .rsvp-item.status-attending {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.04) 100%);
+    border-color: rgba(34, 197, 94, 0.2);
+  }
+
+  .rsvp-item.status-not-attending {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.04) 100%);
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+
+  .rsvp-item.status-attending:hover {
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+  }
+
+  .rsvp-item.status-not-attending:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+  }
+
+  .child-info {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit));
+    flex: 1;
+  }
+
+  .child-name {
+    font-family: var(--font-heading-secondary);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 1.1rem;
+  }
+
+  .child-status {
+    font-size: 1.2rem;
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .rsvp-buttons {
+    display: flex;
+    gap: calc(var(--grid-unit));
+  }
+
+  .rsvp-btn {
+    background: transparent;
+    border: 2px solid var(--color-border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rsvp-btn:hover {
+    transform: scale(1.1);
+    border-color: var(--color-accent);
+  }
+
+  .rsvp-btn:active {
+    transform: scale(0.95);
+  }
+
+  .rsvp-btn.active {
+    border-color: var(--color-accent);
+    background: rgba(220, 38, 38, 0.1);
+  }
+
+  .rsvp-btn.active[data-status="👍"] {
+    border-color: #16a34a;
+    background: rgba(34, 197, 94, 0.15);
+  }
+
+  .rsvp-btn.active[data-status="👎"] {
+    border-color: #dc2626;
+    background: rgba(239, 68, 68, 0.15);
+  }
+
+  .rsvp-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (max-width: 768px) {
+    .rsvp-container {
+      padding: calc(var(--grid-unit) * 2);
+    }
+
+    .rsvp-item {
+      padding: calc(var(--grid-unit));
+    }
+
+    .child-name {
+      font-size: 1rem;
+    }
+
+    .rsvp-btn {
+      width: 36px;
+      height: 36px;
+      font-size: 1.1rem;
+    }
+    
+    .rsvp-loading {
+      padding: calc(var(--grid-unit) * 2);
+      font-size: 0.85rem;
+    }
+    
+    .rsvp-updating {
+      top: calc(var(--grid-unit) * 1.5);
+      right: calc(var(--grid-unit) * 1.5);
+      padding: calc(var(--grid-unit) * 0.75) calc(var(--grid-unit));
+      font-size: 0.7rem;
+    }
+    
+    .loading-spinner {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .updating-spinner {
+      width: 12px;
+      height: 12px;
+    }
+  }
+</style>
+
+<script define:vars={{ meetingDate, RSVP_API_URL, children }}>
+  // RSVP Component JavaScript
+  class RSVPComponent {
+    constructor() {
+      this.meetingDate = meetingDate;
+      this.apiUrl = RSVP_API_URL;
+      this.children = children;
+      this.currentData = null;
+      
+      this.init();
+    }
+
+    async init() {
+      this.bindEvents();
+      await this.loadRSVPData();
+    }
+
+    bindEvents() {
+      // Retry button
+      const retryBtn = document.getElementById('rsvp-retry');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => this.loadRSVPData());
+      }
+
+      // RSVP buttons
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('rsvp-btn')) {
+          const child = e.target.dataset.child;
+          const status = e.target.dataset.status;
+          this.updateRSVP(child, status);
+        }
+      });
+    }
+
+    async loadRSVPData() {
+      this.showLoading();
+      
+      try {
+        console.log('Loading RSVP data for meeting:', this.meetingDate);
+        const response = await fetch(this.apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('API response:', data);
+        this.currentData = data;
+        
+        // Find data for this meeting - handle both YYYY-MM-DD and ISO date formats
+        const meetingData = data.find(meeting => {
+          const apiDate = meeting.meetingDate;
+          // Convert API date to YYYY-MM-DD format for comparison
+          const apiDateOnly = apiDate.includes('T') ? apiDate.split('T')[0] : apiDate;
+          console.log('Comparing dates:', { apiDate, apiDateOnly, expected: this.meetingDate });
+          return apiDateOnly === this.meetingDate;
+        });
+        
+        console.log('Found meeting data:', meetingData);
+        
+        if (meetingData) {
+          this.renderRSVPData(meetingData.kids);
+          this.showContent();
+        } else {
+          this.showError(`No RSVP data found for meeting date: ${this.meetingDate}`);
+        }
+        
+      } catch (error) {
+        console.error('Failed to load RSVP data:', error);
+        this.showError('Unable to load RSVP data');
+      }
+    }
+
+    async updateRSVP(childName, status) {
+      // Update UI immediately (optimistically) and disable buttons
+      this.updateUIOptimistically(childName, status);
+      this.setButtonsDisabled(true);
+      this.showUpdating();
+      
+      try {
+        console.log('Updating RSVP:', { meetingDate: this.meetingDate, kidName: childName, status });
+        
+        // Try the real API call
+        const updateUrl = new URL(this.apiUrl);
+        updateUrl.searchParams.set('action', 'update');
+        updateUrl.searchParams.set('meetingDate', this.meetingDate);
+        updateUrl.searchParams.set('kidName', childName);
+        updateUrl.searchParams.set('status', status);
+
+        const response = await fetch(updateUrl.toString());
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            // Real API call succeeded - no need to reload, UI is already updated
+            this.hideUpdating();
+            return;
+          }
+        } else if (response.status === 401 || response.status === 403) {
+          throw new Error('Authentication required - please use /exec URL instead of /dev URL');
+        }
+        
+        // If API call failed, UI is already updated optimistically
+        console.warn('API call failed, keeping optimistic update');
+        this.hideUpdating();
+        
+      } catch (error) {
+        console.error('Failed to update RSVP:', error);
+        // UI is already updated optimistically
+        this.hideUpdating();
+      } finally {
+        this.setButtonsDisabled(false);
+      }
+    }
+    
+    updateUIOptimistically(childName, status) {
+      // Update the status display
+      const statusElement = document.getElementById(`status-${childName}`);
+      if (statusElement) {
+        statusElement.textContent = status;
+      }
+
+      // Update button states
+      const buttons = document.querySelectorAll(`[data-child="${childName}"]`);
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.status === status) {
+          btn.classList.add('active');
+        }
+      });
+      
+      // Update row background based on status
+      const rsvpItem = document.querySelector(`[data-child="${childName}"]`).closest('.rsvp-item');
+      if (rsvpItem) {
+        // Remove existing status classes
+        rsvpItem.classList.remove('status-attending', 'status-not-attending');
+        
+        // Add appropriate status class
+        if (status === '👍') {
+          rsvpItem.classList.add('status-attending');
+        } else if (status === '👎') {
+          rsvpItem.classList.add('status-not-attending');
+        }
+      }
+    }
+    
+    showTemporaryMessage(message) {
+      const errorDiv = document.getElementById('rsvp-error');
+      const errorMsg = document.getElementById('rsvp-error-message');
+      
+      // Style differently based on message type
+      if (message.includes('✅')) {
+        errorMsg.style.color = '#16a34a';
+        errorMsg.style.fontWeight = '600';
+      } else {
+        errorMsg.style.color = '#f59e0b';
+        errorMsg.style.fontWeight = '600';
+      }
+      
+      errorMsg.textContent = message;
+      errorDiv.style.display = 'block';
+      
+      setTimeout(() => {
+        errorDiv.style.display = 'none';
+        errorMsg.style.color = 'var(--color-accent)';
+        errorMsg.style.fontWeight = 'normal';
+      }, 2000); // Reduced from 3 seconds to 2 seconds
+    }
+
+    renderRSVPData(kidsData) {
+      kidsData.forEach(kid => {
+        const statusElement = document.getElementById(`status-${kid.name}`);
+        if (statusElement) {
+          statusElement.textContent = kid.status || '❓';
+        }
+
+        // Update button states
+        const buttons = document.querySelectorAll(`[data-child="${kid.name}"]`);
+        buttons.forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.dataset.status === kid.status) {
+            btn.classList.add('active');
+          }
+        });
+        
+        // Update row background based on status
+        const rsvpItem = document.querySelector(`[data-child="${kid.name}"]`).closest('.rsvp-item');
+        if (rsvpItem) {
+          // Remove existing status classes
+          rsvpItem.classList.remove('status-attending', 'status-not-attending');
+          
+          // Add appropriate status class
+          if (kid.status === '👍') {
+            rsvpItem.classList.add('status-attending');
+          } else if (kid.status === '👎') {
+            rsvpItem.classList.add('status-not-attending');
+          }
+        }
+      });
+    }
+
+    setButtonsDisabled(disabled) {
+      const buttons = document.querySelectorAll('.rsvp-btn');
+      buttons.forEach(btn => {
+        btn.disabled = disabled;
+      });
+    }
+
+    showLoading() {
+      document.getElementById('rsvp-loading').style.display = 'flex';
+      document.getElementById('rsvp-error').style.display = 'none';
+      document.getElementById('rsvp-updating').style.display = 'none';
+      document.getElementById('rsvp-content').style.display = 'none';
+    }
+
+    showError(message) {
+      document.getElementById('rsvp-error-message').textContent = message;
+      document.getElementById('rsvp-loading').style.display = 'none';
+      document.getElementById('rsvp-updating').style.display = 'none';
+      document.getElementById('rsvp-error').style.display = 'block';
+      document.getElementById('rsvp-content').style.display = 'none';
+    }
+
+    showContent() {
+      document.getElementById('rsvp-loading').style.display = 'none';
+      document.getElementById('rsvp-error').style.display = 'none';
+      document.getElementById('rsvp-updating').style.display = 'none';
+      document.getElementById('rsvp-content').style.display = 'block';
+      this.setButtonsDisabled(false);
+    }
+
+    showUpdating() {
+      document.getElementById('rsvp-updating').style.display = 'flex';
+    }
+
+    hideUpdating() {
+      document.getElementById('rsvp-updating').style.display = 'none';
+    }
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    new RSVPComponent();
+  });
+</script>

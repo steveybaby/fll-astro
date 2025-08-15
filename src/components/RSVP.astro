@@ -1,0 +1,48 @@
+---
+const apiUrl = "https://script.google.com/macros/s/AKfycbzQMOTk7jLblKb7Tp_RqU7vHcBgfgSsjxtHntWwisaN2HYOk_DocHMgoV2bPf5ixnWa_Q/exec"; // replace with your web app URL
+const meetingDate = "2025-08-15"; // change per meeting or make dynamic
+---
+
+<ul id="kids"></ul>
+
+<script>
+const apiUrl = "<?= apiUrl ?>";
+const meetingDate = "<?= meetingDate ?>";
+
+function loadRSVPs() {
+  fetch(apiUrl)
+    .then(res => res.json())
+    .then(data => {
+      const meeting = data.find(m => m.meetingDate == meetingDate);
+      const list = document.getElementById("kids");
+      list.innerHTML = "";
+
+      if (!meeting) {
+        list.innerHTML = "<li>No meeting found</li>";
+        return;
+      }
+
+      meeting.kids.forEach(kid => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${kid.name}
+          <span style="margin: 0 10px;">${kid.status || "❓"}</span>
+          <button onclick="vote('${kid.name}', '👍')">👍</button>
+          <button onclick="vote('${kid.name}', '👎')">👎</button>
+        `;
+        list.appendChild(li);
+      });
+    });
+}
+
+function vote(kidName, status) {
+  fetch(apiUrl, {
+    method: "POST",
+    body: JSON.stringify({ kidName, meetingDate, status })
+  })
+  .then(() => loadRSVPs());
+}
+
+// Initial load
+loadRSVPs();
+</script>

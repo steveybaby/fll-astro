@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../components/Layout.astro';
 import R2PhotoGallery from '../../components/R2PhotoGallery.astro';
+import RSVPComponent from '../../components/RSVPComponent.astro';
 import ModelCard from '../../components/ModelCard.astro';
 import { formatMeetingTime } from '../../utils/meeting-time.ts';
 
@@ -53,6 +54,10 @@ const display = new Intl.DateTimeFormat('en-US', {
 }).format(raw);
 
 const displayWithDay = `${dayName}, ${display}`;
+
+// Check if meeting is in the future
+const now = new Date();
+const isFutureMeeting = raw >= now;
 ---
 
 <Layout title={data.title} description={`Meeting notes from ${display}`} type="article" publishedTime={isoDate}>
@@ -133,12 +138,22 @@ const displayWithDay = `${dayName}, ${display}`;
       )}
     </div>
 
+    <!-- RSVP Component - Show at top for future meetings -->
+    {isFutureMeeting && (
+      <RSVPComponent meetingDate={isoDate} />
+    )}
+
     <div class="meeting-content">
       <Content />
     </div>
 
     {data.assignments && data.assignments.length > 0 && (
       <ModelCard assignments={data.assignments} />
+    )}
+
+    <!-- RSVP Component - Show at bottom for past meetings -->
+    {!isFutureMeeting && (
+      <RSVPComponent meetingDate={isoDate} />
     )}
 
     <!-- R2 Photo Gallery System -->
