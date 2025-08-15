@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../components/Layout.astro';
+import { formatMeetingTime } from '../utils/meeting-time.ts';
 
 // Get all meetings and sort them chronologically
 const meetings = await getCollection('meetings');
@@ -99,6 +100,7 @@ const formatMeetingISO = (date) => {
           const isoDate = formatMeetingISO(meeting.data.date);
           const displayDate = formatMeetingDisplay(meeting.data.date);
           const mobileDate = formatMeetingMobile(meeting.data.date);
+          const meetingTime = formatMeetingTime(meeting.data.startTime, meeting.data.duration);
           
           return (
             <div class="grid-row" data-meeting-date={isoDate}>
@@ -108,11 +110,13 @@ const formatMeetingISO = (date) => {
                     {meeting.data.title}
                   </a>
                   <div class="meeting-date">{displayDate}</div>
+                  {meetingTime && <div class="meeting-time">{meetingTime}</div>}
                 </div>
                 <div class="meeting-info mobile-meeting-info">
                   <a href={`/meetings/${meeting.slug}/`} class="mobile-meeting-link">
                     <div class="mobile-month">{mobileDate.month}</div>
                     <div class="mobile-day">{mobileDate.day}</div>
+                    {meetingTime && <div class="mobile-time">{meetingTime}</div>}
                   </a>
                 </div>
               </div>
@@ -363,6 +367,16 @@ const formatMeetingISO = (date) => {
     letter-spacing: 0.05em;
   }
 
+  .meeting-time {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: calc(var(--grid-unit) / 4);
+  }
+
   .mobile-meeting-link {
     display: flex;
     flex-direction: column;
@@ -390,6 +404,17 @@ const formatMeetingISO = (date) => {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     line-height: 1;
+  }
+
+  .mobile-time {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    margin-top: calc(var(--grid-unit) / 6);
   }
 
   .mobile-meeting-link:hover .mobile-month {
@@ -553,6 +578,10 @@ const formatMeetingISO = (date) => {
       font-size: 0.75rem;
     }
 
+    .meeting-time {
+      font-size: 0.7rem;
+    }
+
     .rsvp-cell {
       padding: calc(var(--grid-unit));
     }
@@ -621,6 +650,10 @@ const formatMeetingISO = (date) => {
       font-size: 0.6rem;
     }
 
+    .meeting-time {
+      font-size: 0.55rem;
+    }
+
     .rsvp-cell {
       padding: calc(var(--grid-unit) * 0.25) calc(var(--grid-unit) * 0.03125);
       gap: calc(var(--grid-unit) / 3);
@@ -681,6 +714,14 @@ const formatMeetingISO = (date) => {
 
     .meeting-date {
       font-size: 0.5rem;
+    }
+
+    .meeting-time {
+      font-size: 0.45rem;
+    }
+
+    .mobile-time {
+      font-size: 0.4rem;
     }
 
     .cell-buttons {
