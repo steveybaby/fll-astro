@@ -22,3 +22,22 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Large photo files (stored in R2, not in Git)
+source-photos/
+temp-photos/
+*.jpg
+*.jpeg
+*.JPG
+*.JPEG
+*.png
+*.PNG
+*.heic
+*.HEIC
+*.webp
+*.WEBP
+# But allow small sample images in public/images/
+!public/images/**/*.jpg
+!public/images/**/*.jpeg
+!public/images/**/*.png
+!public/images/**/*.webp

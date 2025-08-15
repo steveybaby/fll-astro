@@ -65,6 +65,17 @@ const MEETING_DATES = [
   '2025-12-07'
 ];
 
+// Manual date assignments for photos without EXIF data
+// Format: filename (without extension) -> meeting date
+const MANUAL_DATE_ASSIGNMENTS = {
+  '3190850475024400528': '2025-08-10',
+  '5703217700916735598': '2025-08-10', 
+  '6132005204961641733': '2025-08-10',
+  'IMG_0008': '2025-08-10',
+  'IMG_0009': '2025-08-10',
+  'IMG_0010': '2025-08-10'
+};
+
 // Initialize R2 client
 const r2Client = new S3Client({
   region: 'auto',
@@ -88,31 +99,41 @@ function validateConfig() {
 }
 
 /**
- * Extract date from EXIF data
+ * Extract date from EXIF data, with fallback to file creation date
  */
-async function extractPhotoDate(filePath) {
+async function extractPhotoDate(filePath, filename) {
   try {
     const buffer = await fs.readFile(filePath);
     const tags = ExifReader.load(buffer);
     
-    const dateFields = ['DateTime', 'DateTimeOriginal', 'DateTimeDigitized'];
+    const dateFields = ['DateTimeOriginal', 'DateTimeDigitized', 'DateTime'];
     
+    // Try EXIF dates first (prefer DateTimeOriginal as it's when photo was actually taken)
     for (const field of dateFields) {
       if (tags[field]) {
         const dateString = tags[field].description;
         const dateMatch = dateString.match(/^(\d{4}):(\d{2}):(\d{2})/);
         if (dateMatch) {
+          console.log(`  📅 Using EXIF ${field}: ${dateString}`);
           return `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
         }
       }
     }
     
-    // Fallback to file modification date
+    // No EXIF date found - try file creation date (birthtime)
+    console.warn(`⚠️  No EXIF date found for ${filename}, trying file creation date...`);
     const stats = await fs.stat(filePath);
-    return stats.mtime.toISOString().split('T')[0];
+    
+    // Use creation date, but convert to local date to avoid timezone issues
+    const creationDate = new Date(stats.birthtime);
+    const localDateString = creationDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format in local timezone
+    
+    console.log(`  📅 Using file creation date: ${stats.birthtime.toISOString()} → ${localDateString}`);
+    return localDateString;
+    
   } catch (error) {
     console.warn(`Could not extract date from ${filePath}:`, error.message);
-    return new Date().toISOString().split('T')[0];
+    return null;
   }
 }
 
@@ -261,8 +282,24 @@ async function processPhotos() {
       console.log(`\\nProcessing: ${filename}`);
       
       // Extract photo date and assign to meeting
-      const photoDate = await extractPhotoDate(filePath);
-      const meetingDate = findClosestMeetingDate(photoDate);
+      let photoDate = await extractPhotoDate(filePath, filename);
+      let meetingDate;
+      
+      if (photoDate === null) {
+        // Still no date found - check manual assignments as last resort
+        const baseName = path.parse(filename).name;
+        if (MANUAL_DATE_ASSIGNMENTS[baseName]) {
+          meetingDate = MANUAL_DATE_ASSIGNMENTS[baseName];
+          photoDate = meetingDate; // Use meeting date as photo date
+          console.log(`  📋 Using manual assignment: ${baseName} → ${meetingDate}`);
+        } else {
+          console.log(`  ❌ No date found and no manual assignment for ${filename}, skipping`);
+          skipCount++;
+          continue;
+        }
+      } else {
+        meetingDate = findClosestMeetingDate(photoDate);
+      }
       
       console.log(`  Date: ${photoDate} → Meeting: ${meetingDate}`);
       

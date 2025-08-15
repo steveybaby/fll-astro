@@ -1,54 +1,11 @@
 {
-  "lastUpdated": "2025-08-15T05:04:10.120Z",
+  "lastUpdated": "2025-08-15T14:22:16.806Z",
   "r2Config": {
     "bucketName": "site-images",
     "publicUrl": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev"
   },
   "photosByMeeting": {
-    "2025-08-17": [
-      {
-        "filename": "3190850475024400528.jpg",
-        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/thumbnails/thumb_3190850475024400528.jpg",
-        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/3190850475024400528.jpg",
-        "dateFound": "2025-08-15",
-        "uploadedAt": "2025-08-15T05:01:02.775Z"
-      },
-      {
-        "filename": "5703217700916735598.jpg",
-        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/thumbnails/thumb_5703217700916735598.jpg",
-        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/5703217700916735598.jpg",
-        "dateFound": "2025-08-15",
-        "uploadedAt": "2025-08-15T05:01:03.305Z"
-      },
-      {
-        "filename": "6132005204961641733.jpg",
-        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/thumbnails/thumb_6132005204961641733.jpg",
-        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/6132005204961641733.jpg",
-        "dateFound": "2025-08-15",
-        "uploadedAt": "2025-08-15T05:01:03.851Z"
-      },
-      {
-        "filename": "IMG_0008.jpg",
-        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/thumbnails/thumb_IMG_0008.jpg",
-        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/IMG_0008.jpg",
-        "dateFound": "2025-08-14",
-        "uploadedAt": "2025-08-15T05:01:03.853Z"
-      },
-      {
-        "filename": "IMG_0009.jpg",
-        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/thumbnails/thumb_IMG_0009.jpg",
-        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/IMG_0009.jpg",
-        "dateFound": "2025-08-14",
-        "uploadedAt": "2025-08-15T05:01:03.854Z"
-      },
-      {
-        "filename": "IMG_0010.jpg",
-        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/thumbnails/thumb_IMG_0010.jpg",
-        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-17/IMG_0010.jpg",
-        "dateFound": "2025-08-14",
-        "uploadedAt": "2025-08-15T05:01:03.855Z"
-      }
-    ],
+    "2025-08-17": [],
     "2025-08-10": [
       {
         "filename": "3190850475024400528.jpg",
@@ -259,6 +216,27 @@
         "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-10/IMG_3878.jpg",
         "dateFound": "2025-08-10",
         "uploadedAt": "2025-08-15T05:01:19.842Z"
+      },
+      {
+        "filename": "IMG_0008.jpg",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-10/thumbnails/thumb_IMG_0008.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-10/IMG_0008.jpg",
+        "dateFound": "2025-08-10",
+        "uploadedAt": "2025-08-15T05:01:03.853Z"
+      },
+      {
+        "filename": "IMG_0009.jpg",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-10/thumbnails/thumb_IMG_0009.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-10/IMG_0009.jpg",
+        "dateFound": "2025-08-10",
+        "uploadedAt": "2025-08-15T05:01:03.854Z"
+      },
+      {
+        "filename": "IMG_0010.jpg",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-10/thumbnails/thumb_IMG_0010.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2025-08-10/IMG_0010.jpg",
+        "dateFound": "2025-08-10",
+        "uploadedAt": "2025-08-15T05:01:03.855Z"
       }
     ]
   }

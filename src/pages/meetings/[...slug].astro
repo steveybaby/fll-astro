@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../components/Layout.astro';
 import R2PhotoGallery from '../../components/R2PhotoGallery.astro';
+import RSVPComponent from '../../components/RSVPComponent.astro';
 import ModelCard from '../../components/ModelCard.astro';
 import { formatMeetingTime } from '../../utils/meeting-time.ts';
 
@@ -53,6 +54,10 @@ const display = new Intl.DateTimeFormat('en-US', {
 }).format(raw);
 
 const displayWithDay = `${dayName}, ${display}`;
+
+// Check if meeting is in the future
+const now = new Date();
+const isFutureMeeting = raw >= now;
 ---
 
 <Layout title={data.title} description={`Meeting notes from ${display}`} type="article" publishedTime={isoDate}>
@@ -133,12 +138,22 @@ const displayWithDay = `${dayName}, ${display}`;
       )}
     </div>
 
+    <!-- RSVP Component - Show at top for future meetings -->
+    {isFutureMeeting && (
+      <RSVPComponent meetingDate={isoDate} />
+    )}
+
     <div class="meeting-content">
       <Content />
     </div>
 
     {data.assignments && data.assignments.length > 0 && (
       <ModelCard assignments={data.assignments} />
+    )}
+
+    <!-- RSVP Component - Show at bottom for past meetings -->
+    {!isFutureMeeting && (
+      <RSVPComponent meetingDate={isoDate} />
     )}
 
     <!-- R2 Photo Gallery System -->
@@ -156,12 +171,18 @@ const displayWithDay = `${dayName}, ${display}`;
           <span class="nav-label">← Previous Meeting</span>
           <span class="nav-title">{prevMeeting.data.title}</span>
           <span class="nav-date">
-            {new Date(`${prevMeeting.data.date}T12:00:00`).toLocaleDateString('en-US', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            })}
+            {(() => {
+              const prevDate = prevMeeting.data.date instanceof Date 
+                ? prevMeeting.data.date 
+                : new Date(`${prevMeeting.data.date}T00:00:00Z`);
+              return prevDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'UTC'
+              });
+            })()}
           </span>
         </a>
       )}
@@ -171,12 +192,18 @@ const displayWithDay = `${dayName}, ${display}`;
           <span class="nav-label">Next Meeting →</span>
           <span class="nav-title">{nextMeeting.data.title}</span>
           <span class="nav-date">
-            {new Date(`${nextMeeting.data.date}T12:00:00`).toLocaleDateString('en-US', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            })}
+            {(() => {
+              const nextDate = nextMeeting.data.date instanceof Date 
+                ? nextMeeting.data.date 
+                : new Date(`${nextMeeting.data.date}T00:00:00Z`);
+              return nextDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'UTC'
+              });
+            })()}
           </span>
         </a>
       )}
