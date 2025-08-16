@@ -30,7 +30,12 @@ function doGet(e) {
     console.error('Error in doGet:', error);
     return ContentService
       .createTextOutput(JSON.stringify({ error: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
   }
 }
 
@@ -127,13 +132,23 @@ function getAllRSVPData() {
     
     return ContentService
       .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
       
   } catch (error) {
     console.error('Error in getAllRSVPData:', error);
     return ContentService
       .createTextOutput(JSON.stringify({ error: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
   }
 }
 
@@ -225,7 +240,12 @@ function handleUpdate(e) {
         message: `Updated ${kidName} for ${meetingDate}`,
         data: { meetingDate, kidName, status }
       }))
-      .setMimeType(ContentService.MimeType.JSON);
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
       
   } catch (error) {
     console.error('Error in handleUpdate:', error);
@@ -234,7 +254,12 @@ function handleUpdate(e) {
         success: false, 
         error: error.toString() 
       }))
-      .setMimeType(ContentService.MimeType.JSON);
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
   }
 }
 

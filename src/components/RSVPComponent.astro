@@ -10,7 +10,7 @@ const { meetingDate } = Astro.props;
 const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
 
 // API endpoint
-const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbxNboe94Xd1KK5-aVUsleNAfpaxlTiuM07g142SrB6EZestytZkr3dAgNWQzhQIta4tbQ/exec';
+const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
 ---
 
 <div class="rsvp-container">
@@ -443,9 +443,21 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbxNboe94Xd1KK5-aVU
       
       try {
         console.log('Loading RSVP data for meeting:', this.meetingDate);
-        const response = await fetch(this.apiUrl);
+        console.log('API URL:', this.apiUrl);
+        
+        // Use fetch with redirect: 'follow' to automatically handle redirects
+        const response = await fetch(this.apiUrl, {
+          method: 'GET',
+          redirect: 'follow'
+        });
+        
+        console.log('Response status:', response.status, response.statusText);
+        console.log('Response URL:', response.url);
+        console.log('Response headers:', [...response.headers.entries()]);
         
         if (!response.ok) {
+          const responseText = await response.text();
+          console.error('Response body:', responseText);
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
@@ -453,11 +465,32 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbxNboe94Xd1KK5-aVU
         console.log('API response:', data);
         this.currentData = data;
         
-        // Find data for this meeting - handle both YYYY-MM-DD and ISO date formats
+        // Find data for this meeting - handle enhanced date formats
         const meetingData = data.find(meeting => {
           const apiDate = meeting.meetingDate;
-          // Convert API date to YYYY-MM-DD format for comparison
-          const apiDateOnly = apiDate.includes('T') ? apiDate.split('T')[0] : apiDate;
+          console.log('🔍 Raw meeting date from API:', apiDate, 'Type:', typeof apiDate);
+          
+          let apiDateOnly;
+          if (apiDate.match(/^\d{4}-\d{2}-\d{2}(T|$)/)) {
+            // Already in ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
+            apiDateOnly = apiDate.split('T')[0];
+            console.log('📅 ISO format detected, converted to:', apiDateOnly);
+          } else if (apiDate.includes(' ')) {
+            // Full date string like "Sun Aug 10 2025 00:00:00 GMT-0700 (Pacific Daylight Time)"
+            const dateObj = new Date(apiDate);
+            if (!isNaN(dateObj.getTime())) {
+              apiDateOnly = dateObj.toISOString().split('T')[0];
+              console.log('📅 Full date string converted to:', apiDateOnly);
+            } else {
+              apiDateOnly = apiDate;
+              console.log('❌ Failed to parse date, using as-is:', apiDateOnly);
+            }
+          } else {
+            // Assume it's already in the right format
+            apiDateOnly = apiDate;
+            console.log('📅 Using date as-is:', apiDateOnly);
+          }
+          
           console.log('Comparing dates:', { apiDate, apiDateOnly, expected: this.meetingDate });
           return apiDateOnly === this.meetingDate;
         });
@@ -468,12 +501,15 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbxNboe94Xd1KK5-aVU
           this.renderRSVPData(meetingData.kids);
           this.showContent();
         } else {
+          console.error('❌ No meeting data found for date:', this.meetingDate);
+          console.error('Available meeting dates:', data.map(m => m.meetingDate));
           this.showError(`No RSVP data found for meeting date: ${this.meetingDate}`);
         }
         
       } catch (error) {
         console.error('Failed to load RSVP data:', error);
-        this.showError('Unable to load RSVP data');
+        console.error('Error details:', error.message, error.stack);
+        this.showError(`Unable to load RSVP data: ${error.message}`);
       }
     }
 
