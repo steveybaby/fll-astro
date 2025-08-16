@@ -538,7 +538,8 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbxNboe94Xd1KK5-aVU
       });
       
       // Update row background and interaction state
-      const rsvpItem = document.querySelector(`[data-child="${childName}"]`).closest('.rsvp-item');
+      const rsvpElement = document.querySelector(`[data-child="${childName}"]`);
+      const rsvpItem = rsvpElement ? rsvpElement.closest('.rsvp-item') : null;
       if (rsvpItem) {
         // Remove existing status classes
         rsvpItem.classList.remove('status-attending', 'status-not-attending', 'has-answer');
@@ -586,7 +587,10 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbxNboe94Xd1KK5-aVU
     }
 
     renderRSVPData(kidsData) {
-      kidsData.forEach(kid => {
+      // Filter to only include the actual kids (not coaches)
+      const actualKids = kidsData.filter(person => this.children.includes(person.name));
+      
+      actualKids.forEach(kid => {
         const statusElement = document.getElementById(`status-${kid.name}`);
         if (statusElement) {
           statusElement.textContent = kid.status || '';
