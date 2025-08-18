@@ -15,6 +15,10 @@ assignments: []
 **Date:** August 24, 2025  
 **FIRST LEGO League UNEARTHED™ Season**
 
+Steve H is here
+Steve S is here
+Esther is here
+
 ## Meeting Agenda
 
 ### Extended Programming Workshop

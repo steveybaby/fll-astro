@@ -1,5 +1,5 @@
 ---
-title: "Team Meeting"
+title: "Thursday Meeting"
 date: 2025-08-20
 startTime: "17:00" # 5:00 PM
 duration: 1 # 1 hour

@@ -1,7 +1,7 @@
 ---
 title: "Team Meeting"
 date: 2025-08-28
-startTime: "17:00" # 5:00 PM
+startTime: "17:30" # 5:00 PM
 duration: 1 # 1 hour
 location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:

@@ -1,5 +1,5 @@
 ---
-title: "Sunday Session"
+title: "Labor Day Sunday Session"
 date: 2025-08-31
 startTime: "16:30" # 4:30 PM
 duration: 1.5 # 1.5 hours
