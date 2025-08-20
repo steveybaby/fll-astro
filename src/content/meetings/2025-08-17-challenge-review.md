@@ -58,7 +58,10 @@ assignments: []
 
 ## Meeting Notes
 
-*Notes and decisions from the meeting will be added here...*
+- *Team Name:* Looting Llamas
+- *Slogan:* Looting Tombs since 2024!
+- *Team Spirit Ideas:* T-shirts with our rainbow-colored logo (designed by Luca), plus our team logo flag for the tournament.
+- *Logo Display:* The team will build a large LEGO llama for our Innovation Project display table.
 
 ### Action Items
 *Action items and assignments will be added here...*
