@@ -27,7 +27,9 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
         <ul class="nav-list">
           <li><a href={base} class="nav-link">Home</a></li>
           <li><a href={base + "meeting-plans"} class="nav-link">Meetings</a></li>
+          <li><a href={base + "newsletters"} class="nav-link">Newsletters</a></li>
           <li><a href={base + "rsvps"} class="nav-link">RSVPs</a></li>
+          <li><a href={base + "snacks"} class="nav-link">Snacks</a></li>
           <li><a href={base + "coach_rsvps"} class="nav-link">Coach RSVPs</a></li>
           <li><a href={base + "calendar"} class="nav-link">Calendar</a></li>
           <li><a href={base + "resources"} class="nav-link">Resources</a></li>
@@ -55,7 +57,9 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
   <ul class="mobile-nav-list">
     <li><a href={base} class="mobile-nav-link">Home</a></li>
     <li><a href={base + "meeting-plans"} class="mobile-nav-link">Meetings</a></li>
+    <li><a href={base + "newsletters"} class="mobile-nav-link">Newsletters</a></li>
     <li><a href={base + "rsvps"} class="mobile-nav-link">RSVPs</a></li>
+    <li><a href={base + "snacks"} class="mobile-nav-link">Snacks</a></li>
     <li><a href={base + "coach_rsvps"} class="mobile-nav-link">Coach RSVPs</a></li>
     <li><a href={base + "calendar"} class="mobile-nav-link">Calendar</a></li>
     <li><a href={base + "resources"} class="mobile-nav-link">Resources</a></li>
