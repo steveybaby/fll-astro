@@ -7,8 +7,11 @@ const blogPosts = await getCollection('blog', ({ data }) => {
   return data.draft !== true;
 });
 const meetings = await getCollection('meetings');
+const newsletters = await getCollection('newsletter', ({ data }) => {
+  return data.draft !== true;
+});
 
-// Combine both blog posts and meetings, adding a type field
+// Combine blog posts, meetings, and newsletters, adding a type field
 const allContent = [
   ...blogPosts.map(post => ({
     ...post,
@@ -19,6 +22,11 @@ const allContent = [
     ...meeting,
     type: 'meeting',
     url: `/meetings/${meeting.slug}/`
+  })),
+  ...newsletters.map(newsletter => ({
+    ...newsletter,
+    type: 'newsletter',
+    url: `/newsletters/${newsletter.slug}/`
   }))
 ];
 
@@ -44,8 +52,9 @@ const recentContent = allContent
         </p>
         <hr class="hero-rule" />
         <div class="hero-actions">
-          <a href="/resources" class="btn btn-primary">Resources</a>
+          <a href="/newsletters" class="btn btn-primary">Newsletters</a>
           <a href="/meeting-plans" class="btn btn-primary">Meetings</a>
+          <a href="/resources" class="btn btn-primary">Resources</a>
           <a href="/calendar" class="btn btn-primary">Calendar</a>
         </div>
       </div>
@@ -65,7 +74,9 @@ const recentContent = allContent
             {recentContent.map(item => (
               <article class="demo-post-card">
                 <div class="content-type-badge">
-                  {item.type === 'blog' ? '📝 Blog Post' : '📅 Meeting Notes'}
+                  {item.type === 'blog' ? '📝 Blog Post' : 
+                   item.type === 'meeting' ? '📅 Meeting Notes' : 
+                   '📧 Newsletter'}
                 </div>
                 
                 <h3 class="demo-post-title">
@@ -101,8 +112,9 @@ const recentContent = allContent
         )}
         
         <div class="demo-actions">
-          <a href="/blog" class="btn btn-primary">View All Posts</a>
-          <a href="/meeting-plans" class="btn btn-secondary">All Meetings</a>
+          <a href="/newsletters" class="btn btn-primary">View Newsletters</a>
+          <a href="/meeting-plans" class="btn btn-primary">All Meetings</a>
+          <a href="/blog" class="btn btn-secondary">View All Posts</a>
         </div>
       </div>
     </section>

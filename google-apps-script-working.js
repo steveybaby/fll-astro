@@ -30,12 +30,7 @@ function doGet(e) {
     console.error('Error in doGet:', error);
     return ContentService
       .createTextOutput(JSON.stringify({ error: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeaders({
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      });
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
@@ -132,23 +127,13 @@ function getAllRSVPData() {
     
     return ContentService
       .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeaders({
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      });
+      .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {
     console.error('Error in getAllRSVPData:', error);
     return ContentService
       .createTextOutput(JSON.stringify({ error: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeaders({
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      });
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
@@ -240,12 +225,7 @@ function handleUpdate(e) {
         message: `Updated ${kidName} for ${meetingDate}`,
         data: { meetingDate, kidName, status }
       }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeaders({
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      });
+      .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {
     console.error('Error in handleUpdate:', error);
@@ -254,12 +234,7 @@ function handleUpdate(e) {
         success: false, 
         error: error.toString() 
       }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeaders({
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      });
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
@@ -283,7 +258,7 @@ function testUpdate() {
   const mockRequest = {
     parameter: {
       action: 'update',
-      meetingDate: '2025-01-20', // Use an actual date from your sheet
+      meetingDate: '2025-08-17', // Use an actual date from your sheet
       kidName: 'Steve H',        // Test with a coach name
       status: '👍'
     }

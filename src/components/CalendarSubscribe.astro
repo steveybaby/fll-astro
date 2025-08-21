@@ -1,0 +1,338 @@
+---
+// Calendar subscription component for embedding in content
+interface Props {
+  size?: 'small' | 'medium' | 'large';
+  style?: 'button' | 'card' | 'inline';
+}
+
+const { size = 'medium', style = 'button' } = Astro.props;
+---
+
+<div class={`calendar-subscribe ${style} ${size}`}>
+  <button 
+    class="calendar-subscribe-btn"
+    id={`calendar-subscribe-btn-${Math.random().toString(36).substr(2, 9)}`}
+    title="Subscribe to FLL Llamas meeting calendar"
+  >
+    📅 Subscribe to Team Calendar
+  </button>
+  
+  <div class="calendar-subscribe-popup" style="display: none;">
+    <div class="calendar-popup-content">
+      <h4>Subscribe to FLL Llamas Calendar</h4>
+      <p>Copy this URL and add it to your calendar app:</p>
+      
+      <div class="url-copy-container">
+        <input 
+          type="text" 
+          class="calendar-url-input" 
+          value="https://fll.sharpers.com/calendar.ics" 
+          readonly
+        />
+        <button class="copy-button">Copy</button>
+      </div>
+      
+      <div class="calendar-instructions">
+        <h5>Instructions:</h5>
+        <ul>
+          <li><strong>Google Calendar:</strong> Settings → Add calendar → From URL</li>
+          <li><strong>Apple Calendar:</strong> File → New Calendar Subscription</li>
+          <li><strong>Outlook:</strong> Add calendar → Subscribe from web</li>
+        </ul>
+      </div>
+      
+      <div class="popup-actions">
+        <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+        <button class="close-popup-btn">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .calendar-subscribe {
+    position: relative;
+    display: inline-block;
+    margin: calc(var(--grid-unit) * 2) 0;
+  }
+
+  .calendar-subscribe.card {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    padding: calc(var(--grid-unit) * 3);
+    text-align: center;
+  }
+
+  .calendar-subscribe.inline {
+    display: inline;
+    margin: 0 calc(var(--grid-unit)) 0 0;
+  }
+
+  .calendar-subscribe-btn {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    background-color: transparent;
+    border: 2px solid var(--color-accent);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--grid-unit) / 2);
+  }
+
+  /* Size variations */
+  .small .calendar-subscribe-btn {
+    padding: calc(var(--grid-unit) * 0.75) calc(var(--grid-unit) * 1.5);
+    font-size: 0.8rem;
+  }
+
+  .medium .calendar-subscribe-btn {
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    font-size: 0.9rem;
+  }
+
+  .large .calendar-subscribe-btn {
+    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
+    font-size: 1rem;
+  }
+
+  .calendar-subscribe-btn:hover,
+  .calendar-subscribe-btn:focus {
+    background-color: var(--color-accent);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .calendar-subscribe-popup {
+    position: absolute;
+    top: calc(100% + calc(var(--grid-unit)));
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-surface);
+    border: 2px solid var(--color-accent);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 400px;
+    max-width: 500px;
+  }
+
+  .calendar-popup-content {
+    padding: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-popup-content h4 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .calendar-popup-content p {
+    color: var(--color-text-secondary);
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    line-height: 1.5;
+  }
+
+  .url-copy-container {
+    display: flex;
+    gap: calc(var(--grid-unit));
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-url-input {
+    flex: 1;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    background: var(--color-background);
+    color: var(--color-text-primary);
+  }
+
+  .copy-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+  }
+
+  .copy-button:hover,
+  .copy-button:focus {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .calendar-instructions {
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-instructions h5 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit)) 0;
+  }
+
+  .calendar-instructions ul {
+    margin: 0;
+    padding-left: calc(var(--grid-unit) * 3);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .calendar-instructions li {
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .popup-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .download-fallback {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    text-decoration: underline;
+  }
+
+  .download-fallback:hover {
+    color: var(--color-accent);
+  }
+
+  .close-popup-btn {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit) * 1.5);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+  }
+
+  .close-popup-btn:hover,
+  .close-popup-btn:focus {
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+  }
+
+  @media (max-width: 768px) {
+    .calendar-subscribe-popup {
+      left: calc(var(--grid-unit) * -2);
+      right: calc(var(--grid-unit) * -2);
+      transform: none;
+      min-width: auto;
+      max-width: none;
+    }
+    
+    .url-copy-container {
+      flex-direction: column;
+    }
+    
+    .popup-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: calc(var(--grid-unit));
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Find all calendar subscribe components on the page
+    const components = document.querySelectorAll('.calendar-subscribe');
+    
+    components.forEach((component) => {
+      const subscribeBtn = component.querySelector('.calendar-subscribe-btn');
+      const popup = component.querySelector('.calendar-subscribe-popup');
+      const closeBtn = component.querySelector('.close-popup-btn');
+      const copyBtn = component.querySelector('.copy-button');
+      const urlInput = component.querySelector('.calendar-url-input');
+      
+      // Set the correct URL based on current domain
+      if (urlInput) {
+        urlInput.value = `${window.location.origin}/calendar.ics`;
+      }
+      
+      // Show popup
+      if (subscribeBtn && popup) {
+        subscribeBtn.addEventListener('click', function() {
+          // Close any other open popups first
+          document.querySelectorAll('.calendar-subscribe-popup').forEach(p => {
+            if (p !== popup) p.style.display = 'none';
+          });
+          
+          popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+        });
+      }
+      
+      // Hide popup
+      if (closeBtn && popup) {
+        closeBtn.addEventListener('click', function() {
+          popup.style.display = 'none';
+        });
+      }
+      
+      // Copy URL to clipboard
+      if (copyBtn && urlInput) {
+        copyBtn.addEventListener('click', async function() {
+          try {
+            await navigator.clipboard.writeText(urlInput.value);
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+              copyBtn.textContent = 'Copy';
+            }, 2000);
+          } catch (err) {
+            // Fallback for older browsers
+            urlInput.select();
+            document.execCommand('copy');
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+              copyBtn.textContent = 'Copy';
+            }, 2000);
+          }
+        });
+      }
+    });
+    
+    // Hide popup when clicking outside
+    document.addEventListener('click', function(event) {
+      const clickedComponent = event.target.closest('.calendar-subscribe');
+      
+      document.querySelectorAll('.calendar-subscribe').forEach((component) => {
+        if (component !== clickedComponent) {
+          const popup = component.querySelector('.calendar-subscribe-popup');
+          if (popup) popup.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>

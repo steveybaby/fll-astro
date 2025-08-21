@@ -13,10 +13,6 @@ assignments: []
 
 # Sunday Session
 
-Steve H is here
-Steve S is here
-Esther is here
-
 ## Meeting Agenda
 
 ### Extended Programming Workshop

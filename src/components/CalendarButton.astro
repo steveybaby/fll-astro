@@ -1,0 +1,13 @@
+---
+// Simple calendar button shortcode for markdown content
+import CalendarSubscribe from './CalendarSubscribe.astro';
+
+interface Props {
+  size?: 'small' | 'medium' | 'large';
+  style?: 'button' | 'card' | 'inline';
+}
+
+const { size = 'medium', style = 'button' } = Astro.props;
+---
+
+<CalendarSubscribe size={size} style={style} />

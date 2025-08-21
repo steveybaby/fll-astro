@@ -3,13 +3,25 @@ import { getCollection } from 'astro:content';
 import Layout from '../components/Layout.astro';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
 
-// Get all meetings and sort them chronologically
+// Get all meetings and filter to future meetings only
 const meetings = await getCollection('meetings');
-const sortedMeetings = meetings.sort((a, b) => {
-  const dateA = a.data.date instanceof Date ? a.data.date : new Date(`${a.data.date}T00:00:00Z`);
-  const dateB = b.data.date instanceof Date ? b.data.date : new Date(`${b.data.date}T00:00:00Z`);
-  return dateA.getTime() - dateB.getTime();
-});
+const now = new Date();
+const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+const futureMeetings = meetings
+  .filter(meeting => {
+    const meetingDate = meeting.data.date instanceof Date 
+      ? meeting.data.date 
+      : new Date(`${meeting.data.date}T00:00:00Z`);
+    return meetingDate >= todayStart;
+  })
+  .sort((a, b) => {
+    const dateA = a.data.date instanceof Date ? a.data.date : new Date(`${a.data.date}T00:00:00Z`);
+    const dateB = b.data.date instanceof Date ? b.data.date : new Date(`${b.data.date}T00:00:00Z`);
+    return dateA.getTime() - dateB.getTime();
+  });
+
+const sortedMeetings = futureMeetings;
 
 // Fixed list of children in specified order
 const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
@@ -946,8 +958,8 @@ const formatMeetingISO = (date) => {
           const result = await response.json();
           if (result.success) {
             console.log('Snack removal successful');
-            // Reload fresh data from server after successful removal
-            await this.loadAllSnackData();
+            // Update UI immediately without full reload
+            this.clearMeetingSnackAssignment(meetingDate);
             this.hideUpdating();
             return;
           }

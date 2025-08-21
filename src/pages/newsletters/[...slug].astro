@@ -1,0 +1,490 @@
+---
+import { getCollection } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import Layout from '../../components/Layout.astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const newsletters = await getCollection('newsletter');
+  return newsletters.map((newsletter) => ({
+    params: { slug: newsletter.slug },
+    props: newsletter,
+  }));
+};
+
+type Props = {
+  slug: string;
+  data: {
+    title: string;
+    date: Date;
+    description?: string;
+    author: string;
+    excerpt?: string;
+    tags?: string[];
+  };
+  render: () => Promise<{ Content: any }>;
+};
+
+const newsletter = Astro.props;
+const { Content } = await newsletter.render();
+
+// Get other newsletters for navigation
+const allNewsletters = await getCollection('newsletter', ({ data }) => !data.draft);
+allNewsletters.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const currentIndex = allNewsletters.findIndex(n => n.slug === newsletter.slug);
+const prevNewsletter = currentIndex < allNewsletters.length - 1 ? allNewsletters[currentIndex + 1] : null;
+const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : null;
+---
+
+<Layout 
+  title={newsletter.data.title}
+  description={newsletter.data.description || newsletter.data.excerpt}
+  type="article"
+  publishedTime={newsletter.data.date.toISOString()}
+>
+  <article class="newsletter-article">
+    <header class="newsletter-header">
+      <h1>{newsletter.data.title}</h1>
+      
+      <div class="newsletter-meta">
+        <div class="newsletter-date-author">
+          <time datetime={newsletter.data.date.toISOString()}>
+            {newsletter.data.date.toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </time>
+          <span class="newsletter-author">by {newsletter.data.author}</span>
+        </div>
+        
+        <div class="newsletter-actions">
+          <a href="/newsletters/" class="back-to-newsletters">
+            ← All Newsletters
+          </a>
+        </div>
+      </div>
+      
+      {newsletter.data.tags && newsletter.data.tags.length > 0 && (
+        <div class="newsletter-tags">
+          {newsletter.data.tags.map((tag) => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <!-- Quick Navigation Links -->
+    <div class="quicklinks">
+      {prevNewsletter && (
+        <a href={`/newsletters/${prevNewsletter.slug}/`} 
+           class="quicklink prev-quicklink" 
+           title={`Previous: ${prevNewsletter.data.title}`}>
+          ← Previous
+        </a>
+      )}
+      {nextNewsletter && (
+        <a href={`/newsletters/${nextNewsletter.slug}/`} 
+           class="quicklink next-quicklink" 
+           title={`Next: ${nextNewsletter.data.title}`}>
+          Next →
+        </a>
+      )}
+    </div>
+
+    <div class="newsletter-content">
+      <Content />
+    </div>
+
+    <!-- Newsletter Navigation -->
+    <nav class="newsletter-nav">
+      <div class="newsletter-pagination">
+        {prevNewsletter && (
+          <a href={`/newsletters/${prevNewsletter.slug}/`} class="nav-link prev-newsletter">
+            <span class="nav-label">Previous Newsletter</span>
+            <span class="nav-title">{prevNewsletter.data.title}</span>
+            <span class="nav-date">
+              {prevNewsletter.data.date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </span>
+          </a>
+        )}
+        
+        {nextNewsletter && (
+          <a href={`/newsletters/${nextNewsletter.slug}/`} class="nav-link next-newsletter">
+            <span class="nav-label">Next Newsletter</span>
+            <span class="nav-title">{nextNewsletter.data.title}</span>
+            <span class="nav-date">
+              {nextNewsletter.data.date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </span>
+          </a>
+        )}
+      </div>
+      
+      <a href="/newsletters/" class="back-link">View All Newsletters</a>
+    </nav>
+  </article>
+</Layout>
+
+<style>
+  .newsletter-article {
+    max-width: 800px;
+    margin: 0 auto calc(var(--grid-unit) * 6) auto;
+  }
+
+  .newsletter-header {
+    margin-bottom: calc(var(--grid-unit) * 6);
+  }
+
+  .newsletter-header h1 {
+    font-family: var(--font-heading-primary);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+  }
+
+  .newsletter-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: calc(var(--grid-unit) * 2);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .newsletter-date-author {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 2);
+    flex: 1;
+  }
+
+  .newsletter-date-author time {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .newsletter-author {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  .newsletter-actions {
+    flex-shrink: 0;
+  }
+
+  .back-to-newsletters {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .back-to-newsletters:hover {
+    color: var(--color-accent);
+    background-color: var(--color-surface);
+  }
+
+  .newsletter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--grid-unit));
+  }
+
+  .tag {
+    background: var(--color-accent);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .quicklinks {
+    display: flex;
+    justify-content: space-between;
+    margin: calc(var(--grid-unit) * 2) 0 calc(var(--grid-unit) * 4) 0;
+    padding: 0 calc(var(--grid-unit) * 2);
+  }
+
+  .quicklink {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .quicklink:hover {
+    color: var(--color-accent);
+    background-color: var(--color-surface);
+  }
+
+  .prev-quicklink {
+    margin-right: auto;
+  }
+
+  .next-quicklink {
+    margin-left: auto;
+  }
+
+  .newsletter-header::after {
+    content: "";
+    height: 6px;
+    background-color: var(--color-accent);
+    border: none;
+    margin: calc(var(--grid-unit) * 4) 0;
+    width: 100%;
+    display: block;
+  }
+
+  .newsletter-content {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    margin-bottom: calc(var(--grid-unit) * 6);
+  }
+
+  .newsletter-content :global(h1) {
+    font-family: var(--font-heading-primary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: calc(var(--grid-unit) * 6);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .newsletter-content :global(h2) {
+    font-family: var(--font-heading-secondary);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: calc(var(--grid-unit) * 6);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .newsletter-content :global(h3) {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: calc(var(--grid-unit) * 4);
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .newsletter-content :global(ul),
+  .newsletter-content :global(ol) {
+    margin-bottom: calc(var(--grid-unit) * 3);
+    padding-left: calc(var(--grid-unit) * 3);
+  }
+
+  .newsletter-content :global(li) {
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .newsletter-content :global(p) {
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .newsletter-content :global(strong) {
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .newsletter-content :global(em) {
+    font-style: italic;
+  }
+
+  .newsletter-nav {
+    border-top: 1px solid var(--color-border);
+    padding-top: calc(var(--grid-unit) * 3);
+    margin-top: calc(var(--grid-unit) * 6);
+  }
+
+  .newsletter-pagination {
+    display: flex;
+    justify-content: space-between;
+    gap: calc(var(--grid-unit) * 2);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .nav-link {
+    flex: 1;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 2);
+    padding: calc(var(--grid-unit) * 2);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .nav-link:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .prev-newsletter {
+    text-align: left;
+  }
+
+  .next-newsletter {
+    text-align: right;
+    margin-left: auto;
+  }
+
+  .nav-label {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .nav-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+  }
+
+  .nav-link:hover .nav-title {
+    color: var(--color-accent);
+  }
+
+  .nav-date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .back-link {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: inline-block;
+    text-decoration: none;
+  }
+
+  .back-link:hover,
+  .back-link:focus {
+    background-color: var(--color-accent);
+    color: white;
+    text-decoration: none;
+  }
+
+  @media (max-width: 768px) {
+    .newsletter-header h1 {
+      font-size: 2.25rem;
+    }
+
+    .newsletter-content {
+      font-size: 1rem;
+    }
+
+    .newsletter-content :global(h1) {
+      font-size: 2rem;
+    }
+
+    .newsletter-content :global(h2) {
+      font-size: 1.75rem;
+    }
+
+    .newsletter-content :global(h3) {
+      font-size: 1.25rem;
+    }
+
+    .newsletter-pagination {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) * 1.5);
+    }
+
+    .nav-link {
+      max-width: none;
+    }
+
+    .next-newsletter {
+      margin-left: 0;
+    }
+
+    .nav-title {
+      font-size: 0.9rem;
+    }
+
+    .quicklinks {
+      margin: calc(var(--grid-unit) * 1.5) 0 calc(var(--grid-unit) * 3) 0;
+      padding: 0 calc(var(--grid-unit));
+    }
+
+    .quicklink {
+      font-size: 0.8rem;
+      padding: calc(var(--grid-unit) / 2);
+    }
+
+    .newsletter-meta {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) * 1.5);
+      align-items: flex-start;
+    }
+
+    .newsletter-actions {
+      align-self: stretch;
+    }
+
+    .back-to-newsletters {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>
