@@ -1,5 +1,5 @@
 ---
-title: "Thursday Meeting"
+title: "One-off Wednesday Meeting"
 date: 2025-08-20
 startTime: "17:00" # 5:00 PM
 duration: 1 # 1 hour
@@ -12,29 +12,69 @@ assignments: []
 ---
 
 # Team Meeting
-**Date:** August 20, 2025  
-**FIRST LEGO League UNEARTHED™ Season**
 
 ## Meeting Agenda
 
 ### Robot Design Review
-- Review current robot design and identify improvements
-- Test attachment mechanisms
-- Discuss sensor placement and calibration
-
-### Mission Strategy Planning
-- Analyze mission requirements and scoring opportunities
-- Prioritize missions based on difficulty and point value
-- Plan robot run sequences
+- Review Nautiq box robot 
+- Test attachment mechanisms - including "pinless" drop on attachments
 
 ### Programming Session
-- Work on autonomous navigation code
-- Test and refine mission-specific programs
-- Debug sensor readings and motor control
+- Introduction to Python programming in pybricks
+- Write simple code
+- Test running with and without 'gyro'
 
 ## Meeting Notes
 
 *Meeting notes will be added here after the meeting*
+
+## Code Samples
+
+Here are the Python code examples we worked on during the programming session:
+
+```python
+from pybricks.hubs import PrimeHub
+from pybricks.parameters import Direction, Port, Button, Stop
+from pybricks.pupdevices import Motor
+from pybricks.robotics import DriveBase
+from pybricks.tools import wait
+
+
+# We're using a prime hub!
+prime_hub = PrimeHub()
+
+# Setting up the left motor
+left = Motor(Port.B, Direction.COUNTERCLOCKWISE)
+right = Motor(Port.F, Direction.CLOCKWISE)
+
+# Tell setup a drive base by defining left wheel/right wheel and wheelbase sizes
+robot = DriveBase(left, right, 55.6, 112)
+
+# do we want to use the gyro?
+robot.use_gyro(True)
+
+robot.settings(straight_speed=500,straight_acceleration=300,turn_rate=150,turn_acceleration=300)
+
+robot.straight(260)
+robot.turn(90)
+robot.straight(1000)
+robot.turn(-90)
+robot.straight(405)
+robot.turn(90)
+robot.straight(545)
+robot.turn(90)
+robot.straight(666)
+robot.turn(180)
+robot.straight(666)
+robot.turn(-90)
+robot.straight(545)
+robot.turn(-90)
+robot.straight(405)
+robot.turn(90)
+robot.straight(1000)
+robot.turn(90)
+robot.straight(-260)
+```
 
 ## Next Steps
 

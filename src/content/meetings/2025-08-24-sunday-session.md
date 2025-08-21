@@ -1,8 +1,8 @@
 ---
-title: "Sunday Session"
+title: "Regular FLL Meeting"
 date: 2025-08-24
-startTime: "16:30" # 4:30 PM
-duration: 1.5 # 1.5 hours
+startTime: "15:30" # 3:30 PM
+duration: 2.5 # 2.5 hours
 location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:
   - "Extended Programming Workshop"
@@ -12,8 +12,6 @@ assignments: []
 ---
 
 # Sunday Session
-**Date:** August 24, 2025  
-**FIRST LEGO League UNEARTHED™ Season**
 
 Steve H is here
 Steve S is here

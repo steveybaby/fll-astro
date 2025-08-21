@@ -50,8 +50,6 @@ assignments:
 ---
 
 # Season Kickoff Meeting
-**Date:** August 10, 2025  
-**FIRST LEGO League UNEARTHED™ Season**
 
 ## Meeting Agenda
 

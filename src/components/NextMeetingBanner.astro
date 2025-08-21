@@ -27,8 +27,9 @@ const meetings = meetingsRaw.map((m) => {
 });
 
 const now = new Date();
+const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 const futureMeetings = meetings
-  .filter(m => m._date >= now)
+  .filter(m => m._date >= todayStart)
   .sort((a, b) => a._date.getTime() - b._date.getTime());
 
 const nextMeeting = futureMeetings[0] || null;

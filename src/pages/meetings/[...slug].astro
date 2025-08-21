@@ -145,6 +145,26 @@ const isFutureMeeting = raw >= now;
 
     <div class="meeting-content">
       <Content />
+      
+      <!-- Auto-inject meeting date if not present -->
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Find the first h1 in meeting content and add date after it
+          const meetingContent = document.querySelector('.meeting-content');
+          const firstH1 = meetingContent?.querySelector('h1');
+          if (firstH1) {
+            // Check if date already exists in the content
+            const contentText = meetingContent.textContent;
+            if (!contentText.includes('Date:')) {
+              const dateP = document.createElement('p');
+              dateP.innerHTML = `<strong>Date:</strong> ${displayWithDay}<br><strong>FIRST LEGO League UNEARTHED™ Season</strong>`;
+              dateP.style.marginBottom = 'calc(var(--grid-unit) * 3)';
+              dateP.style.color = 'var(--color-text-secondary)';
+              firstH1.parentNode.insertBefore(dateP, firstH1.nextSibling);
+            }
+          }
+        });
+      </script>
     </div>
 
     {data.assignments && data.assignments.length > 0 && (
@@ -534,6 +554,89 @@ const isFutureMeeting = raw >= now;
     font-style: italic;
   }
 
+  /* Code block styling */
+  .meeting-content :global(.code-block-container) {
+    position: relative;
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .meeting-content :global(.code-block-header) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+  }
+
+  .meeting-content :global(.code-block-language) {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .meeting-content :global(.code-copy-btn) {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .meeting-content :global(.code-copy-btn:hover),
+  .meeting-content :global(.code-copy-btn:focus) {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .meeting-content :global(.code-copy-btn.copied) {
+    background: #22c55e;
+  }
+
+  .meeting-content :global(pre) {
+    margin: 0;
+    border-radius: 0 0 8px 8px;
+    border: 2px solid var(--color-border);
+    border-top: none;
+  }
+
+  .meeting-content :global(.code-block-container pre) {
+    background: var(--color-background);
+    padding: calc(var(--grid-unit) * 2);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .meeting-content :global(code) {
+    font-family: var(--font-mono);
+    background: var(--color-surface);
+    padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2);
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: var(--color-accent);
+  }
+
+  .meeting-content :global(pre code) {
+    background: transparent;
+    padding: 0;
+    color: var(--color-text-primary);
+    border-radius: 0;
+  }
+
   .meeting-photos {
     margin-top: calc(var(--grid-unit) * 6);
   }
@@ -779,5 +882,68 @@ const isFutureMeeting = raw >= now;
         popup.style.display = 'none';
       }
     });
+
+    // Code block copy functionality
+    function enhanceCodeBlocks() {
+      const codeBlocks = document.querySelectorAll('pre code');
+      
+      codeBlocks.forEach((codeElement) => {
+        const preElement = codeElement.parentElement;
+        const language = codeElement.className.replace('language-', '') || 'code';
+        
+        // Create container
+        const container = document.createElement('div');
+        container.className = 'code-block-container';
+        
+        // Create header with language and copy button
+        const header = document.createElement('div');
+        header.className = 'code-block-header';
+        
+        const languageLabel = document.createElement('span');
+        languageLabel.className = 'code-block-language';
+        languageLabel.textContent = language;
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'code-copy-btn';
+        copyBtn.textContent = 'Copy';
+        
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(codeElement.textContent);
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+              copyBtn.textContent = 'Copy';
+              copyBtn.classList.remove('copied');
+            }, 2000);
+          } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = codeElement.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+              copyBtn.textContent = 'Copy';
+              copyBtn.classList.remove('copied');
+            }, 2000);
+          }
+        });
+        
+        header.appendChild(languageLabel);
+        header.appendChild(copyBtn);
+        
+        // Insert container before pre element
+        preElement.parentNode.insertBefore(container, preElement);
+        container.appendChild(header);
+        container.appendChild(preElement);
+      });
+    }
+
+    // Enhance code blocks after DOM is loaded
+    enhanceCodeBlocks();
   });
 </script>

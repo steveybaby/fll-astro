@@ -16,8 +16,6 @@ assignments: []
 ---
 
 # Setup and Review Challenges
-**Date:** August 17, 2025  
-**FIRST LEGO League UNEARTHED™ Season**
 
 ## Meeting Agenda
 

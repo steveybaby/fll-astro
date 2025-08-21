@@ -1,8 +1,8 @@
 ---
-title: "Sunday Session"
+title: "Regular FLL Meeting"
 date: 2025-09-14
-startTime: "16:30" # 4:30 PM
-duration: 1.5 # 1.5 hours
+startTime: "15:30" # 3:30 PM
+duration: 2.5 # 2.5 hours
 location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:
   - "Final Innovation Project Polish"
@@ -12,8 +12,6 @@ assignments: []
 ---
 
 # Sunday Session
-**Date:** September 14, 2025  
-**FIRST LEGO League UNEARTHED™ Season**
 
 ## Meeting Agenda
 
