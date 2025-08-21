@@ -1,5 +1,5 @@
 ---
-title: "Regular FLL Meeting"
+title: "FLL Meeting in Oakland"
 date: 2025-09-07
 startTime: "15:30" # 3:30 PM
 duration: 2.5 # 2.5 hours
@@ -12,6 +12,7 @@ assignments: []
 ---
 
 # Sunday Session
+*NOTE: This meeting will be at Steve Schimmels house in Oakland*
 
 ## Meeting Agenda
 
