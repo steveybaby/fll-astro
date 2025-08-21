@@ -3,7 +3,7 @@ title: "Regular FLL Meeting"
 date: 2025-09-07
 startTime: "15:30" # 3:30 PM
 duration: 2.5 # 2.5 hours
-location: "188 Calle La Montana, Moraga, CA, 94556"
+location: "3659 Monterey Blvd, Oakland CA 94619, United States"
 agenda:
   - "Innovation Project Prototype"
   - "Team Presentation Practice"
