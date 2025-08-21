@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Layout from '../../components/Layout.astro';
 import R2PhotoGallery from '../../components/R2PhotoGallery.astro';
 import RSVPComponent from '../../components/RSVPComponent.astro';
+import SnackDutyComponent from '../../components/SnackDutyComponent.astro';
 import ModelCard from '../../components/ModelCard.astro';
 import { formatMeetingTime } from '../../utils/meeting-time.ts';
 
@@ -143,6 +144,11 @@ const isFutureMeeting = raw >= now;
       <RSVPComponent meetingDate={isoDate} />
     )}
 
+    <!-- Snack Duty Component - Show for future meetings -->
+    {isFutureMeeting && (
+      <SnackDutyComponent meetingDate={isoDate} />
+    )}
+
     <div class="meeting-content">
       <Content />
       
@@ -174,6 +180,11 @@ const isFutureMeeting = raw >= now;
     <!-- RSVP Component - Show at bottom for past meetings -->
     {!isFutureMeeting && (
       <RSVPComponent meetingDate={isoDate} />
+    )}
+
+    <!-- Snack Duty Component - Show for past meetings -->
+    {!isFutureMeeting && (
+      <SnackDutyComponent meetingDate={isoDate} />
     )}
 
     <!-- R2 Photo Gallery System -->

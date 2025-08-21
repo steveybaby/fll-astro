@@ -1,0 +1,280 @@
+---
+// Snack Duty display component for meeting pages
+interface Props {
+  meetingDate: string; // YYYY-MM-DD format
+}
+
+const { meetingDate } = Astro.props;
+
+// API endpoint - same as snacks page
+const SNACK_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
+
+// Children list
+const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
+---
+
+<div class="snack-duty-section">
+  <h3 class="snack-duty-title">🍰 Snack Duty</h3>
+  
+  <div class="snack-duty-loading" id="snack-duty-loading">
+    <div class="loading-spinner"></div>
+    <span>Loading snack assignment...</span>
+  </div>
+  
+  <div class="snack-duty-content" id="snack-duty-content" style="display: none;">
+    <div class="snack-duty-assignment" id="snack-duty-assignment">
+      <!-- Will be populated by JavaScript -->
+    </div>
+    
+    <div class="snack-duty-actions">
+      <a href="/snacks" class="snack-signup-link">📝 Manage Snack Signups</a>
+    </div>
+  </div>
+  
+  <div class="snack-duty-error" id="snack-duty-error" style="display: none;">
+    <p>Unable to load snack assignment</p>
+    <a href="/snacks" class="snack-signup-link">📝 Go to Snack Signups</a>
+  </div>
+</div>
+
+<style>
+  .snack-duty-section {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    padding: calc(var(--grid-unit) * 3);
+    margin: calc(var(--grid-unit) * 4) 0;
+  }
+
+  .snack-duty-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    line-height: 1.2;
+  }
+
+  .snack-duty-loading {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit));
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--color-border);
+    border-top: 2px solid var(--color-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .snack-duty-assignment {
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .snack-assigned {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit));
+    padding: calc(var(--grid-unit) * 2);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 8px;
+  }
+
+  .snack-assigned-icon {
+    font-size: 1.5rem;
+  }
+
+  .snack-assigned-text {
+    font-family: var(--font-heading-secondary);
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .snack-assigned-family {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .snack-unassigned {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit));
+    padding: calc(var(--grid-unit) * 2);
+    background: linear-gradient(135deg, rgba(156, 163, 175, 0.15) 0%, rgba(156, 163, 175, 0.05) 100%);
+    border: 1px solid rgba(156, 163, 175, 0.3);
+    border-radius: 8px;
+  }
+
+  .snack-unassigned-icon {
+    font-size: 1.5rem;
+  }
+
+  .snack-unassigned-text {
+    font-family: var(--font-heading-secondary);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  .snack-duty-actions {
+    border-top: 1px solid var(--color-border);
+    padding-top: calc(var(--grid-unit) * 2);
+  }
+
+  .snack-signup-link {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--grid-unit) / 2);
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    background: var(--color-accent);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-family: var(--font-heading-secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+  }
+
+  .snack-signup-link:hover {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .snack-duty-error {
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 768px) {
+    .snack-duty-section {
+      padding: calc(var(--grid-unit) * 2);
+      margin: calc(var(--grid-unit) * 3) 0;
+    }
+
+    .snack-duty-title {
+      font-size: 1.25rem;
+    }
+
+    .snack-assigned,
+    .snack-unassigned {
+      padding: calc(var(--grid-unit) * 1.5);
+    }
+
+    .snack-signup-link {
+      font-size: 0.8rem;
+      padding: calc(var(--grid-unit) * 0.75) calc(var(--grid-unit) * 1.5);
+    }
+  }
+</style>
+
+<script define:vars={{ SNACK_API_URL, meetingDate, children }}>
+  // Snack Duty Component JavaScript
+  class SnackDutyDisplay {
+    constructor() {
+      this.apiUrl = SNACK_API_URL;
+      this.meetingDate = meetingDate;
+      this.children = children;
+      
+      this.init();
+    }
+
+    async init() {
+      await this.loadSnackAssignment();
+    }
+
+    async loadSnackAssignment() {
+      try {
+        // Add cache-busting parameter
+        const cacheBuster = new Date().getTime();
+        const response = await fetch(`${this.apiUrl}?action=getSnacks&_cb=${cacheBuster}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        this.renderSnackAssignment(data);
+        this.showContent();
+        
+      } catch (error) {
+        console.error('Failed to load snack assignment:', error);
+        this.showError();
+      }
+    }
+
+    renderSnackAssignment(allData) {
+      // Find assignment for this meeting
+      let assignedChild = null;
+      
+      allData.forEach(meetingData => {
+        const apiDateOnly = meetingData.meetingDate.includes('T') 
+          ? meetingData.meetingDate.split('T')[0] 
+          : meetingData.meetingDate;
+        
+        if (apiDateOnly === this.meetingDate) {
+          // Find who has the cake assignment
+          meetingData.kids.forEach(kid => {
+            if (kid.status === '🍰') {
+              assignedChild = kid.name;
+            }
+          });
+        }
+      });
+
+      const assignmentDiv = document.getElementById('snack-duty-assignment');
+      if (!assignmentDiv) return;
+
+      if (assignedChild) {
+        assignmentDiv.innerHTML = `
+          <div class="snack-assigned">
+            <div class="snack-assigned-icon">🍰</div>
+            <div class="snack-assigned-text">
+              <span class="snack-assigned-family">${assignedChild}'s family</span> is bringing snacks
+            </div>
+          </div>
+        `;
+      } else {
+        assignmentDiv.innerHTML = `
+          <div class="snack-unassigned">
+            <div class="snack-unassigned-icon">❓</div>
+            <div class="snack-unassigned-text">
+              No one assigned for snacks yet
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    showContent() {
+      document.getElementById('snack-duty-loading').style.display = 'none';
+      document.getElementById('snack-duty-error').style.display = 'none';
+      document.getElementById('snack-duty-content').style.display = 'block';
+    }
+
+    showError() {
+      document.getElementById('snack-duty-loading').style.display = 'none';
+      document.getElementById('snack-duty-content').style.display = 'none';
+      document.getElementById('snack-duty-error').style.display = 'block';
+    }
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    new SnackDutyDisplay();
+  });
+</script>
