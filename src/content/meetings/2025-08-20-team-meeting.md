@@ -25,8 +25,13 @@ assignments: []
 - Test running with and without 'gyro'
 
 ## Meeting Notes
-
-*Meeting notes will be added here after the meeting*
+- Steve reviewed the "Nautiq" box robot. Very nimble, very powerful
+- Using "pinless" attachments we can quickly change FLL attachments. 
+- Reviewed and learned Python coding with pybricks. 
+- Kids are nethusiastic about continuing!
+- Saw how pybricks can make auto incrementing program selection
+- Asher was team coder! He wrote code to traverse the game board.
+- Also wrote code to come back again. Well done Asher!!!
 
 ## Code Samples
 
@@ -75,7 +80,3 @@ robot.straight(1000)
 robot.turn(90)
 robot.straight(-260)
 ```
-
-## Next Steps
-
-*Action items and assignments will be documented here*
