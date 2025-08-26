@@ -46,10 +46,62 @@ const allContent = [
   }))
 ];
 
-// Sort by file modification time (most recently modified first) and take the most recent 4 items
-const recentContent = allContent
-  .sort((a: any, b: any) => b.modTime.getTime() - a.modTime.getTime())
-  .slice(0, 4);
+// Smart ordering: Prioritize newsletters, then related meetings, in chronological order
+function createSmartOrdering(content: any[]) {
+  // Separate content types
+  const newsletters = content.filter(item => item.type === 'newsletter')
+    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+  const meetings = content.filter(item => item.type === 'meeting')
+    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+  const blogs = content.filter(item => item.type === 'blog')
+    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+  const smartOrder = [];
+  
+  // For each newsletter, add it and find the closest meeting
+  newsletters.forEach(newsletter => {
+    smartOrder.push(newsletter);
+    
+    // Find meeting that's closest in date to this newsletter
+    const newsletterDate = new Date(newsletter.data.date);
+    let closestMeeting = null;
+    let closestDistance = Infinity;
+    
+    meetings.forEach(meeting => {
+      const meetingDate = new Date(meeting.data.date);
+      const distance = Math.abs(meetingDate.getTime() - newsletterDate.getTime());
+      
+      // Prefer meetings that are on or before the newsletter date (meetings that the newsletter reports on)
+      const isPriorMeeting = meetingDate <= newsletterDate;
+      const adjustedDistance = isPriorMeeting ? distance : distance * 2; // Favor prior meetings
+      
+      if (adjustedDistance < closestDistance && !smartOrder.includes(meeting)) {
+        closestMeeting = meeting;
+        closestDistance = adjustedDistance;
+      }
+    });
+    
+    if (closestMeeting) {
+      smartOrder.push(closestMeeting);
+    }
+  });
+  
+  // Add any remaining meetings not already included
+  meetings.forEach(meeting => {
+    if (!smartOrder.includes(meeting)) {
+      smartOrder.push(meeting);
+    }
+  });
+  
+  // Add any blog posts
+  blogs.forEach(blog => {
+    smartOrder.push(blog);
+  });
+  
+  return smartOrder;
+}
+
+const recentContent = createSmartOrdering(allContent).slice(0, 4);
 ---
 
 <Layout title="Piedmont Makers Club FLL Challenge Team" description="Welcome to our FIRST Lego League team website! Follow our journey through the FLL UNEARTHED™ season with meeting notes, robot builds, and competition preparations." showSidebar={false}>
