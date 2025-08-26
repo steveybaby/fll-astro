@@ -7,10 +7,11 @@ const meetingsRaw = await getCollection('meetings');
 // Process meetings similar to meeting-plans page
 const fmtISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' });
 const fmtDisplay = new Intl.DateTimeFormat('en-US', {
+  weekday: 'short',
   year: 'numeric',
   month: 'long',
   day: 'numeric',
-  timeZone: 'UTC',
+  timeZone: 'America/Los_Angeles', // Use Pacific Time for California
 });
 
 const meetings = meetingsRaw.map((m) => {

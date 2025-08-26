@@ -112,11 +112,18 @@ function createSmartOrdering(content: any[]) {
 // For now, let's just show the most recent past content first (simple approach)
 const recentContent = allContent
   .filter(item => {
-    const itemDate = new Date(item.data.date);
+    // Handle dates consistently with Pacific Time in mind
+    const itemDate = item.data.date instanceof Date 
+      ? item.data.date 
+      : new Date(`${item.data.date}T12:00:00-07:00`); // Parse as noon Pacific Time
     const now = new Date();
     return itemDate <= now; // Only show past/completed content
   })
-  .sort((a: any, b: any) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .sort((a: any, b: any) => {
+    const aDate = a.data.date instanceof Date ? a.data.date : new Date(`${a.data.date}T12:00:00-07:00`);
+    const bDate = b.data.date instanceof Date ? b.data.date : new Date(`${b.data.date}T12:00:00-07:00`);
+    return bDate.getTime() - aDate.getTime();
+  })
   .slice(0, 4);
 ---
 
@@ -170,14 +177,20 @@ const recentContent = allContent
                 <div class="demo-post-meta">
                   <time class="demo-post-date" datetime={item.data.date}>
                     {(() => {
-                      // Safely handle different date formats
+                      // Safely handle different date formats with California timezone in mind
                       let dateObj;
                       if (item.data.date instanceof Date) {
                         dateObj = item.data.date;
                       } else if (typeof item.data.date === 'string') {
-                        // If it's already YYYY-MM-DD format, append time for parsing
-                        const dateStr = item.data.date.includes('T') ? item.data.date : `${item.data.date}T12:00:00`;
-                        dateObj = new Date(dateStr);
+                        // For YYYY-MM-DD format, parse as noon Pacific Time to avoid timezone shifts
+                        if (item.data.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                          // Parse as noon in Pacific Time to avoid date shifting
+                          dateObj = new Date(`${item.data.date}T12:00:00-07:00`);
+                        } else {
+                          // Handle other formats
+                          const dateStr = item.data.date.includes('T') ? item.data.date : `${item.data.date}T12:00:00`;
+                          dateObj = new Date(dateStr);
+                        }
                       } else {
                         dateObj = new Date(item.data.date);
                       }
@@ -191,7 +204,8 @@ const recentContent = allContent
                         weekday: 'short',
                         year: 'numeric',
                         month: 'long',
-                        day: 'numeric'
+                        day: 'numeric',
+                        timeZone: 'America/Los_Angeles' // Force Pacific Time display
                       });
                     })()}
                   </time>
