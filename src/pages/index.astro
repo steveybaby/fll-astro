@@ -112,16 +112,19 @@ function createSmartOrdering(content: any[]) {
 // For now, let's just show the most recent past content first (simple approach)
 const recentContent = allContent
   .filter(item => {
-    // Handle dates consistently with Pacific Time in mind
-    const itemDate = item.data.date instanceof Date 
-      ? item.data.date 
-      : new Date(`${item.data.date}T12:00:00-07:00`); // Parse as noon Pacific Time
+    // Always reparse dates to ensure Pacific time handling
+    const dateStr = item.data.date instanceof Date 
+      ? item.data.date.toISOString().split('T')[0]  // Convert Date back to YYYY-MM-DD
+      : item.data.date;
+    const itemDate = new Date(`${dateStr}T12:00:00-07:00`); // Parse as noon Pacific Time
     const now = new Date();
     return itemDate <= now; // Only show past/completed content
   })
   .sort((a: any, b: any) => {
-    const aDate = a.data.date instanceof Date ? a.data.date : new Date(`${a.data.date}T12:00:00-07:00`);
-    const bDate = b.data.date instanceof Date ? b.data.date : new Date(`${b.data.date}T12:00:00-07:00`);
+    const aDateStr = a.data.date instanceof Date ? a.data.date.toISOString().split('T')[0] : a.data.date;
+    const bDateStr = b.data.date instanceof Date ? b.data.date.toISOString().split('T')[0] : b.data.date;
+    const aDate = new Date(`${aDateStr}T12:00:00-07:00`);
+    const bDate = new Date(`${bDateStr}T12:00:00-07:00`);
     return bDate.getTime() - aDate.getTime();
   })
   .slice(0, 4);
@@ -177,23 +180,12 @@ const recentContent = allContent
                 <div class="demo-post-meta">
                   <time class="demo-post-date" datetime={item.data.date}>
                     {(() => {
-                      // Safely handle different date formats with California timezone in mind
-                      let dateObj;
-                      if (item.data.date instanceof Date) {
-                        dateObj = item.data.date;
-                      } else if (typeof item.data.date === 'string') {
-                        // For YYYY-MM-DD format, parse as noon Pacific Time to avoid timezone shifts
-                        if (item.data.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                          // Parse as noon in Pacific Time to avoid date shifting
-                          dateObj = new Date(`${item.data.date}T12:00:00-07:00`);
-                        } else {
-                          // Handle other formats
-                          const dateStr = item.data.date.includes('T') ? item.data.date : `${item.data.date}T12:00:00`;
-                          dateObj = new Date(dateStr);
-                        }
-                      } else {
-                        dateObj = new Date(item.data.date);
-                      }
+                      // Always reparse dates to ensure Pacific time handling
+                      const dateStr = item.data.date instanceof Date 
+                        ? item.data.date.toISOString().split('T')[0]  // Convert Date back to YYYY-MM-DD
+                        : item.data.date;
+                      
+                      let dateObj = new Date(`${dateStr}T12:00:00-07:00`); // Parse as noon Pacific Time to avoid date shifts
                       
                       // Check if date is valid
                       if (isNaN(dateObj.getTime())) {

@@ -4,7 +4,7 @@ import { formatMeetingTime } from '../utils/meeting-time.ts';
 
 const meetingsRaw = await getCollection('meetings');
 
-// Process meetings similar to meeting-plans page
+// Process meetings with Pacific Time parsing
 const fmtISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' });
 const fmtDisplay = new Intl.DateTimeFormat('en-US', {
   weekday: 'short',
@@ -15,9 +15,12 @@ const fmtDisplay = new Intl.DateTimeFormat('en-US', {
 });
 
 const meetings = meetingsRaw.map((m) => {
-  const raw = m.data.date instanceof Date
-    ? m.data.date
-    : new Date(`${m.data.date}T00:00:00Z`);
+  // Always reparse the date to ensure Pacific time handling
+  const dateStr = m.data.date instanceof Date 
+    ? m.data.date.toISOString().split('T')[0]  // Convert Date back to YYYY-MM-DD
+    : m.data.date;
+  
+  const raw = new Date(`${dateStr}T12:00:00-07:00`); // Parse as noon Pacific Time to avoid date shifts
 
   return {
     ...m,
