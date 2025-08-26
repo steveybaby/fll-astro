@@ -5,28 +5,31 @@ import { formatMeetingTime } from '../utils/meeting-time.ts';
 
 const meetingsRaw = await getCollection('meetings');
 
-// Reuse formatters (faster than creating inside .map)
+// Reuse formatters (faster than creating inside .map) - Use Pacific Time for California team
 const fmtISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' }); // YYYY-MM-DD
 const fmtDay = new Intl.DateTimeFormat('en-US', {
   weekday: 'short',
-  timeZone: 'UTC',
+  timeZone: 'America/Los_Angeles', // Use Pacific Time for California
 });
 const fmtDisplay = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
-  timeZone: 'UTC',
+  timeZone: 'America/Los_Angeles', // Use Pacific Time for California
 });
 
-// Normalize each item's date
+// Normalize each item's date with Pacific Time parsing
 const meetings = meetingsRaw.map((m) => {
-  const raw = m.data.date instanceof Date
-    ? m.data.date
-    : new Date(`${m.data.date}T12:00:00`); // Use noon to avoid timezone shifts
+  // Always reparse the date to ensure Pacific time handling
+  const dateStr = m.data.date instanceof Date 
+    ? m.data.date.toISOString().split('T')[0]  // Convert Date back to YYYY-MM-DD
+    : m.data.date;
+  
+  const raw = new Date(`${dateStr}T12:00:00-07:00`); // Parse as noon Pacific Time to avoid date shifts
 
   return {
     ...m,
-    _date: raw,                       // actual Date (UTC midnight)
+    _date: raw,                       // actual Date (Pacific noon)
     _iso: fmtISO.format(raw),         // 'YYYY-MM-DD' for datetime=
     _display: `${fmtDay.format(raw)}, ${fmtDisplay.format(raw)}`, // day prefix + human format
   };
