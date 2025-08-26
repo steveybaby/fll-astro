@@ -46,14 +46,22 @@ const allContent = [
   }))
 ];
 
-// Smart ordering: Prioritize newsletters, then related meetings, in chronological order
+// Smart ordering: Only show past/completed content, prioritize by what actually happened most recently
 function createSmartOrdering(content: any[]) {
-  // Separate content types
-  const newsletters = content.filter(item => item.type === 'newsletter')
+  const now = new Date();
+  
+  // Filter to only show past/completed content
+  const pastContent = content.filter(item => {
+    const itemDate = new Date(item.data.date);
+    return itemDate <= now; // Only show content from today or earlier
+  });
+  
+  // Separate content types (already filtered to past only)
+  const newsletters = pastContent.filter(item => item.type === 'newsletter')
     .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-  const meetings = content.filter(item => item.type === 'meeting')
+  const meetings = pastContent.filter(item => item.type === 'meeting')
     .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-  const blogs = content.filter(item => item.type === 'blog')
+  const blogs = pastContent.filter(item => item.type === 'blog')
     .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
   const smartOrder = [];
@@ -101,7 +109,15 @@ function createSmartOrdering(content: any[]) {
   return smartOrder;
 }
 
-const recentContent = createSmartOrdering(allContent).slice(0, 4);
+// For now, let's just show the most recent past content first (simple approach)
+const recentContent = allContent
+  .filter(item => {
+    const itemDate = new Date(item.data.date);
+    const now = new Date();
+    return itemDate <= now; // Only show past/completed content
+  })
+  .sort((a: any, b: any) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .slice(0, 4);
 ---
 
 <Layout title="Piedmont Makers Club FLL Challenge Team" description="Welcome to our FIRST Lego League team website! Follow our journey through the FLL UNEARTHED™ season with meeting notes, robot builds, and competition preparations." showSidebar={false}>
