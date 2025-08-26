@@ -109,12 +109,34 @@ function updateRSVP(meetingDate, kidName, status) {
     const data = sheet.getDataRange().getValues();
     const headers = data[0];
     
-    // Find or create the meeting row
+    // Find or create the meeting row - bulletproof comparison
     let meetingRow = -1;
     for (let i = 1; i < data.length; i++) {
-      if (data[i][0] && data[i][0].toString() === meetingDate.toString()) {
-        meetingRow = i + 1; // +1 for 1-based indexing
+      const rowDate = data[i][0];
+      
+      if (!rowDate) continue; // Skip empty cells
+      
+      // Convert both to strings and trim whitespace
+      const rowDateStr = String(rowDate).trim();
+      const meetingDateStr = String(meetingDate).trim();
+      
+      // Try exact match first
+      if (rowDateStr === meetingDateStr) {
+        meetingRow = i + 1;
         break;
+      }
+      
+      // If it's a Date object, convert to YYYY-MM-DD
+      if (rowDate instanceof Date) {
+        const year = rowDate.getFullYear();
+        const month = String(rowDate.getMonth() + 1).padStart(2, '0');
+        const day = String(rowDate.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        
+        if (formattedDate === meetingDateStr) {
+          meetingRow = i + 1;
+          break;
+        }
       }
     }
     

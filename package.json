@@ -10,7 +10,8 @@
     "check": "astro check",
     "lint": "eslint . --ext .js,.ts,.astro",
     "format": "prettier --write .",
-    "process-photos": "node scripts/process-photos-r2.js"
+    "process-photos": "node scripts/process-photos-r2.js",
+    "sync-photos": "node scripts/process-photos-r2.js"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",
