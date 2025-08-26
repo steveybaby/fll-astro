@@ -8,8 +8,9 @@ const blogPosts = await getCollection('blog', ({ data }) => {
   return data.draft !== true;
 });
 const meetings = await getCollection('meetings');
+const newsletters = await getCollection('newsletters');
 
-// Combine both blog posts and meetings, adding a type field
+// Combine all content types, adding a type field
 const allContent = [
   ...blogPosts.map(post => ({
     ...post,
@@ -20,12 +21,32 @@ const allContent = [
     ...meeting,
     type: 'meeting',
     url: `/meetings/${meeting.slug}/`
+  })),
+  ...newsletters.map(newsletter => ({
+    ...newsletter,
+    type: 'newsletter',
+    url: `/newsletters/${newsletter.slug}/`
   }))
 ];
 
-// Sort by date and take the most recent 5 items
+// Use same smart ordering as homepage - show only completed content chronologically
 const recentPosts = allContent
-  .sort((a: any, b: any) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .filter(item => {
+    // Always reparse dates to ensure Pacific time handling
+    const dateStr = item.data.date instanceof Date 
+      ? item.data.date.toISOString().split('T')[0]  // Convert Date back to YYYY-MM-DD
+      : item.data.date;
+    const itemDate = new Date(`${dateStr}T12:00:00-07:00`); // Parse as noon Pacific Time
+    const now = new Date();
+    return itemDate <= now; // Only show past/completed content
+  })
+  .sort((a: any, b: any) => {
+    const aDateStr = a.data.date instanceof Date ? a.data.date.toISOString().split('T')[0] : a.data.date;
+    const bDateStr = b.data.date instanceof Date ? b.data.date.toISOString().split('T')[0] : b.data.date;
+    const aDate = new Date(`${aDateStr}T12:00:00-07:00`);
+    const bDate = new Date(`${bDateStr}T12:00:00-07:00`);
+    return bDate.getTime() - aDate.getTime();
+  })
   .slice(0, 5);
 
 const categories = [...new Set(blogPosts.flatMap((post: any) => post.data.categories || []))];
@@ -73,13 +94,25 @@ const categories = [...new Set(blogPosts.flatMap((post: any) => post.data.catego
               {post.data.title}
             </a>
             <time class="post-date" datetime={post.data.date}>
-              {new Date(post.data.date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              })}
+              {(() => {
+                // Always reparse dates to ensure Pacific time handling
+                const dateStr = post.data.date instanceof Date 
+                  ? post.data.date.toISOString().split('T')[0]
+                  : post.data.date;
+                const dateObj = new Date(`${dateStr}T12:00:00-07:00`);
+                return dateObj.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                  timeZone: 'America/Los_Angeles' // Use Pacific Time for California
+                });
+              })()}
             </time>
-            <span class="content-type">{post.type === 'blog' ? '📝' : '📅'}</span>
+            <span class="content-type">
+              {post.type === 'blog' ? '📝' : 
+               post.type === 'meeting' ? '📅' : 
+               '📧'}
+            </span>
           </li>
         ))}
       </ul>
