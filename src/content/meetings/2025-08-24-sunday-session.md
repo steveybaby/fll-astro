@@ -16,6 +16,9 @@ assignments: []
 The kids used ChatGPT to narrow down their Innovation Project topic to something that matches both their grade level and interests.
 Luca will continue refining our team logo.
 The kids also brainstormed questions for our upcoming interview with an archaeologist (date TBA).
+Here's a new Llama logo from chatGPT!
+
+![Llama logo](/public/images/llama2.png)
 
 ## Reminders:
 Please subscribe to the LEGO team website and sync the meeting calendar to your own calendar to stay up to date. Weekly newsletters and practice photos will also be posted on the [website](https://fll.sharpers.com/newsletters/) 
