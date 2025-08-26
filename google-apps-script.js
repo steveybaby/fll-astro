@@ -66,9 +66,31 @@ function getRSVPs() {
     // Process each row (skip header)
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
-      const meetingDate = row[0];
+      const rawMeetingDate = row[0];
       
-      if (!meetingDate) continue;
+      if (!rawMeetingDate) continue;
+      
+      // Normalize the date format to YYYY-MM-DD
+      let meetingDate;
+      if (rawMeetingDate instanceof Date) {
+        const year = rawMeetingDate.getFullYear();
+        const month = String(rawMeetingDate.getMonth() + 1).padStart(2, '0');
+        const day = String(rawMeetingDate.getDate()).padStart(2, '0');
+        meetingDate = `${year}-${month}-${day}`;
+      } else {
+        // If it's already a string, try to normalize it
+        const dateStr = String(rawMeetingDate).trim();
+        // If it looks like a date string, try to parse and format it
+        const parsedDate = new Date(dateStr);
+        if (!isNaN(parsedDate.getTime())) {
+          const year = parsedDate.getFullYear();
+          const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+          const day = String(parsedDate.getDate()).padStart(2, '0');
+          meetingDate = `${year}-${month}-${day}`;
+        } else {
+          meetingDate = dateStr; // Keep as-is if we can't parse it
+        }
+      }
       
       const kids = [];
       
