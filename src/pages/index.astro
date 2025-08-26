@@ -2,6 +2,8 @@
 import Layout from '../components/Layout.astro';
 import NextMeetingBanner from '../components/NextMeetingBanner.astro';
 import { getCollection } from 'astro:content';
+import fs from 'fs';
+import path from 'path';
 
 const blogPosts = await getCollection('blog', ({ data }) => {
   return data.draft !== true;
@@ -11,28 +13,42 @@ const newsletters = await getCollection('newsletter', ({ data }) => {
   return data.draft !== true;
 });
 
-// Combine blog posts, meetings, and newsletters, adding a type field
+// Helper function to get file modification time
+function getFileModTime(filePath: string): Date {
+  try {
+    const stats = fs.statSync(filePath);
+    return stats.mtime;
+  } catch (error) {
+    // Fallback to current time if file not found
+    return new Date();
+  }
+}
+
+// Combine blog posts, meetings, and newsletters, adding a type field and modification time
 const allContent = [
   ...blogPosts.map(post => ({
     ...post,
     type: 'blog',
-    url: `/blog/${post.slug}/`
+    url: `/blog/${post.slug}/`,
+    modTime: getFileModTime(path.join(process.cwd(), 'src', 'content', 'blog', `${post.id}.md`))
   })),
   ...meetings.map(meeting => ({
     ...meeting,
     type: 'meeting',
-    url: `/meetings/${meeting.slug}/`
+    url: `/meetings/${meeting.slug}/`,
+    modTime: getFileModTime(path.join(process.cwd(), 'src', 'content', 'meetings', `${meeting.id}.md`))
   })),
   ...newsletters.map(newsletter => ({
     ...newsletter,
     type: 'newsletter',
-    url: `/newsletters/${newsletter.slug}/`
+    url: `/newsletters/${newsletter.slug}/`,
+    modTime: getFileModTime(path.join(process.cwd(), 'src', 'content', 'newsletter', `${newsletter.id}.mdx`))
   }))
 ];
 
-// Sort by date and take the most recent 4 items
+// Sort by file modification time (most recently modified first) and take the most recent 4 items
 const recentContent = allContent
-  .sort((a: any, b: any) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .sort((a: any, b: any) => b.modTime.getTime() - a.modTime.getTime())
   .slice(0, 4);
 ---
 
@@ -85,12 +101,31 @@ const recentContent = allContent
                 
                 <div class="demo-post-meta">
                   <time class="demo-post-date" datetime={item.data.date}>
-                    {new Date(`${item.data.date}T12:00:00`).toLocaleDateString('en-US', {
-                      weekday: 'short',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    {(() => {
+                      // Safely handle different date formats
+                      let dateObj;
+                      if (item.data.date instanceof Date) {
+                        dateObj = item.data.date;
+                      } else if (typeof item.data.date === 'string') {
+                        // If it's already YYYY-MM-DD format, append time for parsing
+                        const dateStr = item.data.date.includes('T') ? item.data.date : `${item.data.date}T12:00:00`;
+                        dateObj = new Date(dateStr);
+                      } else {
+                        dateObj = new Date(item.data.date);
+                      }
+                      
+                      // Check if date is valid
+                      if (isNaN(dateObj.getTime())) {
+                        return 'Invalid date';
+                      }
+                      
+                      return dateObj.toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      });
+                    })()}
                   </time>
                 </div>
                 
