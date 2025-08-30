@@ -867,14 +867,35 @@ const formatMeetingISO = (date) => {
       });
     }
 
-    async loadAllSnackData() {
-      this.showLoading();
+    async loadAllSnackData(opts) {
+      opts = opts || {};
+      if (!opts.background) this.showLoading();
       
+      // Helper with timeout (no object spread)
+      function fetchWithTimeout(input, init, timeoutMs) {
+        init = init || {};
+        timeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 5000;
+        const supportsAbort = typeof AbortController !== 'undefined';
+        const controller = supportsAbort ? new AbortController() : null;
+        const timer = setTimeout(function(){ if (controller) controller.abort(); }, timeoutMs);
+        var p = Promise.race([
+          fetch(input, (function(){
+            var merged = {};
+            for (var k in init) { if (Object.prototype.hasOwnProperty.call(init, k)) merged[k] = init[k]; }
+            if (controller) merged.signal = controller.signal;
+            return merged;
+          })()),
+          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
+        ]);
+        return p.finally(function(){ clearTimeout(timer); });
+      }
+
       try {
         console.log('Loading all snack data');
-        // Add cache-busting parameter to force fresh data
-        const cacheBuster = new Date().getTime();
-        const response = await fetch(`${this.apiUrl}?action=getSnacks&_cb=${cacheBuster}`);
+        const url = new URL(this.apiUrl);
+        url.searchParams.set('action', 'getSnacks');
+        url.searchParams.set('_cb', String(Date.now()));
+        const response = await fetchWithTimeout(url.toString(), { cache: 'no-store' }, 5000);
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -883,13 +904,19 @@ const formatMeetingISO = (date) => {
         const data = await response.json();
         console.log('API response:', data);
         this.currentData = data;
-        
+        this.setCached(data);
         this.renderAllSnackData(data);
         this.showContent();
         
       } catch (error) {
         console.error('Failed to load snack data:', error);
-        this.showError('Unable to load snack signup data');
+        const cached = this.getCached();
+        if (cached) {
+          this.renderAllSnackData(cached);
+          this.showContent();
+        } else {
+          this.showError('Unable to load snack signup data');
+        }
       }
     }
 
@@ -923,6 +950,15 @@ const formatMeetingISO = (date) => {
             console.log('Snack assignment successful');
             this.hideUpdating();
             this.removeSavingState(meetingDate);
+            // Update cache (binary assignment for meeting)
+            const cached = this.getCached();
+            if (cached) {
+              const idx = cached.findIndex(m => (m.meetingDate.includes('T') ? m.meetingDate.split('T')[0] : m.meetingDate) === meetingDate);
+              if (idx >= 0) {
+                cached[idx].kids = [{ name: childName, status: '🍰' }];
+                this.setCached(cached);
+              }
+            }
             return;
           }
         }
@@ -961,6 +997,15 @@ const formatMeetingISO = (date) => {
             // Update UI immediately without full reload
             this.clearMeetingSnackAssignment(meetingDate);
             this.hideUpdating();
+            // Update cache
+            const cached = this.getCached();
+            if (cached) {
+              const idx = cached.findIndex(m => (m.meetingDate.includes('T') ? m.meetingDate.split('T')[0] : m.meetingDate) === meetingDate);
+              if (idx >= 0) {
+                cached[idx].kids = [];
+                this.setCached(cached);
+              }
+            }
             return;
           }
         }
@@ -1117,10 +1162,28 @@ const formatMeetingISO = (date) => {
     hideUpdating() {
       document.getElementById('snack-updating-global').style.display = 'none';
     }
+
+    // Cache helpers
+    getCached() {
+      try {
+        const raw = localStorage.getItem(this.cacheKey);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.fetchedAt) return null;
+        const fresh = Date.now() - parsed.fetchedAt < this.cacheTtlMs;
+        return fresh ? parsed.data : parsed.data; // allow stale while revalidating
+      } catch (e) { return null; }
+    }
+    setCached(data) {
+      try { localStorage.setItem(this.cacheKey, JSON.stringify({ data: data, fetchedAt: Date.now() })); } catch (e) {}
+    }
   }
 
-  // Initialize when DOM is loaded
-  document.addEventListener('DOMContentLoaded', () => {
-    new SnackGrid();
-  });
+  // Initialize when DOM is ready
+  const __initSnackGrid = () => new SnackGrid();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', __initSnackGrid, { once: true });
+  } else {
+    __initSnackGrid();
+  }
 </script>

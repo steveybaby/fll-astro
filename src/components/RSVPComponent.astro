@@ -390,13 +390,25 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
       this.apiUrl = RSVP_API_URL;
       this.children = children;
       this.currentData = null;
+      this.cacheKey = `rsvps:${this.meetingDate}`;
+      this.cacheTtlMs = 2 * 60 * 1000; // 2 minutes
       
       this.init();
     }
 
     async init() {
       this.bindEvents();
-      await this.loadRSVPData();
+      const cached = this.getCached();
+      if (cached) {
+        this.renderRSVPData(cached.kids);
+        this.showContent();
+        // Refresh in background
+        this.loadRSVPData({ background: true });
+      } else {
+        // First load, show compact loader then fetch
+        this.showLoading();
+        await this.loadRSVPData({ background: false });
+      }
     }
 
     bindEvents() {
@@ -438,78 +450,86 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
       });
     }
 
-    async loadRSVPData() {
-      this.showLoading();
+    async loadRSVPData(opts) {
+      opts = opts || {};
+      if (!opts.background) this.showLoading();
+      
+      // Helper with timeout (no object spread)
+      function fetchWithTimeout(input, init, timeoutMs) {
+        init = init || {};
+        timeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 5000;
+        const supportsAbort = typeof AbortController !== 'undefined';
+        const controller = supportsAbort ? new AbortController() : null;
+        const timer = setTimeout(function(){ if (controller) controller.abort(); }, timeoutMs);
+        var p = Promise.race([
+          fetch(input, (function(){
+            var merged = {};
+            for (var k in init) { if (Object.prototype.hasOwnProperty.call(init, k)) merged[k] = init[k]; }
+            if (controller) merged.signal = controller.signal;
+            return merged;
+          })()),
+          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
+        ]);
+        return p.finally(function(){ clearTimeout(timer); });
+      }
       
       try {
-        console.log('Loading RSVP data for meeting:', this.meetingDate);
-        console.log('API URL:', this.apiUrl);
+        // Build filtered URL to reduce payload and add a cache buster
+        const url = new URL(this.apiUrl);
+        url.searchParams.set('action', 'get');
+        url.searchParams.set('meetingDate', this.meetingDate);
+        url.searchParams.set('_cb', String(Date.now()));
         
-        // Use fetch with redirect: 'follow' to automatically handle redirects
-        const response = await fetch(this.apiUrl, {
-          method: 'GET',
-          redirect: 'follow'
-        });
+        const response = await fetchWithTimeout(url.toString(), { method: 'GET', redirect: 'follow', cache: 'no-store' }, 5000);
         
-        console.log('Response status:', response.status, response.statusText);
-        console.log('Response URL:', response.url);
-        console.log('Response headers:', [...response.headers.entries()]);
-        
-        if (!response.ok) {
-          const responseText = await response.text();
-          console.error('Response body:', responseText);
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         
         const data = await response.json();
-        console.log('API response:', data);
         this.currentData = data;
         
         // Find data for this meeting - handle enhanced date formats
         const meetingData = data.find(meeting => {
           const apiDate = meeting.meetingDate;
-          console.log('🔍 Raw meeting date from API:', apiDate, 'Type:', typeof apiDate);
           
           let apiDateOnly;
           if (apiDate.match(/^\d{4}-\d{2}-\d{2}(T|$)/)) {
             // Already in ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
             apiDateOnly = apiDate.split('T')[0];
-            console.log('📅 ISO format detected, converted to:', apiDateOnly);
           } else if (apiDate.includes(' ')) {
             // Full date string like "Sun Aug 10 2025 00:00:00 GMT-0700 (Pacific Daylight Time)"
             const dateObj = new Date(apiDate);
             if (!isNaN(dateObj.getTime())) {
               apiDateOnly = dateObj.toISOString().split('T')[0];
-              console.log('📅 Full date string converted to:', apiDateOnly);
             } else {
               apiDateOnly = apiDate;
-              console.log('❌ Failed to parse date, using as-is:', apiDateOnly);
             }
           } else {
             // Assume it's already in the right format
             apiDateOnly = apiDate;
-            console.log('📅 Using date as-is:', apiDateOnly);
           }
           
-          console.log('Comparing dates:', { apiDate, apiDateOnly, expected: this.meetingDate });
           return apiDateOnly === this.meetingDate;
         });
         
-        console.log('Found meeting data:', meetingData);
-        
         if (meetingData) {
           this.renderRSVPData(meetingData.kids);
+          this.setCached({ kids: meetingData.kids, fetchedAt: Date.now() });
           this.showContent();
         } else {
-          console.error('❌ No meeting data found for date:', this.meetingDate);
-          console.error('Available meeting dates:', data.map(m => m.meetingDate));
-          this.showError(`No RSVP data found for meeting date: ${this.meetingDate}`);
+          if (!opts.background) {
+            this.showError(`No RSVP data found for meeting date: ${this.meetingDate}`);
+          }
         }
         
       } catch (error) {
-        console.error('Failed to load RSVP data:', error);
-        console.error('Error details:', error.message, error.stack);
-        this.showError(`Unable to load RSVP data: ${error.message}`);
+        const cached = this.getCached();
+        if (cached) {
+          // Keep cached view and show a subtle toast
+          this.showTemporaryMessage('⚠️ Using cached RSVPs');
+          this.showContent();
+        } else if (!opts.background) {
+          this.showError(`Unable to load RSVP data: ${error.message || error}`);
+        }
       }
     }
 
@@ -534,6 +554,13 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
         if (response.ok) {
           const result = await response.json();
           if (result.success) {
+            // Update cache so next view is instant
+            const cached = this.getCached();
+            if (cached && Array.isArray(cached.kids)) {
+              const idx = cached.kids.findIndex(k => k.name === childName);
+              if (idx >= 0) cached.kids[idx].status = status;
+              this.setCached({ kids: cached.kids, fetchedAt: Date.now() });
+            }
             // Real API call succeeded - no need to reload, UI is already updated
             this.hideUpdating();
             return;
@@ -553,6 +580,21 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
       } finally {
         this.setButtonsDisabled(false);
       }
+    }
+
+    // Caching helpers (stale-while-revalidate)
+    getCached() {
+      try {
+        const raw = localStorage.getItem(this.cacheKey);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.fetchedAt) return null;
+        const isFresh = Date.now() - parsed.fetchedAt < this.cacheTtlMs;
+        return isFresh ? parsed : parsed; // allow stale for background refresh
+      } catch (e) { return null; }
+    }
+    setCached(value) {
+      try { localStorage.setItem(this.cacheKey, JSON.stringify(value)); } catch (e) {}
     }
     
     updateUIOptimistically(childName, status) {
@@ -713,8 +755,11 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
     }
   }
 
-  // Initialize when DOM is loaded
-  document.addEventListener('DOMContentLoaded', () => {
-    new RSVPComponent();
-  });
+  // Initialize when DOM is ready
+  const __initRSVPComponent = () => new RSVPComponent();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', __initRSVPComponent, { once: true });
+  } else {
+    __initRSVPComponent();
+  }
 </script>

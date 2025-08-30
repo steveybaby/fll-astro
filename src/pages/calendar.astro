@@ -26,22 +26,22 @@ const processedMeetings = meetings.map(meeting => {
 const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 ---
 
-<Layout title="Team Calendar" description="Full calendar view of FLL Llamas team meetings and events" showSidebar={false}>
+<Layout title="Team Calendar" description="Full calendar view of Looting Llamas team meetings and events" showSidebar={false}>
   <div class="calendar-page">
     <header class="calendar-header">
       <div class="header-content">
         <h1>📅 Team Calendar</h1>
-        <p>FLL Llamas meeting schedule and events</p>
+        <p>Looting Llamas meeting schedule and events</p>
       </div>
       
       <div class="calendar-subscribe">
-        <button id="calendar-subscribe-btn" class="subscribe-button" title="Subscribe to FLL Llamas meeting calendar">
+        <button id="calendar-subscribe-btn" class="subscribe-button" title="Subscribe to Looting Llamas meeting calendar">
           📅 Subscribe to Team Calendar
         </button>
         
         <div id="calendar-subscription-popup" class="calendar-popup" style="display: none;">
           <div class="calendar-popup-content">
-            <h4>Subscribe to FLL Llamas Calendar</h4>
+            <h4>Subscribe to Looting Llamas Calendar</h4>
             <p>Copy this URL and add it to your calendar app:</p>
             
             <div class="url-copy-container">

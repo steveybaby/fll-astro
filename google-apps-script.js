@@ -14,14 +14,18 @@ function doGet(e) {
     
     // RSVP Actions
     if (!action || action === 'get') {
-      return getRSVPs();
+      // Optional meetingDate filter to reduce payload
+      const meetingDate = e && e.parameter && e.parameter.meetingDate ? e.parameter.meetingDate : null;
+      return getRSVPs(meetingDate);
     } else if (action === 'update') {
       return updateRSVP(e.parameter.meetingDate, e.parameter.kidName, e.parameter.status);
     }
     
     // Snack Actions
     else if (action === 'getSnacks') {
-      return getSnacks();
+      // Optional meetingDate filter to reduce payload
+      const meetingDate = e && e.parameter && e.parameter.meetingDate ? e.parameter.meetingDate : null;
+      return getSnacks(meetingDate);
     } else if (action === 'assignSnack') {
       return assignSnack(e.parameter.meetingDate, e.parameter.kidName);
     } else if (action === 'removeSnack') {
@@ -47,7 +51,7 @@ function doGet(e) {
 // RSVP FUNCTIONS
 // ============================================================================
 
-function getRSVPs() {
+function getRSVPs(filterDate) {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('RSVPs');
     if (!sheet) {
@@ -111,6 +115,23 @@ function getRSVPs() {
       });
     }
     
+    // If a filterDate is provided, return only that meeting
+    if (filterDate) {
+      const normalizedFilter = String(filterDate).trim();
+      const filtered = meetings.filter(m => {
+        const dateStr = String(m.meetingDate).trim();
+        if (dateStr === normalizedFilter) return true;
+        // Attempt to normalize if date looks parseable
+        const parsed = new Date(dateStr);
+        if (!isNaN(parsed.getTime())) {
+          const iso = `${parsed.getFullYear()}-${String(parsed.getMonth()+1).padStart(2,'0')}-${String(parsed.getDate()).padStart(2,'0')}`;
+          return iso === normalizedFilter;
+        }
+        return false;
+      });
+      return ContentService.createTextOutput(JSON.stringify(filtered)).setMimeType(ContentService.MimeType.JSON);
+    }
+
     return ContentService.createTextOutput(JSON.stringify(meetings)).setMimeType(ContentService.MimeType.JSON);
     
   } catch (error) {
@@ -194,7 +215,7 @@ function updateRSVP(meetingDate, kidName, status) {
 // SNACK FUNCTIONS
 // ============================================================================
 
-function getSnacks() {
+function getSnacks(filterDate) {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Snacks');
     if (!sheet) {
@@ -240,6 +261,22 @@ function getSnacks() {
       });
     }
     
+    // If a filterDate is provided, return only that meeting
+    if (filterDate) {
+      const normalizedFilter = String(filterDate).trim();
+      const filtered = meetings.filter(m => {
+        const dateStr = String(m.meetingDate).trim();
+        if (dateStr === normalizedFilter) return true;
+        const parsed = new Date(dateStr);
+        if (!isNaN(parsed.getTime())) {
+          const iso = `${parsed.getFullYear()}-${String(parsed.getMonth()+1).padStart(2,'0')}-${String(parsed.getDate()).padStart(2,'0')}`;
+          return iso === normalizedFilter;
+        }
+        return false;
+      });
+      return ContentService.createTextOutput(JSON.stringify(filtered)).setMimeType(ContentService.MimeType.JSON);
+    }
+
     return ContentService.createTextOutput(JSON.stringify(meetings)).setMimeType(ContentService.MimeType.JSON);
     
   } catch (error) {

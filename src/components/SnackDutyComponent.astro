@@ -189,31 +189,72 @@ const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
       this.apiUrl = SNACK_API_URL;
       this.meetingDate = meetingDate;
       this.children = children;
+      this.cacheKey = `snacks:${this.meetingDate}`;
+      this.cacheTtlMs = 2 * 60 * 1000; // 2 minutes
       
       this.init();
     }
 
     async init() {
-      await this.loadSnackAssignment();
+      const cached = this.getCached();
+      if (cached) {
+        this.renderSnackAssignment(cached);
+        this.showContent();
+        // Refresh in background
+        this.loadSnackAssignment({ background: true });
+      } else {
+        await this.loadSnackAssignment({ background: false });
+      }
     }
 
-    async loadSnackAssignment() {
+    async loadSnackAssignment(opts) {
+      opts = opts || {};
       try {
-        // Add cache-busting parameter
-        const cacheBuster = new Date().getTime();
-        const response = await fetch(`${this.apiUrl}?action=getSnacks&_cb=${cacheBuster}`);
+        // Helper with timeout (no object spread)
+        function fetchWithTimeout(input, init, timeoutMs) {
+          init = init || {};
+          timeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 5000;
+          const supportsAbort = typeof AbortController !== 'undefined';
+          const controller = supportsAbort ? new AbortController() : null;
+          const timer = setTimeout(function(){ if (controller) controller.abort(); }, timeoutMs);
+          var p = Promise.race([
+            fetch(input, (function(){
+              var merged = {};
+              for (var k in init) { if (Object.prototype.hasOwnProperty.call(init, k)) merged[k] = init[k]; }
+              if (controller) merged.signal = controller.signal;
+              return merged;
+            })()),
+            new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
+          ]);
+          return p.finally(function(){ clearTimeout(timer); });
+        }
+
+        // Filtered request for this meeting with timeout and no-store
+        const url = new URL(this.apiUrl);
+        url.searchParams.set('action', 'getSnacks');
+        url.searchParams.set('meetingDate', this.meetingDate);
+        url.searchParams.set('_cb', String(Date.now()));
+
+        const response = await fetchWithTimeout(url.toString(), { method: 'GET', cache: 'no-store', redirect: 'follow' }, 5000);
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
+        this.setCached(data);
         this.renderSnackAssignment(data);
         this.showContent();
         
       } catch (error) {
         console.error('Failed to load snack assignment:', error);
-        this.showError();
+        const cached = this.getCached();
+        if (cached) {
+          this.renderSnackAssignment(cached);
+          this.showContent();
+        } else {
+          this.showError();
+        }
       }
     }
 
@@ -273,8 +314,26 @@ const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
     }
   }
 
-  // Initialize when DOM is loaded
-  document.addEventListener('DOMContentLoaded', () => {
-    new SnackDutyDisplay();
-  });
+  // Initialize when DOM is ready
+  const __initSnackDuty = () => new SnackDutyDisplay();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', __initSnackDuty, { once: true });
+  } else {
+    __initSnackDuty();
+  }
+
+  // Caching helpers
+  SnackDutyDisplay.prototype.getCached = function() {
+    try {
+      const raw = localStorage.getItem(this.cacheKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.fetchedAt) return null;
+      const fresh = Date.now() - parsed.fetchedAt < this.cacheTtlMs;
+      return fresh ? parsed.data : parsed.data; // allow stale while revalidating
+    } catch (e) { return null; }
+  }
+  SnackDutyDisplay.prototype.setCached = function(data) {
+    try { localStorage.setItem(this.cacheKey, JSON.stringify({ data: data, fetchedAt: Date.now() })); } catch (e) {}
+  }
 </script>

@@ -3,9 +3,14 @@ import { getCollection } from 'astro:content';
 import Layout from '../components/Layout.astro';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
 
-// Get all meetings and sort them chronologically
+// Get all meetings, filter for future meetings, and sort them chronologically
 const meetings = await getCollection('meetings');
-const sortedMeetings = meetings.sort((a, b) => {
+const now = new Date();
+const futureMeetings = meetings.filter(meeting => {
+  const meetingDate = meeting.data.date instanceof Date ? meeting.data.date : new Date(`${meeting.data.date}T00:00:00Z`);
+  return meetingDate >= now;
+});
+const sortedMeetings = futureMeetings.sort((a, b) => {
   const dateA = a.data.date instanceof Date ? a.data.date : new Date(`${a.data.date}T00:00:00Z`);
   const dateB = b.data.date instanceof Date ? b.data.date : new Date(`${b.data.date}T00:00:00Z`);
   return dateA.getTime() - dateB.getTime();
@@ -786,344 +791,292 @@ const formatMeetingISO = (date) => {
 </style>
 
 <script define:vars={{ RSVP_API_URL, coaches }}>
-  // Global Coach RSVP Grid JavaScript
-  class CoachRSVPGrid {
-    constructor() {
+  (function(){
+    function CoachRSVPGrid() {
       this.apiUrl = RSVP_API_URL;
       this.coaches = coaches;
       this.currentData = null;
-      
+      this.cacheKey = 'rsvps:coaches:all';
+      this.cacheTtlMs = 2 * 60 * 1000;
       this.init();
     }
 
-    async init() {
+    CoachRSVPGrid.prototype.init = function() {
       this.bindEvents();
-      await this.loadAllRSVPData();
-    }
+      var cached = this.getCached();
+      var self = this;
+      if (cached) {
+        self.renderAllRSVPData(cached);
+        self.showContent();
+        self.loadAllRSVPData({ background: true });
+      } else {
+        self.loadAllRSVPData({ background: false });
+      }
+    };
 
-    bindEvents() {
-      // Retry button
-      const retryBtn = document.getElementById('rsvp-retry-global');
+    CoachRSVPGrid.prototype.bindEvents = function() {
+      var self = this;
+      var retryBtn = document.getElementById('rsvp-retry-global');
       if (retryBtn) {
-        retryBtn.addEventListener('click', () => this.loadAllRSVPData());
+        retryBtn.addEventListener('click', function(){ self.loadAllRSVPData(); });
       }
 
-      // RSVP cell buttons
-      document.addEventListener('click', (e) => {
+      document.addEventListener('click', function(e){
         if (e.target.classList.contains('cell-btn') || e.target.classList.contains('cell-hover-btn')) {
-          const coach = e.target.dataset.child;
-          const meetingDate = e.target.dataset.meetingDate;
-          let status = e.target.dataset.status;
-          
-          // Handle hover button clicks - clear selection (tri-state)
+          var coach = e.target.dataset.child;
+          var meetingDate = e.target.dataset.meetingDate;
+          var status = e.target.dataset.status;
           if (e.target.classList.contains('cell-hover-btn')) {
-            status = ''; // Clear the selection
+            status = '';
           }
-          
-          this.updateRSVP(meetingDate, coach, status);
+          self.updateRSVP(meetingDate, coach, status);
         }
       });
-      
-      // Handle status clicks for answered cells (tri-state cycling)
-      document.addEventListener('click', (e) => {
+
+      document.addEventListener('click', function(e){
         if (e.target.classList.contains('cell-status')) {
-          const rsvpCell = e.target.closest('.rsvp-cell');
+          var rsvpCell = e.target.closest('.rsvp-cell');
           if (rsvpCell && rsvpCell.classList.contains('has-answer')) {
-            const coach = rsvpCell.dataset.child;
-            const meetingDate = rsvpCell.dataset.meetingDate;
-            const currentStatus = e.target.textContent;
-            
-            // Tri-state cycling: 👍 → 👎 → unselected → 👍
-            let newStatus;
+            var coach = rsvpCell.dataset.child;
+            var meetingDate = rsvpCell.dataset.meetingDate;
+            var currentStatus = e.target.textContent;
+            var newStatus;
             if (currentStatus === '👍') {
               newStatus = '👎';
             } else if (currentStatus === '👎') {
-              newStatus = ''; // Clear selection
+              newStatus = '';
             } else {
-              newStatus = '👍'; // This shouldn't happen in current flow
+              newStatus = '👍';
             }
-            
-            this.updateRSVP(meetingDate, coach, newStatus);
+            self.updateRSVP(meetingDate, coach, newStatus);
           }
         }
       });
-    }
+    };
 
-    async loadAllRSVPData() {
-      this.showLoading();
-      
-      try {
-        console.log('Loading all coach RSVP data from:', this.apiUrl);
-        // Use fetch with redirect: 'follow' to automatically handle redirects
-        const response = await fetch(this.apiUrl, {
-          method: 'GET',
-          redirect: 'follow'
-        });
-        
-        console.log('Response status:', response.status, response.statusText);
-        console.log('Response URL:', response.url);
-        console.log('Response headers:', [...response.headers.entries()]);
-        
-        if (!response.ok) {
-          const responseText = await response.text();
-          console.error('Response body:', responseText);
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log('API response:', data);
-        this.currentData = data;
-        
-        this.renderAllRSVPData(data);
-        this.showContent();
-        
-      } catch (error) {
-        console.error('Failed to load RSVP data:', error);
-        console.error('Error details:', error.message, error.stack);
-        this.showError(`Unable to load RSVP data: ${error.message}`);
+    CoachRSVPGrid.prototype.loadAllRSVPData = function(opts) {
+      opts = opts || {};
+      if (!opts.background) this.showLoading();
+      function fetchWithTimeout(input, init, timeoutMs) {
+        init = init || {};
+        timeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 5000;
+        var supportsAbort = typeof AbortController !== 'undefined';
+        var controller = supportsAbort ? new AbortController() : null;
+        var timer = setTimeout(function(){ if (controller) controller.abort(); }, timeoutMs);
+        var p = Promise.race([
+          fetch(input, (function(){
+            var merged = {};
+            for (var k in init) { if (Object.prototype.hasOwnProperty.call(init, k)) merged[k] = init[k]; }
+            if (controller) merged.signal = controller.signal;
+            return merged;
+          })()),
+          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
+        ]);
+        return p.finally(function(){ clearTimeout(timer); });
       }
-    }
 
-    async updateRSVP(meetingDate, coachName, status) {
-      // Update UI immediately (optimistically) and disable buttons
+      var self = this;
+      try {
+        var url = new URL(this.apiUrl);
+        url.searchParams.set('action', 'get');
+        url.searchParams.set('_cb', String(Date.now()));
+        console.log('Making Coach RSVP API request to:', url.toString());
+        fetchWithTimeout(url.toString(), { cache: 'no-store', redirect: 'follow' }, 15000)
+          .then(function(response){
+            if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+            return response.json();
+          })
+          .then(function(data){
+            self.currentData = data;
+            self.setCached(data);
+            self.renderAllRSVPData(data);
+            self.showContent();
+          })
+          .catch(function(error){
+            console.error('Coach RSVP API Error:', error);
+            var cached = self.getCached();
+            if (cached) {
+              self.renderAllRSVPData(cached);
+              self.showContent();
+            } else {
+              self.showError('Unable to load RSVP data: ' + (error.message || error.toString()));
+            }
+          });
+      } catch (e) {
+        this.showError('Unable to load RSVP data');
+      }
+    };
+
+    CoachRSVPGrid.prototype.updateRSVP = function(meetingDate, coachName, status) {
       this.updateCellOptimistically(meetingDate, coachName, status);
       this.setCellButtonsDisabled(meetingDate, coachName, true);
       this.showUpdating();
-      
+      var self = this;
       try {
-        console.log('Updating coach RSVP:', { meetingDate, kidName: coachName, status });
-        
-        // Try the real API call
-        const updateUrl = new URL(this.apiUrl);
+        var updateUrl = new URL(this.apiUrl);
         updateUrl.searchParams.set('action', 'update');
         updateUrl.searchParams.set('meetingDate', meetingDate);
         updateUrl.searchParams.set('kidName', coachName);
         updateUrl.searchParams.set('status', status);
-
-        const response = await fetch(updateUrl.toString(), {
-          method: 'GET',
-          redirect: 'follow'
-        });
-        
-        console.log('API response status:', response.status, response.statusText);
-        console.log('API response URL:', response.url);
-        
-        if (response.ok) {
-          const result = await response.json();
-          console.log('API response data:', result);
-          if (result.success) {
-            // Real API call succeeded - no need to reload, UI is already updated
-            console.log('✅ Coach RSVP save successful');
-            this.hideUpdating();
-            return;
-          } else {
-            console.error('❌ API returned success=false:', result);
-          }
-        } else {
-          console.error('❌ API request failed with status:', response.status);
-          const responseText = await response.text();
-          console.error('Response text:', responseText.substring(0, 200));
-        }
-        
-        // If API call failed, UI is already updated optimistically
-        console.warn('API call failed, keeping optimistic update');
+        fetch(updateUrl.toString(), { method: 'GET', redirect: 'follow' })
+          .then(function(response){
+            if (response.ok) {
+              return response.json().then(function(result){
+                if (result.success) {
+                  var cached = self.getCached();
+                  if (cached) {
+                    var idx = -1;
+                    for (var i=0;i<cached.length;i++) {
+                      var m = cached[i];
+                      var d = m.meetingDate.indexOf('T')>-1 ? m.meetingDate.split('T')[0] : m.meetingDate;
+                      if (d === meetingDate) { idx = i; break; }
+                    }
+                    if (idx >= 0) {
+                      var kids = cached[idx].kids || [];
+                      var ki = -1; for (var j=0;j<kids.length;j++){ if (kids[j].name === coachName) { ki=j; break; } }
+                      if (ki >= 0) kids[ki].status = status; else kids.push({ name: coachName, status: status });
+                      self.setCached(cached);
+                    }
+                  }
+                }
+                self.hideUpdating();
+              });
+            } else {
+              self.hideUpdating();
+            }
+          })
+          .catch(function(){ self.hideUpdating(); })
+          .finally(function(){ self.setCellButtonsDisabled(meetingDate, coachName, false); });
+      } catch (e) {
         this.hideUpdating();
-        
-      } catch (error) {
-        console.error('Failed to update RSVP:', error);
-        // UI is already updated optimistically
-        this.hideUpdating();
-      } finally {
         this.setCellButtonsDisabled(meetingDate, coachName, false);
       }
-    }
+    };
 
-    updateCellOptimistically(meetingDate, coachName, status) {
-      // Update the status display
-      const statusElement = document.getElementById(`status-${meetingDate}-${coachName}`);
-      if (statusElement) {
-        statusElement.textContent = status || '❓';
-      }
-
-      // Update button states
-      const buttons = document.querySelectorAll(`[data-child="${coachName}"][data-meeting-date="${meetingDate}"]`);
-      buttons.forEach(btn => {
+    CoachRSVPGrid.prototype.updateCellOptimistically = function(meetingDate, coachName, status) {
+      var statusElement = document.getElementById('status-' + meetingDate + '-' + coachName);
+      if (statusElement) statusElement.textContent = status || '❓';
+      var buttons = document.querySelectorAll('[data-child="' + coachName + '"][data-meeting-date="' + meetingDate + '"]');
+      for (var i=0;i<buttons.length;i++) {
+        var btn = buttons[i];
         if (btn.classList.contains('cell-btn')) {
           btn.classList.remove('active');
-          if (btn.dataset.status === status) {
-            btn.classList.add('active');
-          }
+          if (btn.dataset.status === status) btn.classList.add('active');
         }
-      });
-      
-      // Update cell background and interaction state
-      const rsvpCell = document.querySelector(`[data-child="${coachName}"][data-meeting-date="${meetingDate}"].rsvp-cell`);
+      }
+      var rsvpCell = document.querySelector('[data-child="' + coachName + '"][data-meeting-date="' + meetingDate + '"].rsvp-cell');
       if (rsvpCell) {
-        // Remove existing status classes
         rsvpCell.classList.remove('status-attending', 'status-not-attending', 'has-answer');
-        
-        // Add appropriate status class and has-answer class
-        if (status === '👍') {
-          rsvpCell.classList.add('status-attending', 'has-answer');
-        } else if (status === '👎') {
-          rsvpCell.classList.add('status-not-attending', 'has-answer');
-        } else if (status === '') {
-          // No status - back to unselected state (show buttons)
-          // has-answer class removed above
-        }
-        
-        // Update hover button to show clear option for selected states
-        const hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
+        if (status === '👍') rsvpCell.classList.add('status-attending', 'has-answer');
+        else if (status === '👎') rsvpCell.classList.add('status-not-attending', 'has-answer');
+        var hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
         if (hoverBtn && status) {
-          hoverBtn.textContent = '❌'; // Show clear option
+          hoverBtn.textContent = '❌';
           hoverBtn.dataset.child = coachName;
           hoverBtn.dataset.meetingDate = meetingDate;
         }
-        
-        // Add a saving class to prevent hover effects during save
         rsvpCell.classList.add('saving');
       }
-    }
+    };
 
-    renderAllRSVPData(allData) {
-      console.log('Raw coach RSVP data from API:', allData);
-      
-      // Create a lookup map for quick access
-      const dataMap = new Map();
-      allData.forEach(meetingData => {
-        const meetingDate = meetingData.meetingDate;
-        
-        // Convert API date to YYYY-MM-DD format for comparison
-        console.log('🔍 Raw meeting date from API:', meetingDate, 'Type:', typeof meetingDate);
-        
-        let apiDateOnly;
-        if (meetingDate.match(/^\d{4}-\d{2}-\d{2}(T|$)/)) {
-          // Already in ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
-          apiDateOnly = meetingDate.split('T')[0];
-          console.log('📅 ISO format detected, converted to:', apiDateOnly);
-        } else if (meetingDate.includes(' ')) {
-          // Full date string like "Sun Aug 10 2025 00:00:00 GMT-0700 (Pacific Daylight Time)"
-          const dateObj = new Date(meetingDate);
-          if (!isNaN(dateObj.getTime())) {
-            apiDateOnly = dateObj.toISOString().split('T')[0];
-            console.log('📅 Full date string converted to:', apiDateOnly);
-          } else {
-            apiDateOnly = meetingDate;
-            console.log('❌ Failed to parse date, using as-is:', apiDateOnly);
+    CoachRSVPGrid.prototype.renderAllRSVPData = function(allData) {
+      var dataMap = new Map();
+      for (var i=0;i<allData.length;i++) {
+        var meetingData = allData[i];
+        var meetingDate = meetingData.meetingDate;
+        var apiDateOnly = meetingDate.indexOf('T')>-1 ? meetingDate.split('T')[0] : meetingDate;
+        var coachesMap = new Map();
+        if (meetingData.kids) {
+          for (var j=0;j<meetingData.kids.length;j++) {
+            var person = meetingData.kids[j];
+            coachesMap.set(person.name, person.status || '');
           }
-        } else {
-          // Assume it's already in the right format
-          apiDateOnly = meetingDate;
-          console.log('📅 Using date as-is:', apiDateOnly);
         }
-        
-        console.log('Processing meeting:', apiDateOnly, 'with kids data:', meetingData.kids);
-        
-        const coachesMap = new Map();
-        meetingData.kids.forEach(person => {
-          console.log('Found person:', person.name, 'with status:', person.status);
-          coachesMap.set(person.name, person.status || '');
-        });
         dataMap.set(apiDateOnly, coachesMap);
-      });
-
-      // Update all cells
-      const gridRows = document.querySelectorAll('.grid-row');
-      gridRows.forEach(row => {
-        const meetingDate = row.dataset.meetingDate;
-        const meetingData = dataMap.get(meetingDate);
-        
-        this.coaches.forEach(coach => {
-          const statusElement = document.getElementById(`status-${meetingDate}-${coach}`);
-          const rsvpCell = document.querySelector(`[data-child="${coach}"][data-meeting-date="${meetingDate}"].rsvp-cell`);
-          
-          let status = '';
-          if (meetingData && meetingData.has(coach)) {
-            status = meetingData.get(coach);
-          }
-          
-          console.log(`Setting coach ${coach} for ${meetingDate} to status: "${status}"`);
-          
-          if (statusElement) {
-            statusElement.textContent = status || '❓';
-          }
-
-          // Update button states
-          const buttons = document.querySelectorAll(`[data-child="${coach}"][data-meeting-date="${meetingDate}"].cell-btn`);
-          buttons.forEach(btn => {
+      }
+      var gridRows = document.querySelectorAll('.grid-row');
+      for (var r=0;r<gridRows.length;r++) {
+        var row = gridRows[r];
+        var d = row.dataset.meetingDate;
+        var mData = dataMap.get(d);
+        for (var c=0;c<this.coaches.length;c++) {
+          var coach = this.coaches[c];
+          var statusElement = document.getElementById('status-' + d + '-' + coach);
+          var rsvpCell = document.querySelector('[data-child="' + coach + '"][data-meeting-date="' + d + '"].rsvp-cell');
+          var status = '';
+          if (mData && mData.has(coach)) status = mData.get(coach);
+          if (statusElement) statusElement.textContent = status || '❓';
+          var buttons = document.querySelectorAll('[data-child="' + coach + '"][data-meeting-date="' + d + '"].cell-btn');
+          for (var b=0;b<buttons.length;b++) {
+            var btn = buttons[b];
             btn.classList.remove('active');
-            if (btn.dataset.status === status) {
-              btn.classList.add('active');
-            }
-          });
-          
-          // Update cell background and interaction state
+            if (btn.dataset.status === status) btn.classList.add('active');
+          }
           if (rsvpCell) {
             rsvpCell.classList.remove('status-attending', 'status-not-attending', 'has-answer');
-            
-            if (status === '👍') {
-              rsvpCell.classList.add('status-attending', 'has-answer');
-            } else if (status === '👎') {
-              rsvpCell.classList.add('status-not-attending', 'has-answer');
-            }
-            
-            // Update hover button to show clear option for selected states
-            const hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
+            if (status === '👍') rsvpCell.classList.add('status-attending', 'has-answer');
+            else if (status === '👎') rsvpCell.classList.add('status-not-attending', 'has-answer');
+            var hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
             if (hoverBtn && (status === '👍' || status === '👎')) {
-              hoverBtn.textContent = '❌'; // Show clear option
+              hoverBtn.textContent = '❌';
               hoverBtn.dataset.child = coach;
-              hoverBtn.dataset.meetingDate = meetingDate;
+              hoverBtn.dataset.meetingDate = d;
             }
           }
-        });
-      });
-    }
-
-    setCellButtonsDisabled(meetingDate, coachName, disabled) {
-      const buttons = document.querySelectorAll(`[data-child="${coachName}"][data-meeting-date="${meetingDate}"].cell-btn`);
-      buttons.forEach(btn => {
-        btn.disabled = disabled;
-      });
-      
-      // Remove saving class when re-enabling
-      if (!disabled) {
-        const rsvpCell = document.querySelector(`[data-child="${coachName}"][data-meeting-date="${meetingDate}"].rsvp-cell`);
-        if (rsvpCell) {
-          rsvpCell.classList.remove('saving');
         }
       }
-    }
+    };
 
-    showLoading() {
+    CoachRSVPGrid.prototype.setCellButtonsDisabled = function(meetingDate, coachName, disabled) {
+      var buttons = document.querySelectorAll('[data-child="' + coachName + '"][data-meeting-date="' + meetingDate + '"].cell-btn');
+      for (var i=0;i<buttons.length;i++) buttons[i].disabled = disabled;
+      if (!disabled) {
+        var rsvpCell = document.querySelector('[data-child="' + coachName + '"][data-meeting-date="' + meetingDate + '"].rsvp-cell');
+        if (rsvpCell) rsvpCell.classList.remove('saving');
+      }
+    };
+
+    CoachRSVPGrid.prototype.showLoading = function(){
       document.getElementById('rsvp-loading-global').style.display = 'flex';
       document.getElementById('rsvp-error-global').style.display = 'none';
       document.getElementById('rsvp-grid-container').style.display = 'none';
-    }
-
-    showError(message) {
+    };
+    CoachRSVPGrid.prototype.showError = function(message){
       document.getElementById('rsvp-error-message-global').textContent = message;
       document.getElementById('rsvp-loading-global').style.display = 'none';
       document.getElementById('rsvp-error-global').style.display = 'block';
       document.getElementById('rsvp-grid-container').style.display = 'none';
-    }
-
-    showContent() {
+    };
+    CoachRSVPGrid.prototype.showContent = function(){
       document.getElementById('rsvp-loading-global').style.display = 'none';
       document.getElementById('rsvp-error-global').style.display = 'none';
       document.getElementById('rsvp-grid-container').style.display = 'block';
-    }
-
-    showUpdating() {
+    };
+    CoachRSVPGrid.prototype.showUpdating = function(){
       document.getElementById('rsvp-updating-global').style.display = 'flex';
-    }
-
-    hideUpdating() {
+    };
+    CoachRSVPGrid.prototype.hideUpdating = function(){
       document.getElementById('rsvp-updating-global').style.display = 'none';
-    }
-  }
+    };
 
-  // Initialize when DOM is loaded
-  document.addEventListener('DOMContentLoaded', () => {
-    new CoachRSVPGrid();
-  });
+    CoachRSVPGrid.prototype.getCached = function(){
+      try {
+        var raw = localStorage.getItem(this.cacheKey);
+        if (!raw) return null;
+        var parsed = JSON.parse(raw);
+        if (!parsed || !parsed.fetchedAt) return null;
+        return parsed.data;
+      } catch (e) { return null; }
+    };
+    CoachRSVPGrid.prototype.setCached = function(data){
+      try { localStorage.setItem(this.cacheKey, JSON.stringify({ data: data, fetchedAt: Date.now() })); } catch (e) {}
+    };
+
+    function init(){ new CoachRSVPGrid(); }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
 </script>

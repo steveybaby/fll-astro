@@ -40,8 +40,8 @@ export async function GET() {
       const meetingUrl = `${import.meta.env.SITE}/meetings/${meeting.slug}/`;
       const summary = meeting.data.title;
       const description = meeting.data.agenda 
-        ? `FLL Llamas Team Meeting\\n\\nAgenda:\\n${meeting.data.agenda.map(item => `• ${item}`).join('\\n')}\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`
-        : `FLL Llamas Team Meeting\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`;
+        ? `Looting Llamas Team Meeting\\n\\nAgenda:\\n${meeting.data.agenda.map(item => `• ${item}`).join('\\n')}\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`
+        : `Looting Llamas Team Meeting\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`;
       const location = meeting.data.location || 'Piedmont Makers Club';
       
       return [
@@ -59,10 +59,10 @@ export async function GET() {
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//FLL Llamas//Team Calendar//EN',
+      'PRODID:-//Looting Llamas//Team Calendar//EN',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
-      'X-WR-CALNAME:FLL Llamas Team Meetings',
+      'X-WR-CALNAME:Looting Llamas Team Meetings',
       'X-WR-CALDESC:FIRST Lego League team meeting schedule',
       'X-WR-TIMEZONE:America/Los_Angeles',
       'BEGIN:VTIMEZONE',

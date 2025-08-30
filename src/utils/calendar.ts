@@ -18,7 +18,7 @@ export function generateICSFile(event: CalendarEvent): string {
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//FLL Llamas//Meeting Calendar//EN',
+    'PRODID:-//Looting Llamas//Meeting Calendar//EN',
     'BEGIN:VEVENT',
     `UID:${Date.now()}@fll-llamas.com`,
     `DTSTART:${startDate}`,
