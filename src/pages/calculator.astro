@@ -7,7 +7,7 @@ import Layout from '../components/Layout.astro';
     <header class="calculator-header">
       <h1>🧮 Calculator</h1>
       <p>Convert real-world measurements to robot programming values</p>
-      <p class="ratio-info">Ratio: 23mm real = 200mm robot</p>
+      <p class="ratio-info">Ratio: 24mm real = 200mm robot</p>
     </header>
 
     <div class="calculator-form">
@@ -40,7 +40,7 @@ import Layout from '../components/Layout.astro';
       <h3>How it works:</h3>
       <ul>
         <li>Enter a real-world measurement in millimeters</li>
-        <li>The calculator converts it using the ratio 23mm real = 200mm robot</li>
+        <li>The calculator converts it using the ratio 24mm real = 200mm robot</li>
         <li>Use the converted value in your robot programming</li>
       </ul>
     </div>
@@ -215,7 +215,7 @@ import Layout from '../components/Layout.astro';
       this.realInput = document.getElementById('real-measurement');
       this.robotInput = document.getElementById('robot-measurement');
       this.copyButton = document.getElementById('copy-result');
-      this.ratio = 200 / 23; // robot mm per real mm
+      this.ratio = 200 / 24; // robot mm per real mm
       this.init();
     }
 
