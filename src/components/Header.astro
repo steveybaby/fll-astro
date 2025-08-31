@@ -46,6 +46,7 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
             <a href="#" class="nav-link dropdown-toggle">Resources</a>
             <ul class="dropdown-menu">
               <li><a href={base + "resources"} class="dropdown-link">FLL Resources</a></li>
+              <li><a href={base + "calculator"} class="dropdown-link">Calculator</a></li>
               <li><a href={base + "newsletters"} class="dropdown-link">Newsletters</a></li>
             </ul>
           </li>
@@ -92,6 +93,7 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
       <div class="mobile-nav-header">Resources</div>
       <ul class="mobile-nav-submenu">
         <li><a href={base + "resources"} class="mobile-nav-link submenu">FLL Resources</a></li>
+        <li><a href={base + "calculator"} class="mobile-nav-link submenu">Calculator</a></li>
         <li><a href={base + "newsletters"} class="mobile-nav-link submenu">Newsletters</a></li>
       </ul>
     </li>
