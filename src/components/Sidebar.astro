@@ -8,7 +8,7 @@ const blogPosts = await getCollection('blog', ({ data }) => {
   return data.draft !== true;
 });
 const meetings = await getCollection('meetings');
-const newsletters = await getCollection('newsletters');
+const newsletters = await getCollection('newsletter');
 
 // Combine all content types, adding a type field
 const allContent = [
