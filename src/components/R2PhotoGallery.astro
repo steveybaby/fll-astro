@@ -594,6 +594,39 @@ const hasPhotos = normalizedPhotos.length > 0;
 <script define:vars={{ meetingPhotos: normalizedPhotos, meetingDate }}>
   let currentPhotoIndex = 0;
 
+  function attachVideoEventHandlers(videoElement, playOverlay) {
+    // Clear any existing event handlers to avoid duplicates
+    videoElement.onclick = null;
+    videoElement.onended = null;
+    videoElement.onplay = null;
+    videoElement.onpause = null;
+    playOverlay.onclick = null;
+    
+    // Attach fresh event handlers
+    playOverlay.onclick = function(e) {
+      e.stopPropagation(); // Prevent lightbox click-through
+      videoElement.play();
+      playOverlay.style.display = 'none';
+    };
+    
+    // Show overlay when video ends
+    videoElement.onended = function() {
+      playOverlay.style.display = 'flex';
+    };
+    
+    // Hide overlay when video starts playing
+    videoElement.onplay = function() {
+      playOverlay.style.display = 'none';
+    };
+    
+    // Show overlay when video is paused
+    videoElement.onpause = function() {
+      if (!videoElement.ended) {
+        playOverlay.style.display = 'flex';
+      }
+    };
+  }
+
   function openR2Lightbox(index) {
     if (!meetingPhotos || meetingPhotos.length === 0) return;
     
@@ -643,28 +676,7 @@ const hasPhotos = normalizedPhotos.length > 0;
     if (isVideo) {
       const playOverlay = document.getElementById('r2-lightbox-play-overlay');
       const videoElement = document.getElementById('r2-lightbox-video');
-      
-      playOverlay.onclick = function() {
-        videoElement.play();
-        playOverlay.style.display = 'none';
-      };
-      
-      // Show overlay when video ends
-      videoElement.onended = function() {
-        playOverlay.style.display = 'flex';
-      };
-      
-      // Hide overlay when video starts playing
-      videoElement.onplay = function() {
-        playOverlay.style.display = 'none';
-      };
-      
-      // Show overlay when video is paused
-      videoElement.onpause = function() {
-        if (!videoElement.ended) {
-          playOverlay.style.display = 'flex';
-        }
-      };
+      attachVideoEventHandlers(videoElement, playOverlay);
     }
   }
 
@@ -715,9 +727,12 @@ const hasPhotos = normalizedPhotos.length > 0;
       videoSource.type = item.filename?.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime';
       video.load();
       
-      // Show play overlay
+      // Show play overlay and re-attach event handlers
       const playOverlay = document.getElementById('r2-lightbox-play-overlay');
       playOverlay.style.display = 'flex';
+      
+      // Re-attach video event handlers (important for navigation between items)
+      attachVideoEventHandlers(video, playOverlay);
     } else {
       // Show photo, hide video container
       document.getElementById('r2-lightbox-video-container').style.display = 'none';
