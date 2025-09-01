@@ -1,5 +1,5 @@
 ---
-title: "Regular FLL Meeting"
+title: "Meeting 4 - Solving Missions!"
 date: 2025-08-31
 startTime: "15:30" # 3:30 PM
 duration: 2.5 # 2.5 hours
@@ -10,32 +10,55 @@ assignments: []
 ---
 
 # Sunday Session
-
-## Meeting Agenda
-
-### Innovation Project: Archeologist Interview
-- What is the most challenging part of archaeology?  Is it getting funding?  
-- What types of activities do you do at a dig site?  And in preparation for a dig project?
-- What type of standards do you follow at a dig site?
-- How could Artificial Intelligence be used to help archaeologists?   Or support the business of Archeology?
-- Do archaeologists use robots?  How do you see robots being used in the future?
-- What are the tradeoffs of mechanical vs. manual excavation?
-- What are potential pros & cons in the use of automation (and/or high tech)?
-- Do you think that archaeologists will seek different things in the future than they do in the present?
-- What does the free market most value in terms of archifacts?
-- How does the competing interest of the mining industry challenge archaeology?  
-- How does excavation profit (mining?) negatively impact archeology?  How often are completing interests challenges?
-- How might archaeology be self-funded?  Opportunities for commercialization of discoveries, limited edition replicas?
-- Are the more expensive technologies funded or worth it?
--  What will the education of future archeologists require?
-- Does archaeology help science with new discoveries, or vice versa?
-- Do you think at some point in the future, we'll find all the artifacts?
-- What would you change about archeology?
-
 ## Meeting Notes
+- Coach Steve showed the kids how to use ratios to convert from paper drawn plans to actual robot measurements
+- Kids used [the new calculator](/calculator) to convert using the ratio
 
-*Meeting notes will be added here after the meeting*
 
-## Next Steps
+### Robot Missions Progress
+- We coded some missions and made great progress
+- **Achieved 110 points in robot missions** - excellent performance!
+![alt text](image.png)
+- Built four attachments for various missions
 
-*Action items and assignments will be documented here*
+### Individual Accomplishments
+- **Asher**: Successfully completed the "Surface brushing" mission and one of the "Map reveal" missions
+- **Jasper and Kai**: Worked together to complete the "Tip the Scales" mission
+- **Jeremiah**: Built a robot arm attachment for use in future meetings
+
+### Attachments Built
+- Robot arm (by Jeremiah)
+- One way gate (by Jasper using [this design](https://www.youtube.com/watch?v=_YZqt5a6md4))
+- Push attachment to slide the lawn out of the way in "Map Reveal"
+- Arm attachment to flip the fork back and forth in "Surface Brushing"
+
+## Code Samples
+
+Asher's code for the first two missions:
+
+```python
+robot.use_gyro(True)
+robot.settings(straight_speed=550,straight_acceleration=300,turn_rate=150,turn_acceleration=300)
+robot.straight(650)
+robot.straight(-190)
+robot.straight(190)
+robot.turn(-45)
+robot.straight(200)
+robot.straight(-200)
+robot.turn(45)
+robot.straight(-650)
+```
+
+Jasper and Kai's code for the third mission:
+```python
+robot.use_gyro(True)
+robot.settings(straight_speed=550,straight_acceleration=300,turn_rate=150,turn_acceleration=300)
+robot.straight(400)
+robot.turn (90)
+robot.straight(1230)
+robot.curve(-240, 90)
+robot.straight (250)
+robot.straight(-200)
+robot.turn(90)
+robot.straight(450)
+```

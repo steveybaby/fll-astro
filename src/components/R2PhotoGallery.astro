@@ -48,24 +48,44 @@ const hasPhotos = meetingPhotos.length > 0;
 {hasPhotos ? (
   <div class="r2-photo-gallery-section">
     <h3 class="photos-heading">
-      📸 Photos from {meetingName || meetingDate}
-      <span class="photo-count">({meetingPhotos.length} photos)</span>
+      📸 Media from {meetingName || meetingDate}
+      <span class="photo-count">({meetingPhotos.length} items)</span>
     </h3>
     
     <div class="photo-grid" id="r2-photo-grid">
-      {meetingPhotos.map((photo, index) => (
-        <div class="photo-item" data-index={index}>
-          <img 
-            src={photo.thumbnail}
-            alt={`Photo from ${meetingDate}`}
-            loading="lazy"
-            class="thumbnail-image"
-            onclick={`openR2Lightbox(${index})`}
-          />
+      {meetingPhotos.map((item, index) => (
+        <div class="photo-item" data-index={index} data-type={item.type || 'image'}>
+          {item.type === 'video' ? (
+            <div class="video-container">
+              <video 
+                class="thumbnail-image video-thumbnail"
+                poster={item.thumbnail}
+                muted
+                onmouseenter="this.play()"
+                onmouseleave="this.pause(); this.currentTime = 0"
+                onclick={`openR2Lightbox(${index})`}
+              >
+                <source src={item.fullImage} type={item.filename.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime'} />
+                Video preview
+              </video>
+              <div class="play-button-overlay">
+                <div class="play-button">▶</div>
+              </div>
+            </div>
+          ) : (
+            <img 
+              src={item.thumbnail}
+              alt={`Photo from ${meetingDate}`}
+              loading="lazy"
+              class="thumbnail-image"
+              onclick={`openR2Lightbox(${index})`}
+            />
+          )}
           <div class="photo-overlay">
             <div class="photo-info">
-              <span class="photo-date">{new Date(photo.dateFound).toLocaleDateString()}</span>
+              <span class="photo-date">{new Date(item.dateFound).toLocaleDateString()}</span>
               <span class="r2-badge" title="Served from Cloudflare R2">☁️</span>
+              {item.type === 'video' && <span class="video-badge">🎬</span>}
             </div>
           </div>
         </div>
@@ -77,15 +97,27 @@ const hasPhotos = meetingPhotos.length > 0;
   <div id="r2-photo-lightbox" class="r2-photo-lightbox" onclick="closeR2Lightbox(event)">
     <div class="lightbox-wrapper">
       <span class="lightbox-close" onclick="closeR2Lightbox()">&times;</span>
-      <img id="r2-lightbox-photo" src="" alt="Meeting photo" />
+      <div id="r2-lightbox-media" class="lightbox-media-container">
+        <img id="r2-lightbox-photo" src="" alt="Meeting photo" style="display: none;" />
+        <div class="lightbox-video-container" style="display: none;" id="r2-lightbox-video-container">
+          <video id="r2-lightbox-video" controls>
+            <source id="r2-video-source" src="" type="" />
+            Your browser does not support video playback.
+          </video>
+          <div class="lightbox-play-overlay" id="r2-lightbox-play-overlay">
+            <div class="lightbox-play-button">▶</div>
+            <div class="click-to-play-text">Click to play</div>
+          </div>
+        </div>
+      </div>
       <div class="lightbox-info">
         <span id="r2-photo-counter">1 / {meetingPhotos.length}</span>
         <span id="r2-photo-filename"></span>
         <span class="r2-source">📡 Served from Cloudflare R2</span>
       </div>
       <div class="lightbox-controls">
-        <button id="r2-prev-photo" onclick="changeR2Photo(-1)" class="control-button" title="Previous photo">&#8249;</button>
-        <button id="r2-next-photo" onclick="changeR2Photo(1)" class="control-button" title="Next photo">&#8250;</button>
+        <button id="r2-prev-photo" onclick="changeR2Photo(-1)" class="control-button" title="Previous item">&#8249;</button>
+        <button id="r2-next-photo" onclick="changeR2Photo(1)" class="control-button" title="Next item">&#8250;</button>
       </div>
     </div>
   </div>
@@ -160,6 +192,60 @@ const hasPhotos = meetingPhotos.length > 0;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+  }
+
+  .video-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-thumbnail {
+    background: #000;
+    object-fit: contain !important; /* Show full video without cropping */
+  }
+
+  .play-button-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .play-button {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #333;
+    text-shadow: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .photo-item:hover .play-button-overlay {
+    opacity: 0.8;
+  }
+
+  .photo-item:hover .play-button {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  .video-badge {
+    font-size: 1rem;
+    margin-left: 4px;
   }
 
   .photo-item:hover .thumbnail-image {
@@ -263,12 +349,90 @@ const hasPhotos = meetingPhotos.length > 0;
     padding: 40px;
   }
 
-  #r2-lightbox-photo {
+  .lightbox-media-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     max-width: 90%;
     max-height: 80%;
+    width: 100%;
+    height: 100%;
+  }
+
+  #r2-lightbox-photo {
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .lightbox-video-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #r2-lightbox-video {
+    max-width: 90vw;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .lightbox-play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+  }
+
+  .lightbox-play-overlay:hover {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .lightbox-play-button {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #333;
+    margin-bottom: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .lightbox-play-overlay:hover .lightbox-play-button {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  .click-to-play-text {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    opacity: 0.9;
+  }
+
+  .lightbox-play-overlay.hidden {
+    display: none;
   }
 
   .lightbox-close {
@@ -427,24 +591,84 @@ const hasPhotos = meetingPhotos.length > 0;
     currentPhotoIndex = index;
     const lightbox = document.getElementById('r2-photo-lightbox');
     const photo = document.getElementById('r2-lightbox-photo');
+    const video = document.getElementById('r2-lightbox-video');
+    const videoSource = document.getElementById('r2-video-source');
     const counter = document.getElementById('r2-photo-counter');
     const filename = document.getElementById('r2-photo-filename');
     
-    // Set photo source to full image URL
-    photo.src = meetingPhotos[index].fullImage;
+    const item = meetingPhotos[index];
+    const isVideo = item.type === 'video';
+    
+    if (isVideo) {
+      // Show video container, hide photo
+      photo.style.display = 'none';
+      document.getElementById('r2-lightbox-video-container').style.display = 'flex';
+      
+      // Set video source
+      videoSource.src = item.fullImage;
+      videoSource.type = item.filename.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime';
+      video.load(); // Reload video with new source
+      
+      // Show play overlay
+      const playOverlay = document.getElementById('r2-lightbox-play-overlay');
+      playOverlay.style.display = 'flex';
+      playOverlay.classList.remove('hidden');
+    } else {
+      // Show photo, hide video container
+      document.getElementById('r2-lightbox-video-container').style.display = 'none';
+      photo.style.display = 'block';
+      
+      // Set photo source
+      photo.src = item.fullImage;
+    }
     
     // Update info
     counter.textContent = `${index + 1} / ${meetingPhotos.length}`;
-    filename.textContent = meetingPhotos[index].filename;
+    filename.textContent = item.filename;
     
     // Show lightbox
     lightbox.style.display = 'block';
     document.body.style.overflow = 'hidden';
+    
+    // Add event handlers for video play overlay
+    if (isVideo) {
+      const playOverlay = document.getElementById('r2-lightbox-play-overlay');
+      const videoElement = document.getElementById('r2-lightbox-video');
+      
+      playOverlay.onclick = function() {
+        videoElement.play();
+        playOverlay.style.display = 'none';
+      };
+      
+      // Show overlay when video ends
+      videoElement.onended = function() {
+        playOverlay.style.display = 'flex';
+      };
+      
+      // Hide overlay when video starts playing
+      videoElement.onplay = function() {
+        playOverlay.style.display = 'none';
+      };
+      
+      // Show overlay when video is paused
+      videoElement.onpause = function() {
+        if (!videoElement.ended) {
+          playOverlay.style.display = 'flex';
+        }
+      };
+    }
   }
 
   function closeR2Lightbox(event) {
     if (!event || event.target.id === 'r2-photo-lightbox' || event.target.classList.contains('lightbox-close')) {
       const lightbox = document.getElementById('r2-photo-lightbox');
+      const video = document.getElementById('r2-lightbox-video');
+      
+      // Pause video if playing
+      if (video && !video.paused) {
+        video.pause();
+      }
+      
       lightbox.style.display = 'none';
       document.body.style.overflow = 'auto';
     }
@@ -462,14 +686,40 @@ const hasPhotos = meetingPhotos.length > 0;
       currentPhotoIndex = meetingPhotos.length - 1;
     }
     
-    // Update photo and info
+    // Update media and info
     const photo = document.getElementById('r2-lightbox-photo');
+    const video = document.getElementById('r2-lightbox-video');
+    const videoSource = document.getElementById('r2-video-source');
     const counter = document.getElementById('r2-photo-counter');
     const filename = document.getElementById('r2-photo-filename');
     
-    photo.src = meetingPhotos[currentPhotoIndex].fullImage;
+    const item = meetingPhotos[currentPhotoIndex];
+    const isVideo = item.type === 'video';
+    
+    if (isVideo) {
+      // Show video container, hide photo
+      photo.style.display = 'none';
+      document.getElementById('r2-lightbox-video-container').style.display = 'flex';
+      
+      // Set video source
+      videoSource.src = item.fullImage;
+      videoSource.type = item.filename.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime';
+      video.load();
+      
+      // Show play overlay
+      const playOverlay = document.getElementById('r2-lightbox-play-overlay');
+      playOverlay.style.display = 'flex';
+    } else {
+      // Show photo, hide video container
+      document.getElementById('r2-lightbox-video-container').style.display = 'none';
+      photo.style.display = 'block';
+      
+      // Set photo source
+      photo.src = item.fullImage;
+    }
+    
     counter.textContent = `${currentPhotoIndex + 1} / ${meetingPhotos.length}`;
-    filename.textContent = meetingPhotos[currentPhotoIndex].filename;
+    filename.textContent = item.filename;
   }
 
   // Keyboard navigation

@@ -110,26 +110,31 @@ function validateConfig() {
  * Extract date from EXIF data, with fallback to file creation date
  */
 async function extractPhotoDate(filePath, filename) {
+  const isVideo = isVideoFile(filename);
+  
   try {
-    const buffer = await fs.readFile(filePath);
-    const tags = ExifReader.load(buffer);
-    
-    const dateFields = ['DateTimeOriginal', 'DateTimeDigitized', 'DateTime'];
-    
-    // Try EXIF dates first (prefer DateTimeOriginal as it's when photo was actually taken)
-    for (const field of dateFields) {
-      if (tags[field]) {
-        const dateString = tags[field].description;
-        const dateMatch = dateString.match(/^(\d{4}):(\d{2}):(\d{2})/);
-        if (dateMatch) {
-          console.log(`  📅 Using EXIF ${field}: ${dateString}`);
-          return `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+    if (!isVideo) {
+      // For images, try EXIF data first
+      const buffer = await fs.readFile(filePath);
+      const tags = ExifReader.load(buffer);
+      
+      const dateFields = ['DateTimeOriginal', 'DateTimeDigitized', 'DateTime'];
+      
+      // Try EXIF dates first (prefer DateTimeOriginal as it's when photo was actually taken)
+      for (const field of dateFields) {
+        if (tags[field]) {
+          const dateString = tags[field].description;
+          const dateMatch = dateString.match(/^(\d{4}):(\d{2}):(\d{2})/);
+          if (dateMatch) {
+            console.log(`  📅 Using EXIF ${field}: ${dateString}`);
+            return `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+          }
         }
       }
     }
     
-    // No EXIF date found - try file creation date (birthtime)
-    console.warn(`⚠️  No EXIF date found for ${filename}, trying file creation date...`);
+    // For videos or images without EXIF, use file creation date (birthtime)
+    console.log(`  📅 ${isVideo ? 'Video file' : 'No EXIF date found'}, using file creation date...`);
     const stats = await fs.stat(filePath);
     
     // Use creation date, but convert to local date to avoid timezone issues
@@ -142,6 +147,37 @@ async function extractPhotoDate(filePath, filename) {
   } catch (error) {
     console.warn(`Could not extract date from ${filePath}:`, error.message);
     return null;
+  }
+}
+
+/**
+ * Check if file is a video
+ */
+function isVideoFile(filename) {
+  return /\.(mov|mp4)$/i.test(filename);
+}
+
+/**
+ * Get appropriate content type for file
+ */
+function getContentType(filename) {
+  const ext = path.extname(filename).toLowerCase();
+  switch (ext) {
+    case '.mov':
+      return 'video/quicktime';
+    case '.mp4':
+      return 'video/mp4';
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.png':
+      return 'image/png';
+    case '.webp':
+      return 'image/webp';
+    case '.heic':
+      return 'image/heic';
+    default:
+      return 'application/octet-stream';
   }
 }
 
@@ -197,7 +233,7 @@ async function createOptimizedImage(inputPath, isThumb = false) {
 /**
  * Upload file to R2
  */
-async function uploadToR2(buffer, key, contentType = 'image/jpeg') {
+async function uploadToR2(buffer, key, contentType) {
   try {
     const command = new PutObjectCommand({
       Bucket: config.bucketName,
@@ -253,18 +289,18 @@ async function processPhotos() {
   const files = await fs.readdir(config.sourcePhotosDir);
   console.log(`Found files: ${files.join(', ')}`);
   
-  const imageFiles = files.filter(file => 
-    /\.(jpg|jpeg|png|heic|webp)$/i.test(file)
+  const mediaFiles = files.filter(file => 
+    /\.(jpg|jpeg|png|heic|webp|mov|mp4)$/i.test(file)
   );
   
-  console.log(`Image files: ${imageFiles.join(', ')}`);
+  console.log(`Media files: ${mediaFiles.join(', ')}`);
   
-  if (imageFiles.length === 0) {
-    console.log('No image files found to process.');
+  if (mediaFiles.length === 0) {
+    console.log('No media files found to process.');
     return;
   }
   
-  console.log(`Found ${imageFiles.length} images to process`);
+  console.log(`Found ${mediaFiles.length} media files to process`);
   
   // Get existing photos to avoid re-uploading
   const existingPhotos = await getExistingPhotos();
@@ -283,7 +319,7 @@ async function processPhotos() {
   let skipCount = 0;
   const processedBasenames = new Set();
   
-  for (const filename of imageFiles) {
+  for (const filename of mediaFiles) {
     const filePath = path.join(config.sourcePhotosDir, filename);
     
     try {
@@ -311,11 +347,18 @@ async function processPhotos() {
       
       console.log(`  Date: ${photoDate} → Meeting: ${meetingDate}`);
       
-      // Generate file paths - normalize extension to .jpg
+      // Generate file paths - preserve original extension for videos, normalize to .jpg for images
       const baseName = path.parse(filename).name;
+      const originalExt = path.extname(filename).toLowerCase();
       const normalizedBaseName = baseName.toLowerCase();
-      const fullImageKey = `meetings/${meetingDate}/${baseName}.jpg`;
-      const thumbnailKey = `meetings/${meetingDate}/thumbnails/thumb_${baseName}.jpg`;
+      const isVideo = isVideoFile(filename);
+      
+      const fullImageKey = isVideo 
+        ? `meetings/${meetingDate}/${baseName}${originalExt}` 
+        : `meetings/${meetingDate}/${baseName}.jpg`;
+      const thumbnailKey = isVideo
+        ? null // Videos don't have thumbnails for now
+        : `meetings/${meetingDate}/thumbnails/thumb_${baseName}.jpg`;
       
       // Check for duplicates based on basename and meeting date
       const photoKey = `${meetingDate}:${normalizedBaseName}`;
@@ -326,8 +369,9 @@ async function processPhotos() {
       }
       
       // Check if already exists in manifest
-      const existingInManifest = photosByMeeting[meetingDate]?.some(photo => 
-        photo.filename.toLowerCase() === (baseName + '.jpg').toLowerCase()
+      const expectedFilename = isVideo ? baseName + originalExt : baseName + '.jpg';
+      const existingInManifest = photosByMeeting[meetingDate]?.some(item => 
+        item.filename.toLowerCase() === expectedFilename.toLowerCase()
       );
       
       if (existingInManifest) {
@@ -338,7 +382,11 @@ async function processPhotos() {
       }
       
       // Check if already uploaded to R2
-      if (existingPhotos.has(fullImageKey) && existingPhotos.has(thumbnailKey)) {
+      const alreadyUploaded = isVideo 
+        ? existingPhotos.has(fullImageKey)
+        : (existingPhotos.has(fullImageKey) && existingPhotos.has(thumbnailKey));
+      
+      if (alreadyUploaded) {
         console.log(`  ⏭️  Already uploaded to R2, adding to manifest: ${baseName}`);
         skipCount++;
         
@@ -348,8 +396,9 @@ async function processPhotos() {
         }
         
         photosByMeeting[meetingDate].push({
-          filename: baseName + '.jpg',
-          thumbnail: `${config.publicUrl}/${thumbnailKey}`,
+          filename: expectedFilename,
+          type: isVideo ? 'video' : 'image',
+          thumbnail: isVideo ? null : `${config.publicUrl}/${thumbnailKey}`,
           fullImage: `${config.publicUrl}/${fullImageKey}`,
           dateFound: photoDate,
           uploadedAt: new Date().toISOString()
@@ -359,17 +408,27 @@ async function processPhotos() {
         continue;
       }
       
-      // Create optimized images
-      console.log(`  📸 Creating thumbnail...`);
-      const thumbnailBuffer = await createOptimizedImage(filePath, true);
+      // Handle images and videos differently
+      let thumbnailUrl = null;
+      let fullImageUrl;
       
-      console.log(`  🖼️  Creating full image...`);
-      const fullImageBuffer = await createOptimizedImage(filePath, false);
-      
-      // Upload to R2
-      console.log(`  ☁️  Uploading to R2...`);
-      const thumbnailUrl = await uploadToR2(thumbnailBuffer, thumbnailKey);
-      const fullImageUrl = await uploadToR2(fullImageBuffer, fullImageKey);
+      if (isVideo) {
+        console.log(`  🎬 Processing video file...`);
+        // For videos, upload the original file directly
+        const videoBuffer = await fs.readFile(filePath);
+        fullImageUrl = await uploadToR2(videoBuffer, fullImageKey, getContentType(filename));
+      } else {
+        console.log(`  📸 Creating thumbnail...`);
+        const thumbnailBuffer = await createOptimizedImage(filePath, true);
+        
+        console.log(`  🖼️  Creating full image...`);
+        const fullImageBuffer = await createOptimizedImage(filePath, false);
+        
+        // Upload to R2
+        console.log(`  ☁️  Uploading to R2...`);
+        thumbnailUrl = await uploadToR2(thumbnailBuffer, thumbnailKey, 'image/jpeg');
+        fullImageUrl = await uploadToR2(fullImageBuffer, fullImageKey, 'image/jpeg');
+      }
       
       // Add to manifest
       if (!photosByMeeting[meetingDate]) {
@@ -377,7 +436,8 @@ async function processPhotos() {
       }
       
       photosByMeeting[meetingDate].push({
-        filename: baseName + '.jpg',
+        filename: expectedFilename,
+        type: isVideo ? 'video' : 'image',
         thumbnail: thumbnailUrl,
         fullImage: fullImageUrl,
         dateFound: photoDate,
