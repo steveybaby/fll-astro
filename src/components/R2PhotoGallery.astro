@@ -42,30 +42,39 @@ try {
   console.error('Error loading photo manifest:', error);
 }
 
-const hasPhotos = meetingPhotos.length > 0;
+// Ensure all items have required properties with defaults
+const normalizedPhotos = meetingPhotos.map(item => ({
+  ...item,
+  type: item.type || 'image',
+  filename: item.filename || '',
+  thumbnail: item.thumbnail || '',
+  fullImage: item.fullImage || ''
+}));
+
+const hasPhotos = normalizedPhotos.length > 0;
 ---
 
 {hasPhotos ? (
   <div class="r2-photo-gallery-section">
     <h3 class="photos-heading">
       📸 Media from {meetingName || meetingDate}
-      <span class="photo-count">({meetingPhotos.length} items)</span>
+      <span class="photo-count">({normalizedPhotos.length} items)</span>
     </h3>
     
     <div class="photo-grid" id="r2-photo-grid">
-      {meetingPhotos.map((item, index) => (
+      {normalizedPhotos.map((item, index) => (
         <div class="photo-item" data-index={index} data-type={item.type || 'image'}>
           {item.type === 'video' ? (
             <div class="video-container">
               <video 
                 class="thumbnail-image video-thumbnail"
-                poster={item.thumbnail}
+                poster={item.thumbnail || ''}
                 muted
                 onmouseenter="this.play()"
                 onmouseleave="this.pause(); this.currentTime = 0"
                 onclick={`openR2Lightbox(${index})`}
               >
-                <source src={item.fullImage} type={item.filename.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime'} />
+                <source src={item.fullImage} type={item.filename?.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime'} />
                 Video preview
               </video>
               <div class="play-button-overlay">
@@ -111,7 +120,7 @@ const hasPhotos = meetingPhotos.length > 0;
         </div>
       </div>
       <div class="lightbox-info">
-        <span id="r2-photo-counter">1 / {meetingPhotos.length}</span>
+        <span id="r2-photo-counter">1 / {normalizedPhotos.length}</span>
         <span id="r2-photo-filename"></span>
         <span class="r2-source">📡 Served from Cloudflare R2</span>
       </div>
@@ -582,7 +591,7 @@ const hasPhotos = meetingPhotos.length > 0;
   }
 </style>
 
-<script define:vars={{ meetingPhotos, meetingDate }}>
+<script define:vars={{ meetingPhotos: normalizedPhotos, meetingDate }}>
   let currentPhotoIndex = 0;
 
   function openR2Lightbox(index) {
@@ -606,7 +615,7 @@ const hasPhotos = meetingPhotos.length > 0;
       
       // Set video source
       videoSource.src = item.fullImage;
-      videoSource.type = item.filename.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime';
+      videoSource.type = item.filename?.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime';
       video.load(); // Reload video with new source
       
       // Show play overlay
@@ -703,7 +712,7 @@ const hasPhotos = meetingPhotos.length > 0;
       
       // Set video source
       videoSource.src = item.fullImage;
-      videoSource.type = item.filename.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime';
+      videoSource.type = item.filename?.endsWith('.mp4') ? 'video/mp4' : 'video/quicktime';
       video.load();
       
       // Show play overlay
