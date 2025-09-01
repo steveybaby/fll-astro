@@ -18,6 +18,7 @@ assignments: []
 ### Robot Missions Progress
 - We coded some missions and made great progress
 - **Achieved 110 points in robot missions** - excellent performance!
+![110 points!](/images/110_points.png)
 - Built four attachments for various missions
 
 ### Individual Accomplishments
