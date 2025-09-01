@@ -728,7 +728,7 @@ const hasPhotos = normalizedPhotos.length > 0;
       video.load();
       
       // Show play overlay and re-attach event handlers
-      const playOverlay = document.getElementById('r2-lightbox-play-overlay');
+      var playOverlay = document.getElementById('r2-lightbox-play-overlay');
       playOverlay.style.display = 'flex';
       
       // Re-attach video event handlers (important for navigation between items)
