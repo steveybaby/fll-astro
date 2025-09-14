@@ -5,9 +5,10 @@ startTime: "15:30" # 3:30 PM
 duration: 2.5 # 2.5 hours
 location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:
-  - "Final Innovation Project Polish"
-  - "Competition Simulation"
-  - "Team Bonding and Preparation"
+  - "Prepping for Wednesday's Archaeologist Interview"
+  - "Looking at Robot Progress"
+  - "Make Sure Last Week's Code Still Works"
+  - "Solve Some More Missions!"
 assignments: []
 ---
 
@@ -15,23 +16,29 @@ assignments: []
 
 ## Meeting Agenda
 
-### Final Innovation Project Polish
-- Complete innovation project final touches
-- Prepare all presentation materials
-- Practice innovation project judging session
-- Document our solution and impact
+### Prepping for Wednesday's Archaeologist Interview
+- Review interview questions for the archaeologist
+- Prepare team members for the Innovation Project research session
+- Discuss what we want to learn about archaeology and technology
+- Set up for the Google Meet session
 
-### Competition Simulation
-- Full competition day simulation
-- Timed robot game sessions
-- Practice all judging presentations
-- Work through competition logistics
+### Looking at Robot Progress
+- Review the robot build from last week's session
+- Check all attachments and mechanical components
+- Test robot mobility and basic functions
+- Plan any needed improvements or adjustments
 
-### Team Bonding and Preparation
-- Team building activities and motivation
-- Review Core Values and team goals
-- Prepare for competition experience
-- Celebrate our season achievements
+### Make Sure Last Week's Code Still Works
+- Test all previously written robot programs
+- Verify mission code is still functioning properly
+- Debug any issues that may have developed
+- Document current code status
+
+### Solve Some More Missions!
+- Continue working on unfinished missions
+- Test mission strategies with current robot setup
+- Optimize mission runs for better scoring
+- Practice mission execution and timing
 
 ## Meeting Notes
 

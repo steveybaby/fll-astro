@@ -56,8 +56,30 @@ assignments: []
 
 ## Meeting Notes
 
-*Meeting notes will be added here after the meeting*
+### Robot Construction
+- **Primary Activity**: Kids built the main robot structure
+- **Duration**: Approximately 2 hours to complete the robot build
+- **Team Organization**: Divided into 2-3 groups for efficient workflow
+  - Group 1: Focused on main robot construction
+  - Groups 2-3: Built mission-specific attachments
+
+### Mission Attachments Development
+- Teams worked on various attachments for completing different missions
+- Multiple groups collaborated to create specialized tools for mission objectives
+- Continued building attachments to finish up remaining missions
+
+### Team Identity & Branding
+- **Team Logo Discussion**: Reviewed current team logo concepts
+- **Action Item**: Luca will continue working on logo modifications and refinements
 
 ## Next Steps
 
-*Action items and assignments will be documented here*
+### For Next Meeting
+- **Luca**: Complete team logo modifications and present updated designs
+- **All Teams**: Continue refining mission attachments based on testing results
+- **Robot Team**: Begin programming and testing the newly built robot
+
+### Upcoming Priorities
+- Test all mission attachments with the completed robot
+- Finalize team logo design
+- Begin mission programming and optimization
