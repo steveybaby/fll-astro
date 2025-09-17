@@ -16,7 +16,7 @@ assignments: []
 Special interview session with a professional archaeologist to support our Innovation Project research and development.
 
 **📅 When:** Wednesday, September 17, 2025 at 2:30-3:30 PM  
-**💻 Join:** [Google Meet: meet.google.com/sax-hpet-ckr](https://meet.google.com/sax-hpet-ckr)
+**💻 Join:** [Zoom: https://veeva.zoom.us/j/4888725453?pwd=Nm1VYS9xdTNKUlY3MnZZZ1Z4WUJ1dz09](https://veeva.zoom.us/j/4888725453?pwd=Nm1VYS9xdTNKUlY3MnZZZ1Z4WUJ1dz09)
 
 ## Interview Questions
 

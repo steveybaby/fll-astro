@@ -42,8 +42,23 @@ assignments: []
 
 ## Meeting Notes
 
-*Meeting notes will be added here after the meeting*
+All team members and coaches were present for today's session.
+
+We spent most of the meeting building attachments and coding. The team made good progress on both mechanical and programming aspects of the robot.
+
+We verified that we can still achieve our 120-point target with the current robot configuration and mission strategies.
+
+Asher successfully added a new challenge completion to our mission mix, expanding our scoring potential.
+
+We are now up to 160 points!
+
+![110 points!](/images/160_points.png)
 
 ## Next Steps
 
-*Action items and assignments will be documented here*
+- Continue refining attachments based on today's testing
+- Integrate Asher's new challenge completion into our overall strategy
+- Prepare for Wednesday's archaeologist interview
+- Test and optimize the updated mission sequences
+
+
