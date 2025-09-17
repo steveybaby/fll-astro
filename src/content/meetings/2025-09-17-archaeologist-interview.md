@@ -20,30 +20,30 @@ Special interview session with a professional archaeologist to support our Innov
 
 ## Interview Questions
 
-### Archaeology Profession & Challenges
-- What is the most challenging part of archaeology? Is it getting funding?
-- What types of activities do you do at a dig site? And in preparation for a dig project?
-- What type of standards do you follow at a dig site?
+### Introduction (Jasper: a, Asher: b & c)
+- Introduce herself
+- What do you do?
+- Why did you want to become an archaeologist?
+- Describe your perspective of archeology?
 
-### Technology & Innovation in Archaeology
-- How could Artificial Intelligence be used to help archaeologists? Or support the business of Archaeology?
-- Do archaeologists use robots? How do you see robots being used in the future?
-- What are the tradeoffs of mechanical vs. manual excavation?
-- What are potential pros & cons in the use of automation (and/or high tech)?
-- Are the more expensive technologies funded or worth it?
+### Challenges & Benefits (Jeremiah: a & b, Luca: c)
+- What are the challenges for you? In your job?
+- Across the field of archeology?
+- What are the benefits for society?
 
-### Future of Archaeology
-- Do you think that archaeologists will seek different things in the future than they do in the present?
-- What will the education of future archeologists require?
-- Does archaeology help science with new discoveries, or vice versa?
+### Tools (Ethan: a & b, Kai: c)
+- What are the tools that you use in your job?
+- What tasks do humans do now that could change in the future? Maybe with mechanical equipment for excavation sensing equipment, e.g. lidar, or AI for identification?
+- How do you track where the artifacts are?
+
+### Summary (Kai: a, Jasper: b)
 - Do you think at some point in the future, we'll find all the artifacts?
 - What would you change about archeology?
 
-### Industry & Economics
-- What does the free market most value in terms of artifacts?
-- How does the competing interest of the mining industry challenge archaeology?
-- How does excavation profit (mining?) negatively impact archeology? How often are competing interests challenges?
-- How might archaeology be self-funded? Opportunities for commercialization of discoveries, limited edition replicas?
+### Additional Questions
+- What is something that you find interesting about archaeology that most people don't know?
+- What type of person becomes an archeologist? How?
+- How is your work funded vs. privately funded projects?
 
 ## Meeting Goals
 - Gather expert insights for our Innovation Project
