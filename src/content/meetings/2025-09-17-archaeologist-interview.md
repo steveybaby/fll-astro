@@ -1,7 +1,7 @@
 ---
 title: "Archaeologist Interview - Innovation Project Research"
 date: 2025-09-17
-startTime: "14:30" # 2:30 PM
+startTime: "15:30" # 3:30 PM
 duration: 1 # 1 hour
 location: "Zoom: https://veeva.zoom.us/j/4888725453?pwd=Nm1VYS9xdTNKUlY3MnZZZ1Z4WUJ1dz09"
 agenda:
@@ -15,7 +15,7 @@ assignments: []
 ## Meeting Overview
 Special interview session with a professional archaeologist to support our Innovation Project research and development.
 
-**📅 When:** Wednesday, September 17, 2025 at 2:30-3:30 PM  
+**📅 When:** Wednesday, September 17, 2025 at 3:30-4:30 PM  
 **💻 Join:** [Zoom: https://veeva.zoom.us/j/4888725453?pwd=Nm1VYS9xdTNKUlY3MnZZZ1Z4WUJ1dz09](https://veeva.zoom.us/j/4888725453?pwd=Nm1VYS9xdTNKUlY3MnZZZ1Z4WUJ1dz09)
 
 ## Interview Questions
