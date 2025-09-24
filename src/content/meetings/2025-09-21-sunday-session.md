@@ -39,3 +39,9 @@ The group discussed the destructive nature of archaeological digging, emphasizin
 - Parents to provide availability for the upcoming field trip on Saturday
 - Steve Harper to create a webpage/calendar for scheduling and information sharing
 
+## Homework Assignment
+
+**Research Topic:** How can archaeologists use new technologies—such as AI and advanced non-invasive scanning tools that create underground images—to study and uncover important artifacts, while deciding what should be excavated and what should remain preserved for future generations with better tools?
+
+Students should research and prepare to discuss this topic at next Sunday's meeting (September 28th).
+
