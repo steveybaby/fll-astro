@@ -1,9 +1,9 @@
 ---
 title: "Presidio Archaeology Lab Visit"
 date: 2025-09-27
-startTime: "09:00" # TBD - 9:00 AM to 5:00 PM window
-duration: 3 # Duration to be determined
-location: "Presidio of San Francisco Archaeology Lab"
+startTime: "11:00" # 11:00 AM
+duration: 1 # 1 hour
+location: "Presidio Officers' Club, 50 Moraga Avenue, San Francisco"
 agenda:
   - "Tour Dr. Jones' Archaeology Lab"
   - "Hands-on Learning Experience"
@@ -14,10 +14,10 @@ assignments: []
 # Presidio Archaeology Lab Visit
 
 ## Meeting Overview
-Special field trip to visit Dr. Jones' archaeology lab at the Presidio of San Francisco for hands-on learning and Innovation Project research.
+In-person archaeology lab tour and Q&A session with Dr. Jones at the Presidio of San Francisco for hands-on learning and Innovation Project research.
 
-**📅 When:** Saturday, September 27, 2025 (Time TBD - available 9:00 AM to 5:00 PM)
-**📍 Location:** Presidio of San Francisco Archaeology Lab
+**📅 When:** Saturday, September 27, 2025 at 11:00 AM
+**📍 Location:** Presidio Officers' Club, 50 Moraga Avenue, San Francisco
 
 ## Visit Goals
 - Experience hands-on archaeology lab work
