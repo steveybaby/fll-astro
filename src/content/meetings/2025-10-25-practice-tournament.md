@@ -28,3 +28,29 @@ assignments: []
 ## What to Expect
 
 Teams will have 2 timed, scored robot runs. Each will be followed by 15-minute feedback sessions with experienced league coaches/mentors who will give tips and answer questions.
+
+## Tournament Results
+
+The kids did really well and stayed focused throughout both rounds of competition!
+
+| Mission | Points Available | Round 1 | Round 2 |
+|---------|-----------------|---------|---------|
+| Equipment Inspection | 20 | 20 | 20 |
+| Surface Brushing | 30 | 20 | 20 |
+| Map Reveal | 30 | 10 | 10 |
+| Angler Fish | 30 | 30 | 30 |
+| Forge | 30 | 20 | 20 |
+| Coral Nursery | 20 | 20 | 20 |
+| Shark Habitat | 20 | 20 | 20 |
+| Raise the Mast | 30 | 30 | 20 |
+| Kraken's Treasure | 20 | 0 | 0 |
+| Artificial Habitat | 20 | 20 | 20 |
+| Salvage Operation | 30 | 10 | 10 |
+| Heavy Lifting | 30 | 0 | 0 |
+| Precision Tokens | 50 | 15 | 40 |
+| **Total** | | **175** | **190** |
+
+**Key Improvements in Round 2:**
+- **Precision Tokens**: Increased from 15 to 40 points (+25 points!)
+- Overall improvement of **15 points** between rounds
+- Team demonstrated excellent learning and adaptation, focusing on precision and consistency
