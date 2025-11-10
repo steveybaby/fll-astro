@@ -1,9 +1,9 @@
 ---
 title: "Practice Innovation "
 date: 2025-11-15
-startTime: "9:30" # 3:30 PM
-duration: 5 # 2.5 hours
-location: "Piedmont Middle School, 740 Magnolia Ave, Piedmont, CA 94611."
+startTime: "8:45" # 8:45 AM
+duration: 2.5 # 1.25 hours
+location: "Piedmont Middle School classrooms, 740 Magnolia Ave, Piedmont, CA 94611"
 agenda:
   - "Advanced Robot Optimization"
   - "Elite Competition Strategies"
