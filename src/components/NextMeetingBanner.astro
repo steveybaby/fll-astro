@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
+import { getMeetingDateTime } from '../utils/calendar.ts';
 
 const meetingsRaw = await getCollection('meetings');
 
@@ -15,25 +16,24 @@ const fmtDisplay = new Intl.DateTimeFormat('en-US', {
 });
 
 const meetings = meetingsRaw.map((m) => {
-  // Always reparse the date to ensure Pacific time handling
-  const dateStr = m.data.date instanceof Date 
-    ? m.data.date.toISOString().split('T')[0]  // Convert Date back to YYYY-MM-DD
-    : m.data.date;
-  
-  const raw = new Date(`${dateStr}T12:00:00-07:00`); // Parse as noon Pacific Time to avoid date shifts
+  // Use getMeetingDateTime to get the actual meeting time with proper timezone handling
+  const { date: meetingDateTime } = getMeetingDateTime(
+    m.data.date,
+    m.data.startTime,
+    m.data.duration
+  );
 
   return {
     ...m,
-    _date: raw,
-    _iso: fmtISO.format(raw),
-    _display: fmtDisplay.format(raw),
+    _date: meetingDateTime,
+    _iso: fmtISO.format(meetingDateTime),
+    _display: fmtDisplay.format(meetingDateTime),
   };
 });
 
 const now = new Date();
-const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 const futureMeetings = meetings
-  .filter(m => m._date >= todayStart)
+  .filter(m => m._date >= now)
   .sort((a, b) => a._date.getTime() - b._date.getTime());
 
 const nextMeeting = futureMeetings[0] || null;

@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Layout from '../components/Layout.astro';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
+import { getMeetingDateTime } from '../utils/calendar.ts';
 
 const meetingsRaw = await getCollection('meetings');
 
@@ -20,18 +21,18 @@ const fmtDisplay = new Intl.DateTimeFormat('en-US', {
 
 // Normalize each item's date with Pacific Time parsing
 const meetings = meetingsRaw.map((m) => {
-  // Always reparse the date to ensure Pacific time handling
-  const dateStr = m.data.date instanceof Date 
-    ? m.data.date.toISOString().split('T')[0]  // Convert Date back to YYYY-MM-DD
-    : m.data.date;
-  
-  const raw = new Date(`${dateStr}T12:00:00-07:00`); // Parse as noon Pacific Time to avoid date shifts
+  // Use getMeetingDateTime to get the actual meeting time with proper timezone handling
+  const { date: meetingDateTime } = getMeetingDateTime(
+    m.data.date,
+    m.data.startTime,
+    m.data.duration
+  );
 
   return {
     ...m,
-    _date: raw,                       // actual Date (Pacific noon)
-    _iso: fmtISO.format(raw),         // 'YYYY-MM-DD' for datetime=
-    _display: `${fmtDay.format(raw)}, ${fmtDisplay.format(raw)}`, // day prefix + human format
+    _date: meetingDateTime,                       // actual Date with time
+    _iso: fmtISO.format(meetingDateTime),         // 'YYYY-MM-DD' for datetime=
+    _display: `${fmtDay.format(meetingDateTime)}, ${fmtDisplay.format(meetingDateTime)}`, // day prefix + human format
   };
 });
 
