@@ -23,6 +23,14 @@ assignments: []
 **Pit Number:** 10
 **Location:** Campolindo High School, Moraga
 
+## Please help your kiddos prepare:
+- **Water bottle**
+- **Snacks and lunch** 
+- **Something to keep your kiddos entertained during waiting periods**
+- **A jacket and appropriate clothing for the weather**
+
+Meanwhile, please help your kiddos practice their Innovation Project presentations, following their notes and time limits.
+
 ## Overall Schedule
 
 - **Coaches Meeting** - 8:20 AM at Morrison Gym (Coaches Only)
