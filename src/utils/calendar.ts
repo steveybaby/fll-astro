@@ -61,10 +61,10 @@ export function getMeetingDateTime(meetingDate: Date, startTime?: string, durati
   
   // Determine if date is in PDT (Daylight Saving Time)
   // DST in US: second Sunday in March to first Sunday in November
-  const march2nd = new Date(year, 2, 8); // March 8th
-  const march2ndSunday = new Date(march2nd.getTime() + (7 - march2nd.getDay()) * 24 * 60 * 60 * 1000);
-  const nov1st = new Date(year, 10, 1); // November 1st
-  const nov1stSunday = new Date(nov1st.getTime() + (7 - nov1st.getDay()) % 7 * 24 * 60 * 60 * 1000);
+  const march2nd = new Date(Date.UTC(year, 2, 8)); // March 8th in UTC
+  const march2ndSunday = new Date(march2nd.getTime() + (7 - march2nd.getUTCDay()) * 24 * 60 * 60 * 1000);
+  const nov1st = new Date(Date.UTC(year, 10, 1)); // November 1st in UTC
+  const nov1stSunday = new Date(nov1st.getTime() + (7 - nov1st.getUTCDay()) % 7 * 24 * 60 * 60 * 1000);
   
   const isDST = meetingDate >= march2ndSunday && meetingDate < nov1stSunday;
   const utcOffset = isDST ? 7 : 8; // PDT is UTC-7, PST is UTC-8
