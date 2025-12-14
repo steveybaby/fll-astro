@@ -67,7 +67,8 @@ const MEETING_DATES = [
   '2025-11-09',
   '2025-11-15',
   '2025-12-04',
-  '2025-12-07'
+  '2025-12-07',
+  '2025-12-13'
 ];
 
 // Manual date assignments for photos without EXIF data
