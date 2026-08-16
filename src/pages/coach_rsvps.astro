@@ -26,9 +26,6 @@ const coachInitials = {
   'Esther R': 'ER'
 };
 
-// API endpoint
-const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
-
 // Helper function to format meeting date
 const formatMeetingDisplay = (date) => {
   const raw = date instanceof Date ? date : new Date(`${date}T00:00:00Z`);
@@ -790,10 +787,17 @@ const formatMeetingISO = (date) => {
   }
 </style>
 
-<script define:vars={{ RSVP_API_URL, coaches }}>
+<script type="application/json" id="coach-rsvps-config" set:html={JSON.stringify({ coaches })} />
+
+<script>
+  // aliased: CoachRSVPGrid has its own updateRSVP method
+  import { getRSVPs, updateRSVP as sendRSVPUpdate } from '../lib/signups';
+
   (function(){
+    var cfg = JSON.parse(document.getElementById('coach-rsvps-config').textContent);
+    var coaches = cfg.coaches;
+
     function CoachRSVPGrid() {
-      this.apiUrl = RSVP_API_URL;
       this.coaches = coaches;
       this.currentData = null;
       this.cacheKey = 'rsvps:coaches:all';
@@ -857,35 +861,10 @@ const formatMeetingISO = (date) => {
     CoachRSVPGrid.prototype.loadAllRSVPData = function(opts) {
       opts = opts || {};
       if (!opts.background) this.showLoading();
-      function fetchWithTimeout(input, init, timeoutMs) {
-        init = init || {};
-        timeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 5000;
-        var supportsAbort = typeof AbortController !== 'undefined';
-        var controller = supportsAbort ? new AbortController() : null;
-        var timer = setTimeout(function(){ if (controller) controller.abort(); }, timeoutMs);
-        var p = Promise.race([
-          fetch(input, (function(){
-            var merged = {};
-            for (var k in init) { if (Object.prototype.hasOwnProperty.call(init, k)) merged[k] = init[k]; }
-            if (controller) merged.signal = controller.signal;
-            return merged;
-          })()),
-          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
-        ]);
-        return p.finally(function(){ clearTimeout(timer); });
-      }
-
       var self = this;
       try {
-        var url = new URL(this.apiUrl);
-        url.searchParams.set('action', 'get');
-        url.searchParams.set('_cb', String(Date.now()));
-        console.log('Making Coach RSVP API request to:', url.toString());
-        fetchWithTimeout(url.toString(), { cache: 'no-store', redirect: 'follow' }, 15000)
-          .then(function(response){
-            if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + response.statusText);
-            return response.json();
-          })
+        console.log('Making Coach RSVP API request');
+        getRSVPs(undefined, 15000)
           .then(function(data){
             self.currentData = data;
             self.setCached(data);
@@ -913,37 +892,26 @@ const formatMeetingISO = (date) => {
       this.showUpdating();
       var self = this;
       try {
-        var updateUrl = new URL(this.apiUrl);
-        updateUrl.searchParams.set('action', 'update');
-        updateUrl.searchParams.set('meetingDate', meetingDate);
-        updateUrl.searchParams.set('kidName', coachName);
-        updateUrl.searchParams.set('status', status);
-        fetch(updateUrl.toString(), { method: 'GET', redirect: 'follow' })
-          .then(function(response){
-            if (response.ok) {
-              return response.json().then(function(result){
-                if (result.success) {
-                  var cached = self.getCached();
-                  if (cached) {
-                    var idx = -1;
-                    for (var i=0;i<cached.length;i++) {
-                      var m = cached[i];
-                      var d = m.meetingDate.indexOf('T')>-1 ? m.meetingDate.split('T')[0] : m.meetingDate;
-                      if (d === meetingDate) { idx = i; break; }
-                    }
-                    if (idx >= 0) {
-                      var kids = cached[idx].kids || [];
-                      var ki = -1; for (var j=0;j<kids.length;j++){ if (kids[j].name === coachName) { ki=j; break; } }
-                      if (ki >= 0) kids[ki].status = status; else kids.push({ name: coachName, status: status });
-                      self.setCached(cached);
-                    }
-                  }
+        sendRSVPUpdate(meetingDate, coachName, status)
+          .then(function(result){
+            if (result.success) {
+              var cached = self.getCached();
+              if (cached) {
+                var idx = -1;
+                for (var i=0;i<cached.length;i++) {
+                  var m = cached[i];
+                  var d = m.meetingDate.indexOf('T')>-1 ? m.meetingDate.split('T')[0] : m.meetingDate;
+                  if (d === meetingDate) { idx = i; break; }
                 }
-                self.hideUpdating();
-              });
-            } else {
-              self.hideUpdating();
+                if (idx >= 0) {
+                  var kids = cached[idx].kids || [];
+                  var ki = -1; for (var j=0;j<kids.length;j++){ if (kids[j].name === coachName) { ki=j; break; } }
+                  if (ki >= 0) kids[ki].status = status; else kids.push({ name: coachName, status: status });
+                  self.setCached(cached);
+                }
+              }
             }
+            self.hideUpdating();
           })
           .catch(function(){ self.hideUpdating(); })
           .finally(function(){ self.setCellButtonsDisabled(meetingDate, coachName, false); });
