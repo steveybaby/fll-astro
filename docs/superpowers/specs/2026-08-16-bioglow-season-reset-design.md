@@ -181,7 +181,8 @@ The BIOGLOW palette replaces red-on-white as primary:
 |---|---|---|
 | Deep teal | `#0F3A47` | Primary dark surface |
 | Light green | `#C3E39A` | Panels, cards, highlights |
-| Leaf green | `#3E8E3E` | Secondary accent, icons |
+| Leaf green | `#3E8E3E` | Icons and fills only (3.22:1 on cream — fails AA for text) |
+| Leaf green deep | `#2E6B2E` | Links and headings (5.08:1 on cream — passes AA) |
 | Cream | `#F2E3C4` | Light surface |
 | Glow yellow | `#FFD21E` | Small accents |
 | Signal red | `#EE2027` | Bold accent |
