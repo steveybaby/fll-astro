@@ -40,7 +40,7 @@ export async function GET() {
       
       const uid = `meeting-${meeting.slug}@fll-llamas.com`;
       const meetingUrl = `${import.meta.env.SITE}/meetings/${meeting.slug}/`;
-      const summary = meeting.data.title;
+      const summary = meeting.data.timeTBD ? `${meeting.data.title} (time TBD)` : meeting.data.title;
       const description = meeting.data.agenda
         ? `${teamName} Team Meeting\\n\\nAgenda:\\n${meeting.data.agenda.map(item => `• ${item}`).join('\\n')}\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`
         : `${teamName} Team Meeting\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`;

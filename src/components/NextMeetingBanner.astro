@@ -1,5 +1,5 @@
 ---
-import { formatMeetingTime } from '../utils/meeting-time.ts';
+import { formatMeetingTimeOrTBD } from '../utils/meeting-time.ts';
 import { getMeetingDateTime } from '../utils/calendar.ts';
 import { getSeasonContent } from '../utils/season';
 
@@ -51,7 +51,7 @@ const nextMeeting = futureMeetings[0] || null;
         <div class="banner-datetime">
           <time datetime={nextMeeting._iso}>{nextMeeting._display}</time>
           {nextMeeting.data.startTime && (
-            <span class="banner-time">{formatMeetingTime(nextMeeting.data.startTime, nextMeeting.data.duration)}</span>
+            <span class="banner-time">{formatMeetingTimeOrTBD(nextMeeting.data.startTime, nextMeeting.data.duration, nextMeeting.data.timeTBD)}</span>
           )}
         </div>
       </div>

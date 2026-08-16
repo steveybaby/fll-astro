@@ -1,6 +1,6 @@
 ---
 import Layout from '../components/Layout.astro';
-import { formatMeetingTime } from '../utils/meeting-time.ts';
+import { formatMeetingTimeOrTBD } from '../utils/meeting-time.ts';
 import { getSeasonContent } from '../utils/season';
 import { getCurrentSeason } from '../config/season';
 
@@ -48,19 +48,24 @@ const formatMeetingMobile = (date) => {
   return { month, day };
 };
 
-const formatMeetingTimeMobile = (startTime, duration) => {
+const formatMeetingTimeMobile = (startTime, duration, timeTBD) => {
   if (!startTime) {
     return { time: '', duration: '' };
   }
-  
+
+  const durationText = duration ? (duration === 1 ? '1hr' : `${duration}hrs`) : '';
+
+  if (timeTBD) {
+    return { time: 'TBD', duration: durationText };
+  }
+
   const [hours, minutes] = startTime.split(':').map(Number);
   const period = hours >= 12 ? 'pm' : 'am';
   const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
   const displayMinutes = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : '';
-  
+
   const timeString = `${displayHour}${displayMinutes}${period}`;
-  const durationText = duration ? (duration === 1 ? '1hr' : `${duration}hrs`) : '';
-  
+
   return { time: timeString, duration: durationText };
 };
 
@@ -113,8 +118,8 @@ const formatMeetingISO = (date) => {
           const isoDate = formatMeetingISO(meeting.data.date);
           const displayDate = formatMeetingDisplay(meeting.data.date);
           const mobileDate = formatMeetingMobile(meeting.data.date);
-          const meetingTime = formatMeetingTime(meeting.data.startTime, meeting.data.duration);
-          const mobileTime = formatMeetingTimeMobile(meeting.data.startTime, meeting.data.duration);
+          const meetingTime = formatMeetingTimeOrTBD(meeting.data.startTime, meeting.data.duration, meeting.data.timeTBD);
+          const mobileTime = formatMeetingTimeMobile(meeting.data.startTime, meeting.data.duration, meeting.data.timeTBD);
           
           return (
             <div class="grid-row" data-meeting-date={isoDate}>
