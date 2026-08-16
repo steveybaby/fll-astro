@@ -881,12 +881,13 @@ In `src/styles/global.css`, replace the color custom properties in `:root` with:
   --color-deep-teal: #0F3A47;
   --color-light-green: #C3E39A;
   --color-leaf-green: #3E8E3E;
+  --color-leaf-green-deep: #2E6B2E;  /* links/headings: AA on cream */
   --color-cream: #F2E3C4;
   --color-glow-yellow: #FFD21E;
   --color-signal-red: #EE2027;
   --color-near-black: #111A20;
 
-  --color-accent: var(--color-leaf-green);
+  --color-accent: var(--color-leaf-green-deep);
   --color-background: var(--color-cream);
   --color-surface: #ffffff;
   --color-text-primary: var(--color-near-black);
