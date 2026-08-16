@@ -1,0 +1,74 @@
+export interface RosterMember {
+  name: string;
+  initials: string;
+  returning: boolean;
+}
+
+export interface SeasonDefaults {
+  startTime: string;
+  duration: number;
+  location: string;
+}
+
+export interface Season {
+  id: string;
+  challenge: string;
+  teamName: string;
+  archived: boolean;
+  archivePath: string | null;
+  roster: RosterMember[];
+  defaults: SeasonDefaults;
+}
+
+export const CURRENT_SEASON = '2026-27';
+
+const MORAGA = '188 Calle La Montana, Moraga, CA, 94556';
+
+export const SEASONS: Record<string, Season> = {
+  '2026-27': {
+    id: '2026-27',
+    challenge: 'BIOGLOW',
+    // Placeholder name. This is the only place the team name is defined.
+    teamName: 'Bio-Llamas',
+    archived: false,
+    archivePath: null,
+    roster: [
+      { name: 'Jasper', initials: 'JH', returning: true },
+      { name: 'Ethan', initials: 'EM', returning: true },
+      { name: 'Luca', initials: 'LS', returning: true },
+      { name: 'Ishaan', initials: 'IA', returning: false },
+      { name: 'Hudson', initials: 'HH', returning: false },
+    ],
+    defaults: { startTime: '14:00', duration: 2, location: MORAGA },
+  },
+  '2025-26': {
+    id: '2025-26',
+    challenge: 'UNEARTHED',
+    teamName: 'Looting Llamas',
+    archived: true,
+    archivePath: '/2025',
+    roster: [
+      { name: 'Jasper', initials: 'JH', returning: false },
+      { name: 'Asher', initials: 'AO', returning: false },
+      { name: 'Kai', initials: 'KP', returning: false },
+      { name: 'Jeremiah', initials: 'JR', returning: false },
+      { name: 'Luca', initials: 'LS', returning: false },
+      { name: 'Ethan', initials: 'EM', returning: false },
+    ],
+    defaults: { startTime: '15:30', duration: 2.5, location: MORAGA },
+  },
+};
+
+export const ARCHIVED_SEASONS = Object.values(SEASONS)
+  .filter((s) => s.archived)
+  .map((s) => s.id);
+
+export function getSeason(id: string): Season {
+  const season = SEASONS[id];
+  if (!season) throw new Error(`Unknown season: ${id}`);
+  return season;
+}
+
+export function getCurrentSeason(): Season {
+  return getSeason(CURRENT_SEASON);
+}
