@@ -1,10 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
 import Layout from '../components/Layout.astro';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
 import { getMeetingDateTime } from '../utils/calendar.ts';
+import { getSeasonContent } from '../utils/season';
 
-const meetingsRaw = await getCollection('meetings');
+const meetingsRaw = await getSeasonContent('meetings');
 
 // Reuse formatters (faster than creating inside .map) - Use Pacific Time for California team
 const fmtISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' }); // YYYY-MM-DD

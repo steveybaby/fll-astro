@@ -1,10 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
 import Layout from '../components/Layout.astro';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
+import { getSeasonContent } from '../utils/season';
 
 // Get all meetings, filter for future meetings, and sort them chronologically
-const meetings = await getCollection('meetings');
+const meetings = await getSeasonContent('meetings');
 const now = new Date();
 const futureMeetings = meetings.filter(meeting => {
   const meetingDate = meeting.data.date instanceof Date ? meeting.data.date : new Date(`${meeting.data.date}T00:00:00Z`);

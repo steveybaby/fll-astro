@@ -1,9 +1,9 @@
-import { getCollection } from 'astro:content';
 import { getMeetingDateTime } from '../utils/calendar.ts';
+import { getSeasonContent } from '../utils/season';
 
 export async function GET() {
   try {
-    const meetings = await getCollection('meetings');
+    const meetings = await getSeasonContent('meetings');
     
     // Generate events for all meetings
     const events = meetings.map(meeting => {

@@ -1,14 +1,12 @@
 ---
 import { config } from '../config';
-import { getCollection } from 'astro:content';
+import { getSeasonContent } from '../utils/season';
 
 const base = import.meta.env.BASE_URL;
 
-const blogPosts = await getCollection('blog', ({ data }) => {
-  return data.draft !== true;
-});
-const meetings = await getCollection('meetings');
-const newsletters = await getCollection('newsletter');
+const blogPosts = (await getSeasonContent('blog')).filter(({ data }) => data.draft !== true);
+const meetings = await getSeasonContent('meetings');
+const newsletters = await getSeasonContent('newsletter');
 
 // Combine all content types, adding a type field
 const allContent = [

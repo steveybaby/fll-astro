@@ -1,17 +1,13 @@
 ---
 import Layout from '../components/Layout.astro';
 import NextMeetingBanner from '../components/NextMeetingBanner.astro';
-import { getCollection } from 'astro:content';
+import { getSeasonContent } from '../utils/season';
 import fs from 'fs';
 import path from 'path';
 
-const blogPosts = await getCollection('blog', ({ data }) => {
-  return data.draft !== true;
-});
-const meetings = await getCollection('meetings');
-const newsletters = await getCollection('newsletter', ({ data }) => {
-  return data.draft !== true;
-});
+const blogPosts = (await getSeasonContent('blog')).filter(({ data }) => data.draft !== true);
+const meetings = await getSeasonContent('meetings');
+const newsletters = (await getSeasonContent('newsletter')).filter(({ data }) => data.draft !== true);
 
 // Helper function to get file modification time
 function getFileModTime(filePath: string): Date {

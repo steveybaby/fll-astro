@@ -1,10 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
 import Layout from '../components/Layout.astro';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
+import { getSeasonContent } from '../utils/season';
 
 // Get all meetings and filter to future meetings only
-const meetings = await getCollection('meetings');
+const meetings = await getSeasonContent('meetings');
 const now = new Date();
 const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 

@@ -1,9 +1,9 @@
 ---
-import { getCollection } from 'astro:content';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
 import { getMeetingDateTime } from '../utils/calendar.ts';
+import { getSeasonContent } from '../utils/season';
 
-const meetingsRaw = await getCollection('meetings');
+const meetingsRaw = await getSeasonContent('meetings');
 
 // Process meetings with Pacific Time parsing
 const fmtISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' });
