@@ -13,7 +13,12 @@
 ## Global Constraints
 
 - Node 20 (matches `.github/workflows` CI).
-- `npm run build` and `npm run check` must pass at the end of every task.
+- `npm run build` must pass at the end of every task.
+- `npm run check` has a **pre-existing baseline of 91 errors** (verified at commit `28e768f`,
+  before any work on this branch). The rule is: do not exceed 91. Fixing pre-existing errors
+  is out of scope — do not attempt it, and do not treat the baseline as a task failure.
+  Check the count with:
+  `npm run check 2>&1 | grep -oE '^- [0-9]+ errors' | head -1`
 - Never change signup request/response behavior in this spec — the Apps Script backend is untouched. Backend replacement is spec 2.
 - Team name is `Bio-Llamas` (placeholder) and must only ever be read from `season.ts`.
 - Current season id is the string `"2026-27"`; archived is `"2025-26"`.
