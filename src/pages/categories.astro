@@ -1,5 +1,6 @@
 ---
 import Layout from '../components/Layout.astro';
+import { CURRENT_SEASON } from '../config/season';
 
 const base = import.meta.env.BASE_URL;
 
@@ -7,7 +8,8 @@ const base = import.meta.env.BASE_URL;
 const mdPostsGlob = import.meta.glob('../content/blog/*.md', { eager: true });
 const mdxPostsGlob = import.meta.glob('../content/blog/*.mdx', { eager: true });
 
-const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
+const inSeason = (post: any) => post.frontmatter.season === CURRENT_SEASON;
+const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)].filter(inSeason) as any[];
 
 // Extract all categories from posts
 const allCategories = new Set<string>();

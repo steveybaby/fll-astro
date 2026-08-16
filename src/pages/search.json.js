@@ -1,13 +1,16 @@
+import { CURRENT_SEASON } from '../config/season';
+
 export async function GET() {
   // Get all blog posts
   const posts = await import.meta.glob('../content/blog/*.md');
-  
+
   const searchData = [];
-  
+
   for (const path in posts) {
     const post = await posts[path]();
+    if (post.frontmatter.season !== CURRENT_SEASON) continue;
     const url = path.replace('../content', '').replace('.md', '');
-    
+
     searchData.push({
       title: post.frontmatter.title || 'Untitled',
       url: url,
