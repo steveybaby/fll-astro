@@ -6,12 +6,15 @@ interface Props {
 
 const { meetingDate } = Astro.props;
 
-// API endpoint - same as snacks page
-const SNACK_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
-
 // Children list
 const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
 ---
+
+<script
+  type="application/json"
+  id="snack-duty-config"
+  set:html={JSON.stringify({ meetingDate, children })}
+/>
 
 <div class="snack-duty-section">
   <h3 class="snack-duty-title">🍰 Snack Duty</h3>
@@ -182,11 +185,16 @@ const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
   }
 </style>
 
-<script define:vars={{ SNACK_API_URL, meetingDate, children }}>
+<script>
+  import { getSnacks } from '../lib/signups';
+
+  const cfg = JSON.parse(document.getElementById('snack-duty-config').textContent);
+  const meetingDate = cfg.meetingDate;
+  const children = cfg.children;
+
   // Snack Duty Component JavaScript
   class SnackDutyDisplay {
     constructor() {
-      this.apiUrl = SNACK_API_URL;
       this.meetingDate = meetingDate;
       this.children = children;
       this.cacheKey = `snacks:${this.meetingDate}`;
@@ -210,38 +218,8 @@ const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
     async loadSnackAssignment(opts) {
       opts = opts || {};
       try {
-        // Helper with timeout (no object spread)
-        function fetchWithTimeout(input, init, timeoutMs) {
-          init = init || {};
-          timeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 5000;
-          const supportsAbort = typeof AbortController !== 'undefined';
-          const controller = supportsAbort ? new AbortController() : null;
-          const timer = setTimeout(function(){ if (controller) controller.abort(); }, timeoutMs);
-          var p = Promise.race([
-            fetch(input, (function(){
-              var merged = {};
-              for (var k in init) { if (Object.prototype.hasOwnProperty.call(init, k)) merged[k] = init[k]; }
-              if (controller) merged.signal = controller.signal;
-              return merged;
-            })()),
-            new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
-          ]);
-          return p.finally(function(){ clearTimeout(timer); });
-        }
-
-        // Filtered request for this meeting with timeout and no-store
-        const url = new URL(this.apiUrl);
-        url.searchParams.set('action', 'getSnacks');
-        url.searchParams.set('meetingDate', this.meetingDate);
-        url.searchParams.set('_cb', String(Date.now()));
-
-        const response = await fetchWithTimeout(url.toString(), { method: 'GET', cache: 'no-store', redirect: 'follow' }, 5000);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
+        // Filtered request for this meeting (timeout + no-store live in the seam)
+        const data = await getSnacks(this.meetingDate, 5000);
         this.setCached(data);
         this.renderSnackAssignment(data);
         this.showContent();
@@ -314,15 +292,9 @@ const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
     }
   }
 
-  // Initialize when DOM is ready
-  const __initSnackDuty = () => new SnackDutyDisplay();
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', __initSnackDuty, { once: true });
-  } else {
-    __initSnackDuty();
-  }
-
-  // Caching helpers
+  // Caching helpers — must be attached before init runs. (As a bundled module
+  // this script is deferred, so readyState is never 'loading' and init would
+  // otherwise fire before these assignments.)
   SnackDutyDisplay.prototype.getCached = function() {
     try {
       const raw = localStorage.getItem(this.cacheKey);
@@ -335,5 +307,13 @@ const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
   }
   SnackDutyDisplay.prototype.setCached = function(data) {
     try { localStorage.setItem(this.cacheKey, JSON.stringify({ data: data, fetchedAt: Date.now() })); } catch (e) {}
+  }
+
+  // Initialize when DOM is ready
+  const __initSnackDuty = () => new SnackDutyDisplay();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', __initSnackDuty, { once: true });
+  } else {
+    __initSnackDuty();
   }
 </script>
