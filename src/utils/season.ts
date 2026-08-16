@@ -1,4 +1,4 @@
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry, type CollectionKey } from 'astro:content';
 import { CURRENT_SEASON } from '../config/season';
 
 /**
@@ -14,7 +14,10 @@ export function filterBySeason<T extends { data: { season: string } }>(
 }
 
 /** Load one collection, filtered to a season. Defaults to the current season. */
-export async function getSeasonContent(collection: any, season: string = CURRENT_SEASON) {
+export async function getSeasonContent<C extends CollectionKey>(
+  collection: C,
+  season: string = CURRENT_SEASON
+): Promise<CollectionEntry<C>[]> {
   const entries = await getCollection(collection);
-  return filterBySeason(entries as any[], season);
+  return filterBySeason(entries, season);
 }
