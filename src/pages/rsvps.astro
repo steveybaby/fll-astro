@@ -793,6 +793,9 @@ const formatMeetingISO = (date) => {
 <script type="application/json" id="rsvps-config" set:html={JSON.stringify({ children })} />
 
 <script>
+  // @ts-nocheck — this body was an untyped `define:vars` inline script before the
+  // signups extraction; bundling it newly exposes it to `astro check`. Typing it
+  // is out of scope for a no-behavior-change refactor.
   // aliased: RSVPGrid has its own updateRSVP method
   import { getRSVPs, updateRSVP as sendRSVPUpdate } from '../lib/signups';
 

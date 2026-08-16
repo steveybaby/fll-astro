@@ -186,6 +186,9 @@ const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
 </style>
 
 <script>
+  // @ts-nocheck — this body was an untyped `define:vars` inline script before the
+  // signups extraction; bundling it newly exposes it to `astro check`. Typing it
+  // is out of scope for a no-behavior-change refactor.
   import { getSnacks } from '../lib/signups';
 
   const cfg = JSON.parse(document.getElementById('snack-duty-config').textContent);

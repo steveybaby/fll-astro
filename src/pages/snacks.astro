@@ -36,9 +36,6 @@ const childInitials = {
   'Ethan': 'EM'
 };
 
-// API endpoint - using same backend as RSVPs but different action
-const SNACK_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
-
 // Helper function to format meeting date
 const formatMeetingDisplay = (date) => {
   const raw = date instanceof Date ? date : new Date(`${date}T00:00:00Z`);
@@ -810,11 +807,25 @@ const formatMeetingISO = (date) => {
   }
 </style>
 
-<script define:vars={{ SNACK_API_URL, children }}>
+<script type="application/json" id="snacks-config" set:html={JSON.stringify({ children })} />
+
+<script>
+  // @ts-nocheck — this body was an untyped `define:vars` inline script before the
+  // signups extraction; bundling it newly exposes it to `astro check`. Typing it
+  // is out of scope for a no-behavior-change refactor.
+  // aliased: SnackGrid has its own assignSnack method
+  import {
+    getSnacks,
+    assignSnack as sendAssignSnack,
+    removeSnack as sendRemoveSnack,
+  } from '../lib/signups';
+
+  const cfg = JSON.parse(document.getElementById('snacks-config').textContent);
+  const children = cfg.children;
+
   // Global Snack Grid JavaScript
   class SnackGrid {
     constructor() {
-      this.apiUrl = SNACK_API_URL;
       this.children = children;
       this.currentData = null;
       
@@ -871,37 +882,9 @@ const formatMeetingISO = (date) => {
       opts = opts || {};
       if (!opts.background) this.showLoading();
       
-      // Helper with timeout (no object spread)
-      function fetchWithTimeout(input, init, timeoutMs) {
-        init = init || {};
-        timeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 5000;
-        const supportsAbort = typeof AbortController !== 'undefined';
-        const controller = supportsAbort ? new AbortController() : null;
-        const timer = setTimeout(function(){ if (controller) controller.abort(); }, timeoutMs);
-        var p = Promise.race([
-          fetch(input, (function(){
-            var merged = {};
-            for (var k in init) { if (Object.prototype.hasOwnProperty.call(init, k)) merged[k] = init[k]; }
-            if (controller) merged.signal = controller.signal;
-            return merged;
-          })()),
-          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
-        ]);
-        return p.finally(function(){ clearTimeout(timer); });
-      }
-
       try {
         console.log('Loading all snack data');
-        const url = new URL(this.apiUrl);
-        url.searchParams.set('action', 'getSnacks');
-        url.searchParams.set('_cb', String(Date.now()));
-        const response = await fetchWithTimeout(url.toString(), { cache: 'no-store' }, 5000);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
+        const data = await getSnacks(undefined, 5000);
         console.log('API response:', data);
         this.currentData = data;
         this.setCached(data);
@@ -936,33 +919,25 @@ const formatMeetingISO = (date) => {
         console.log('Assigning snack duty:', { meetingDate, kidName: childName });
         
         // Try the real API call
-        const updateUrl = new URL(this.apiUrl);
-        updateUrl.searchParams.set('action', 'assignSnack');
-        updateUrl.searchParams.set('meetingDate', meetingDate);
-        updateUrl.searchParams.set('kidName', childName);
+        console.log('Assign API call:', { meetingDate, kidName: childName });
+        const result = await sendAssignSnack(meetingDate, childName);
 
-        console.log('Assign API call:', updateUrl.toString());
-        const response = await fetch(updateUrl.toString());
-        
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            console.log('Snack assignment successful');
-            this.hideUpdating();
-            this.removeSavingState(meetingDate);
-            // Update cache (binary assignment for meeting)
-            const cached = this.getCached();
-            if (cached) {
-              const idx = cached.findIndex(m => (m.meetingDate.includes('T') ? m.meetingDate.split('T')[0] : m.meetingDate) === meetingDate);
-              if (idx >= 0) {
-                cached[idx].kids = [{ name: childName, status: '🍰' }];
-                this.setCached(cached);
-              }
+        if (result.success) {
+          console.log('Snack assignment successful');
+          this.hideUpdating();
+          this.removeSavingState(meetingDate);
+          // Update cache (binary assignment for meeting)
+          const cached = this.getCached();
+          if (cached) {
+            const idx = cached.findIndex(m => (m.meetingDate.includes('T') ? m.meetingDate.split('T')[0] : m.meetingDate) === meetingDate);
+            if (idx >= 0) {
+              cached[idx].kids = [{ name: childName, status: '🍰' }];
+              this.setCached(cached);
             }
-            return;
           }
+          return;
         }
-        
+
         // If API call failed, UI is already updated optimistically
         console.warn('API call failed, keeping optimistic update');
         this.hideUpdating();
@@ -982,34 +957,26 @@ const formatMeetingISO = (date) => {
       try {
         
         // Try the real API call
-        const updateUrl = new URL(this.apiUrl);
-        updateUrl.searchParams.set('action', 'removeSnack');
-        updateUrl.searchParams.set('meetingDate', meetingDate);
-        updateUrl.searchParams.set('kidName', childName);
+        console.log('Remove API call:', { meetingDate, kidName: childName });
+        const result = await sendRemoveSnack(meetingDate, childName);
 
-        console.log('Remove API call:', updateUrl.toString());
-        const response = await fetch(updateUrl.toString());
-        
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            console.log('Snack removal successful');
-            // Update UI immediately without full reload
-            this.clearMeetingSnackAssignment(meetingDate);
-            this.hideUpdating();
-            // Update cache
-            const cached = this.getCached();
-            if (cached) {
-              const idx = cached.findIndex(m => (m.meetingDate.includes('T') ? m.meetingDate.split('T')[0] : m.meetingDate) === meetingDate);
-              if (idx >= 0) {
-                cached[idx].kids = [];
-                this.setCached(cached);
-              }
+        if (result.success) {
+          console.log('Snack removal successful');
+          // Update UI immediately without full reload
+          this.clearMeetingSnackAssignment(meetingDate);
+          this.hideUpdating();
+          // Update cache
+          const cached = this.getCached();
+          if (cached) {
+            const idx = cached.findIndex(m => (m.meetingDate.includes('T') ? m.meetingDate.split('T')[0] : m.meetingDate) === meetingDate);
+            if (idx >= 0) {
+              cached[idx].kids = [];
+              this.setCached(cached);
             }
-            return;
           }
+          return;
         }
-        
+
         // If API call failed, don't update UI
         console.warn('API call failed');
         this.hideUpdating();
