@@ -1,0 +1,949 @@
+---
+import Layout from './Layout.astro';
+import R2PhotoGallery from './R2PhotoGallery.astro';
+import RSVPComponent from './RSVPComponent.astro';
+import SnackDutyComponent from './SnackDutyComponent.astro';
+import ModelCard from './ModelCard.astro';
+import { formatMeetingTime } from '../utils/meeting-time.ts';
+import { getSeason, CURRENT_SEASON } from '../config/season';
+
+export interface Props {
+  meeting: any;
+  prevMeeting?: any;
+  nextMeeting?: any;
+  season?: string;
+}
+
+const { meeting, prevMeeting = null, nextMeeting = null, season = CURRENT_SEASON } = Astro.props;
+
+const seasonInfo = getSeason(season);
+/** '' for the live season, '/2025' for an archived one. */
+const prefix = seasonInfo.archived && seasonInfo.archivePath ? seasonInfo.archivePath : '';
+/** Archived seasons point back at their archive landing page. */
+const meetingsIndexHref = prefix ? `${prefix}/` : '/meeting-plans/';
+
+const { Content } = await meeting.render();
+const { data } = meeting;
+/** data.date can be a Date or a 'YYYY-MM-DD' string */
+const raw = data.date instanceof Date ? data.date : new Date(`${data.date}T00:00:00Z`);
+
+// ISO date for <time datetime="YYYY-MM-DD">
+const isoDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' }).format(raw); // e.g., 2025-08-10
+
+// Human-friendly, but still pinned to UTC
+const dayName = new Intl.DateTimeFormat('en-US', {
+  weekday: 'short',
+  timeZone: 'UTC',
+}).format(raw);
+
+const display = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+}).format(raw);
+
+const displayWithDay = `${dayName}, ${display}`;
+
+// Check if meeting is in the future
+const now = new Date();
+const isFutureMeeting = raw >= now;
+---
+
+<Layout title={data.title} description={`Meeting notes from ${display}`} type="article" publishedTime={isoDate}>
+  <article class="meeting-article">
+    <header class="meeting-header">
+      <h1>Meeting: {data.title}</h1>
+      <div class="meeting-header-info">
+        <div class="meeting-datetime">
+          <time datetime={isoDate}>{displayWithDay}</time>
+          {data.startTime && (
+            <span class="meeting-start-time">{formatMeetingTime(data.startTime, data.duration)}</span>
+          )}
+        </div>
+        
+        <div class="meeting-actions">
+          <button 
+            class="calendar-button"
+            id="calendar-subscribe-btn"
+            title="Subscribe to Looting Llamas meeting calendar"
+          >
+            📅 Subscribe to Team Calendar
+          </button>
+          
+          <div id="calendar-subscription-popup" class="calendar-popup" style="display: none;">
+            <div class="calendar-popup-content">
+              <h4>Subscribe to Looting Llamas Calendar</h4>
+              <p>Copy this URL and add it to your calendar app:</p>
+              
+              <div class="url-copy-container">
+                <input 
+                  type="text" 
+                  id="calendar-url" 
+                  value="https://fll.sharpers.com/calendar.ics" 
+                  readonly
+                  class="calendar-url-input"
+                />
+                <button id="copy-url-btn" class="copy-button">Copy</button>
+              </div>
+              
+              <div class="calendar-instructions">
+                <h5>Instructions:</h5>
+                <ul>
+                  <li><strong>Google Calendar:</strong> Settings → Add calendar → From URL</li>
+                  <li><strong>Apple Calendar:</strong> File → New Calendar Subscription</li>
+                  <li><strong>Outlook:</strong> Add calendar → Subscribe from web</li>
+                </ul>
+              </div>
+              
+              <div class="popup-actions">
+                <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+                <button id="close-popup-btn" class="close-button">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- <time datetime={data.date.toISOString()}>
+        {data.date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        })}
+      </time> -->
+    </header>
+
+    <!-- Quick Navigation Links -->
+    <div class="quicklinks">
+      {prevMeeting && (
+        <a href={`${prefix}/meetings/${prevMeeting.slug}/`} class="quicklink prev-quicklink" title={`Previous: ${prevMeeting.data.title}`}>
+          ← Previous
+        </a>
+      )}
+      {nextMeeting && (
+        <a href={`${prefix}/meetings/${nextMeeting.slug}/`} class="quicklink next-quicklink" title={`Next: ${nextMeeting.data.title}`}>
+          Next →
+        </a>
+      )}
+    </div>
+
+    <!-- RSVP Component - Show at top for future meetings -->
+    {isFutureMeeting && (
+      <RSVPComponent meetingDate={isoDate} />
+    )}
+
+    <!-- Snack Duty Component - Show for future meetings -->
+    {isFutureMeeting && (
+      <SnackDutyComponent meetingDate={isoDate} />
+    )}
+
+    <div class="meeting-content">
+      <Content />
+      
+      <!-- Auto-inject meeting date if not present -->
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Find the first h1 in meeting content and add date after it
+          const meetingContent = document.querySelector('.meeting-content');
+          const firstH1 = meetingContent?.querySelector('h1');
+          if (firstH1) {
+            // Check if date already exists in the content
+            const contentText = meetingContent.textContent;
+            if (!contentText.includes('Date:')) {
+              const dateP = document.createElement('p');
+              dateP.innerHTML = `<strong>Date:</strong> ${displayWithDay}<br><strong>FIRST LEGO League UNEARTHED™ Season</strong>`;
+              dateP.style.marginBottom = 'calc(var(--grid-unit) * 3)';
+              dateP.style.color = 'var(--color-text-secondary)';
+              firstH1.parentNode.insertBefore(dateP, firstH1.nextSibling);
+            }
+          }
+        });
+      </script>
+    </div>
+
+    {data.assignments && data.assignments.length > 0 && (
+      <ModelCard assignments={data.assignments} />
+    )}
+
+    <!-- RSVP Component - Show at bottom for past meetings -->
+    {!isFutureMeeting && (
+      <RSVPComponent meetingDate={isoDate} />
+    )}
+
+    <!-- Snack Duty Component - Show for past meetings -->
+    {!isFutureMeeting && (
+      <SnackDutyComponent meetingDate={isoDate} />
+    )}
+
+    <!-- R2 Photo Gallery System -->
+    <R2PhotoGallery 
+      meetingDate={isoDate} 
+      meetingName={data.title}
+    />
+
+  </article>
+
+  <nav class="meeting-nav">
+    <div class="meeting-pagination">
+      {prevMeeting && (
+        <a href={`${prefix}/meetings/${prevMeeting.slug}/`} class="nav-link prev-meeting">
+          <span class="nav-label">← Previous Meeting</span>
+          <span class="nav-title">{prevMeeting.data.title}</span>
+          <span class="nav-date">
+            {(() => {
+              const prevDate = prevMeeting.data.date instanceof Date 
+                ? prevMeeting.data.date 
+                : new Date(`${prevMeeting.data.date}T00:00:00Z`);
+              return prevDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'UTC'
+              });
+            })()}
+          </span>
+        </a>
+      )}
+      
+      {nextMeeting && (
+        <a href={`${prefix}/meetings/${nextMeeting.slug}/`} class="nav-link next-meeting">
+          <span class="nav-label">Next Meeting →</span>
+          <span class="nav-title">{nextMeeting.data.title}</span>
+          <span class="nav-date">
+            {(() => {
+              const nextDate = nextMeeting.data.date instanceof Date 
+                ? nextMeeting.data.date 
+                : new Date(`${nextMeeting.data.date}T00:00:00Z`);
+              return nextDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'UTC'
+              });
+            })()}
+          </span>
+        </a>
+      )}
+    </div>
+    
+    <a href={meetingsIndexHref} class="back-link">← Back to All Meetings</a>
+  </nav>
+</Layout>
+
+<style>
+  .meeting-article {
+    max-width: 800px;
+    margin: 0 auto calc(var(--grid-unit) * 6) auto;
+  }
+
+  .meeting-header {
+    margin-bottom: calc(var(--grid-unit) * 6);
+  }
+
+  .meeting-header h1 {
+    font-family: var(--font-heading-primary);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+  }
+
+  .meeting-header time {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: calc(var(--grid-unit) * 2);
+    display: block;
+  }
+
+  .meeting-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: calc(var(--grid-unit) * 2);
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .meeting-datetime {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 2);
+    flex: 1;
+  }
+
+  .meeting-start-time {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .quicklinks {
+    display: flex;
+    justify-content: space-between;
+    margin: calc(var(--grid-unit) * 2) 0 calc(var(--grid-unit) * 4) 0;
+    padding: 0 calc(var(--grid-unit) * 2);
+  }
+
+  .quicklink {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .quicklink:hover {
+    color: var(--color-accent);
+    background-color: var(--color-surface);
+  }
+
+  .prev-quicklink {
+    margin-right: auto;
+  }
+
+  .next-quicklink {
+    margin-left: auto;
+  }
+
+  .meeting-actions {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .calendar-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    background-color: transparent;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .calendar-button:hover,
+  .calendar-button:focus {
+    background-color: var(--color-accent);
+    color: white;
+  }
+
+  .calendar-popup {
+    position: absolute;
+    top: calc(100% + calc(var(--grid-unit)));
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border: 2px solid var(--color-accent);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-width: 500px;
+  }
+
+  .calendar-popup-content {
+    padding: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-popup h4 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .calendar-popup p {
+    color: var(--color-text-secondary);
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    line-height: 1.5;
+  }
+
+  .url-copy-container {
+    display: flex;
+    gap: calc(var(--grid-unit));
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-url-input {
+    flex: 1;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    background: var(--color-background);
+    color: var(--color-text-primary);
+  }
+
+  .copy-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+  }
+
+  .copy-button:hover,
+  .copy-button:focus {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .calendar-instructions {
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .calendar-instructions h5 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit)) 0;
+  }
+
+  .calendar-instructions ul {
+    margin: 0;
+    padding-left: calc(var(--grid-unit) * 3);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .calendar-instructions li {
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .popup-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .download-fallback {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    text-decoration: underline;
+  }
+
+  .download-fallback:hover {
+    color: var(--color-accent);
+  }
+
+  .close-button {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit) * 1.5);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+  }
+
+  .close-button:hover,
+  .close-button:focus {
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+  }
+
+  /* Monumental Blood Red Rule */
+  .meeting-header::after {
+    content: "";
+    height: 6px;
+    background-color: var(--color-accent);
+    border: none;
+    margin: calc(var(--grid-unit) * 4) 0;
+    width: 100%;
+    display: block;
+  }
+
+  .meeting-content {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    margin-bottom: calc(var(--grid-unit) * 6);
+  }
+
+  .meeting-content :global(h1) {
+    font-family: var(--font-heading-primary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: calc(var(--grid-unit) * 6);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .meeting-content :global(h2) {
+    font-family: var(--font-heading-secondary);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: calc(var(--grid-unit) * 6);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .meeting-content :global(h3) {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: calc(var(--grid-unit) * 4);
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .meeting-content :global(ul),
+  .meeting-content :global(ol) {
+    margin-bottom: calc(var(--grid-unit) * 3);
+    padding-left: calc(var(--grid-unit) * 3);
+  }
+
+  .meeting-content :global(li) {
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .meeting-content :global(p) {
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .meeting-content :global(strong) {
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .meeting-content :global(em) {
+    font-style: italic;
+  }
+
+  /* Code block styling */
+  .meeting-content :global(.code-block-container) {
+    position: relative;
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .meeting-content :global(.code-block-header) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+  }
+
+  .meeting-content :global(.code-block-language) {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .meeting-content :global(.code-copy-btn) {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .meeting-content :global(.code-copy-btn:hover),
+  .meeting-content :global(.code-copy-btn:focus) {
+    background: var(--color-text-primary);
+    transform: translateY(-1px);
+  }
+
+  .meeting-content :global(.code-copy-btn.copied) {
+    background: #22c55e;
+  }
+
+  .meeting-content :global(pre) {
+    margin: 0;
+    border-radius: 0 0 8px 8px;
+    border: 2px solid var(--color-border);
+    border-top: none;
+  }
+
+  .meeting-content :global(.code-block-container pre) {
+    background: var(--color-background);
+    padding: calc(var(--grid-unit) * 2);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .meeting-content :global(code) {
+    font-family: var(--font-mono);
+    background: var(--color-surface);
+    padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2);
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: var(--color-accent);
+  }
+
+  .meeting-content :global(pre code) {
+    background: transparent;
+    padding: 0;
+    color: var(--color-text-primary);
+    border-radius: 0;
+  }
+
+  .meeting-photos {
+    margin-top: calc(var(--grid-unit) * 6);
+  }
+
+  .meeting-photos h3 {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+  }
+
+  .meeting-nav {
+    border-top: 1px solid var(--color-border);
+    padding-top: calc(var(--grid-unit) * 3);
+    margin-top: calc(var(--grid-unit) * 6);
+  }
+
+  .meeting-pagination {
+    display: flex;
+    justify-content: space-between;
+    gap: calc(var(--grid-unit) * 2);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .nav-link {
+    flex: 1;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) / 2);
+    padding: calc(var(--grid-unit) * 2);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .nav-link:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .prev-meeting {
+    text-align: left;
+  }
+
+  .next-meeting {
+    text-align: right;
+    margin-left: auto;
+  }
+
+  .nav-label {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .nav-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+  }
+
+  .nav-link:hover .nav-title {
+    color: var(--color-accent);
+  }
+
+  .nav-date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .back-link {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: inline-block;
+    text-decoration: none;
+  }
+
+  .back-link:hover,
+  .back-link:focus {
+    background-color: var(--color-accent);
+    color: white;
+    text-decoration: none;
+  }
+
+  @media (max-width: 768px) {
+    .meeting-header h1 {
+      font-size: 2.25rem;
+    }
+    
+    .meeting-content {
+      font-size: 1rem;
+    }
+    
+    .meeting-content :global(h1) {
+      font-size: 2rem;
+    }
+    
+    .meeting-content :global(h2) {
+      font-size: 1.75rem;
+    }
+    
+    .meeting-content :global(h3) {
+      font-size: 1.25rem;
+    }
+
+    .meeting-pagination {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) * 1.5);
+    }
+
+    .nav-link {
+      max-width: none;
+    }
+
+    .next-meeting {
+      margin-left: 0;
+    }
+
+    .nav-title {
+      font-size: 0.9rem;
+    }
+
+    .quicklinks {
+      margin: calc(var(--grid-unit) * 1.5) 0 calc(var(--grid-unit) * 3) 0;
+      padding: 0 calc(var(--grid-unit));
+    }
+
+    .quicklink {
+      font-size: 0.8rem;
+      padding: calc(var(--grid-unit) / 2);
+    }
+
+    .meeting-header-info {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) * 1.5);
+      align-items: flex-start;
+    }
+
+    .meeting-actions {
+      align-self: stretch;
+    }
+
+    .calendar-button {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .calendar-popup {
+      left: calc(var(--grid-unit) * -2);
+      right: calc(var(--grid-unit) * -2);
+      max-width: none;
+    }
+    
+    .url-copy-container {
+      flex-direction: column;
+    }
+    
+    .popup-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: calc(var(--grid-unit));
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const subscribeBtn = document.getElementById('calendar-subscribe-btn');
+    const popup = document.getElementById('calendar-subscription-popup');
+    const closeBtn = document.getElementById('close-popup-btn');
+    const copyBtn = document.getElementById('copy-url-btn');
+    const urlInput = document.getElementById('calendar-url');
+    
+    // Set the correct URL based on current domain
+    if (urlInput) {
+      urlInput.value = `${window.location.origin}/calendar.ics`;
+    }
+    
+    // Show popup
+    if (subscribeBtn && popup) {
+      subscribeBtn.addEventListener('click', function() {
+        popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+    
+    // Hide popup
+    if (closeBtn && popup) {
+      closeBtn.addEventListener('click', function() {
+        popup.style.display = 'none';
+      });
+    }
+    
+    // Copy URL to clipboard
+    if (copyBtn && urlInput) {
+      copyBtn.addEventListener('click', async function() {
+        try {
+          await navigator.clipboard.writeText(urlInput.value);
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          // Fallback for older browsers
+          urlInput.select();
+          document.execCommand('copy');
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy';
+          }, 2000);
+        }
+      });
+    }
+    
+    // Hide popup when clicking outside
+    document.addEventListener('click', function(event) {
+      if (popup && !popup.contains(event.target) && !subscribeBtn.contains(event.target)) {
+        popup.style.display = 'none';
+      }
+    });
+
+    // Code block copy functionality
+    function enhanceCodeBlocks() {
+      const codeBlocks = document.querySelectorAll('pre code');
+      
+      codeBlocks.forEach((codeElement) => {
+        const preElement = codeElement.parentElement;
+        const language = codeElement.className.replace('language-', '') || 'code';
+        
+        // Create container
+        const container = document.createElement('div');
+        container.className = 'code-block-container';
+        
+        // Create header with language and copy button
+        const header = document.createElement('div');
+        header.className = 'code-block-header';
+        
+        const languageLabel = document.createElement('span');
+        languageLabel.className = 'code-block-language';
+        languageLabel.textContent = language;
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'code-copy-btn';
+        copyBtn.textContent = 'Copy';
+        
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(codeElement.textContent);
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+              copyBtn.textContent = 'Copy';
+              copyBtn.classList.remove('copied');
+            }, 2000);
+          } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = codeElement.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+              copyBtn.textContent = 'Copy';
+              copyBtn.classList.remove('copied');
+            }, 2000);
+          }
+        });
+        
+        header.appendChild(languageLabel);
+        header.appendChild(copyBtn);
+        
+        // Insert container before pre element
+        preElement.parentNode.insertBefore(container, preElement);
+        container.appendChild(header);
+        container.appendChild(preElement);
+      });
+    }
+
+    // Enhance code blocks after DOM is loaded
+    enhanceCodeBlocks();
+  });
+</script>
