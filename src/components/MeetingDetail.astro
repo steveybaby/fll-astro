@@ -148,21 +148,27 @@ const isFutureMeeting = raw >= now;
       )
     )}
 
-    <div class="meeting-content">
+    <div
+      class="meeting-content"
+      data-meeting-display-date={displayWithDay}
+      data-season-challenge={seasonInfo.challenge}
+    >
       <Content />
-      
+
       <!-- Auto-inject meeting date if not present -->
       <script>
         document.addEventListener('DOMContentLoaded', function() {
           // Find the first h1 in meeting content and add date after it
           const meetingContent = document.querySelector('.meeting-content');
           const firstH1 = meetingContent?.querySelector('h1');
-          if (firstH1) {
+          if (firstH1 && meetingContent instanceof HTMLElement) {
             // Check if date already exists in the content
             const contentText = meetingContent.textContent;
             if (!contentText.includes('Date:')) {
+              const displayWithDay = meetingContent.dataset.meetingDisplayDate ?? '';
+              const seasonChallenge = meetingContent.dataset.seasonChallenge ?? '';
               const dateP = document.createElement('p');
-              dateP.innerHTML = `<strong>Date:</strong> ${displayWithDay}<br><strong>FIRST LEGO League UNEARTHED™ Season</strong>`;
+              dateP.innerHTML = `<strong>Date:</strong> ${displayWithDay}<br><strong>FIRST LEGO League ${seasonChallenge}™ Season</strong>`;
               dateP.style.marginBottom = 'calc(var(--grid-unit) * 3)';
               dateP.style.color = 'var(--color-text-secondary)';
               firstH1.parentNode.insertBefore(dateP, firstH1.nextSibling);

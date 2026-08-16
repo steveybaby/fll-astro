@@ -1,9 +1,11 @@
 import { getMeetingDateTime } from '../utils/calendar.ts';
 import { getSeasonContent } from '../utils/season';
+import { getCurrentSeason } from '../config/season';
 
 export async function GET() {
   try {
     const meetings = await getSeasonContent('meetings');
+    const teamName = getCurrentSeason().teamName;
     
     // Generate events for all meetings
     const events = meetings.map(meeting => {
@@ -39,9 +41,9 @@ export async function GET() {
       const uid = `meeting-${meeting.slug}@fll-llamas.com`;
       const meetingUrl = `${import.meta.env.SITE}/meetings/${meeting.slug}/`;
       const summary = meeting.data.title;
-      const description = meeting.data.agenda 
-        ? `Looting Llamas Team Meeting\\n\\nAgenda:\\n${meeting.data.agenda.map(item => `• ${item}`).join('\\n')}\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`
-        : `Looting Llamas Team Meeting\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`;
+      const description = meeting.data.agenda
+        ? `${teamName} Team Meeting\\n\\nAgenda:\\n${meeting.data.agenda.map(item => `• ${item}`).join('\\n')}\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`
+        : `${teamName} Team Meeting\\n\\nView full meeting details and notes: ${meetingUrl}\\n\\nAll team meetings: ${import.meta.env.SITE}/meeting-plans/`;
       const location = meeting.data.location || 'Piedmont Makers Club';
       
       return [
@@ -59,10 +61,10 @@ export async function GET() {
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Looting Llamas//Team Calendar//EN',
+      `PRODID:-//${teamName}//Team Calendar//EN`,
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
-      'X-WR-CALNAME:Looting Llamas Team Meetings',
+      `X-WR-CALNAME:${teamName} Team Meetings`,
       'X-WR-CALDESC:FIRST Lego League team meeting schedule',
       'X-WR-TIMEZONE:America/Los_Angeles',
       'BEGIN:VTIMEZONE',

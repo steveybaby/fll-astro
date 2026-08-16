@@ -1,3 +1,5 @@
+import { getCurrentSeason } from '../config/season';
+
 interface CalendarEvent {
   title: string;
   date: Date;
@@ -14,11 +16,13 @@ export function generateICSFile(event: CalendarEvent): string {
   const startDate = formatDate(event.date);
   const endDate = new Date(event.date.getTime() + event.duration * 60 * 60 * 1000);
   const endDateString = formatDate(endDate);
-  
+
+  const teamName = getCurrentSeason().teamName;
+
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Looting Llamas//Meeting Calendar//EN',
+    `PRODID:-//${teamName}//Meeting Calendar//EN`,
     'BEGIN:VEVENT',
     `UID:${Date.now()}@fll-llamas.com`,
     `DTSTART:${startDate}`,

@@ -1,3 +1,5 @@
+import { getCurrentSeason } from './config/season';
+
 export interface SiteConfig {
   title: string;
   description: string;
@@ -15,13 +17,15 @@ export interface SiteConfig {
   };
   siteUrl: string;
 }
- 
+
+const season = getCurrentSeason();
+
 export const config: SiteConfig = {
-  title: "Looting Llamas",
-  description: "FIRST Lego League team blog and meeting documentation",
+  title: season.teamName,
+  description: `FIRST LEGO League ${season.challenge} season — meetings, schedule, and progress`,
   author: {
     name: "FLL Team",
-    bio: "FIRST Lego League robotics team sharing our journey, meetings, and progress throughout the season.",
+    bio: `FIRST LEGO League robotics team sharing our ${season.challenge} season journey.`,
     avatar: "/images/avatar.jpg"
   },
   social: {
@@ -30,7 +34,7 @@ export const config: SiteConfig = {
     // linkedin: "https://linkedin.com/in/yourusername",
     email: "team@fll-astro.com"
   },
-  siteUrl: "https://fll-astro.com"
+  siteUrl: "https://fll.sharpers.com"
 };
 
 // Export constants for SEO component
