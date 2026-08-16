@@ -6,6 +6,7 @@
   --color-deep-teal: #0F3A47;
   --color-light-green: #C3E39A;
   --color-leaf-green: #3E8E3E;
+  --color-leaf-green-deep: #2E6B2E;
   --color-cream: #F2E3C4;
   --color-glow-yellow: #FFD21E;
   --color-signal-red: #EE2027;
@@ -20,7 +21,11 @@
   --color-dark-gray: #274139;
   --color-black: var(--color-near-black);
 
-  --color-accent: var(--color-leaf-green);
+  /* Links and headings use the deep variant, not the logo green: leaf green on
+     cream is only 3.22:1, below the 4.5:1 WCAG AA floor for normal-size text.
+     The deep variant reaches 5.08:1. --color-leaf-green stays the brand value
+     for icons and fills, where the 3:1 non-text threshold applies. */
+  --color-accent: var(--color-leaf-green-deep);
   --color-background: var(--color-cream);
   --color-surface: #ffffff;
   --color-text-primary: var(--color-near-black);
