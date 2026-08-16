@@ -654,13 +654,37 @@ In each file below, replace the bare `await getCollection('<name>')` with `await
 - `src/pages/rsvps.astro`
 - `src/pages/coach_rsvps.astro`
 - `src/pages/meeting-plans.astro:6`
-- `src/pages/photos.astro`
-- `src/pages/blog.astro`
 - `src/pages/newsletters.astro`
-- `src/pages/categories.astro`
-- `src/pages/rss.xml.js`
-- `src/pages/search.json.js`
 - `src/pages/calendar.ics.ts`
+- `src/components/NextMeetingBanner.astro` — renders on the homepage
+- `src/components/Sidebar.astro`
+
+`src/pages/photos.astro` needs no change: it is a static informational page with no content
+query at all.
+
+**The blog pages do not use content collections.** `blog.astro`, `categories.astro`,
+`rss.xml.js`, `search.json.js`, `blog/[...slug].astro`, and `categories/[category].astro`
+all read markdown directly with `import.meta.glob`, so the `season` schema field has no
+effect on them. They cannot be "repointed" — instead, filter their glob results, which
+expose frontmatter directly:
+
+```js
+import { CURRENT_SEASON } from '../config/season';
+
+// eager globs (blog.astro, categories.astro, rss.xml.js, and the two dynamic routes)
+const inSeason = ([, post]) => post.frontmatter.season === CURRENT_SEASON;
+const posts = Object.entries(import.meta.glob('../content/blog/*.md', { eager: true }))
+  .filter(inSeason);
+```
+
+`search.json.js` uses a lazy glob, so its filter goes after the per-path `await`:
+
+```js
+const post = await posts[path]();
+if (post.frontmatter.season !== CURRENT_SEASON) continue;
+```
+
+The archived equivalents under `/2025/` (Task 7) filter on `'2025-26'` the same way.
 
 Leave `src/pages/meetings/[...slug].astro`, `src/pages/blog/[...slug].astro`, and `src/pages/newsletters/[...slug].astro` on unfiltered `getCollection` for now — Task 7 changes how those generate paths.
 
