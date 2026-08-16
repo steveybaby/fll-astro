@@ -721,7 +721,6 @@ git commit -m "feat: filter listing pages to the current season"
 - Create: `src/pages/2025/index.astro`
 - Create: `src/pages/2025/meetings/[...slug].astro`
 - Create: `src/pages/2025/calendar.astro`
-- Create: `src/pages/2025/photos.astro`
 - Create: `src/pages/2025/newsletters/index.astro`
 - Create: `src/pages/2025/newsletters/[...slug].astro`
 - Create: `src/pages/2025/blog/index.astro`
@@ -822,8 +821,7 @@ const meetings = (await getSeasonContent('meetings', ARCHIVED)).sort(
 
     <nav class="archive-links">
       <a href="/2025/calendar/">Calendar</a>
-      <a href="/2025/photos/">Photos</a>
-      <a href="/2025/newsletters/">Newsletters</a>
+          <a href="/2025/newsletters/">Newsletters</a>
       <a href="/2025/blog/">Blog</a>
     </nav>
   </div>
@@ -832,11 +830,11 @@ const meetings = (await getSeasonContent('meetings', ARCHIVED)).sort(
 
 - [ ] **Step 4: Create the remaining archive routes**
 
-Create `src/pages/2025/calendar.astro`, `src/pages/2025/photos.astro`, `src/pages/2025/newsletters/index.astro`, `src/pages/2025/newsletters/[...slug].astro`, `src/pages/2025/blog/index.astro`, and `src/pages/2025/blog/[...slug].astro`.
+Create `src/pages/2025/calendar.astro`, `src/pages/2025/newsletters/index.astro`, `src/pages/2025/newsletters/[...slug].astro`, `src/pages/2025/blog/index.astro`, and `src/pages/2025/blog/[...slug].astro`.
 
 Each index route mirrors Step 3: import `Layout`, call `getSeasonContent('<collection>', '2025-26')`, pass `season={ARCHIVED}` to `Layout`, and render links prefixed with `/2025/`. Each `[...slug].astro` mirrors Step 2: `getStaticPaths` over `getSeasonContent('<collection>', '2025-26')`, rendering the same detail component the live route uses with `season="2025-26"`.
 
-For `photos.astro`, pass the archived date range to the existing `R2PhotoGallery` component rather than reimplementing it — the R2 bucket is shared across seasons and photos are keyed by meeting date.
+`/2025/photos` is deliberately NOT created: `photos.astro` is static explanatory prose with no content query, so an archived copy would carry no information. Archived photos remain visible via the `R2PhotoGallery` on each archived meeting page, which is where they actually live.
 
 - [ ] **Step 5: Add the archive entry points**
 
