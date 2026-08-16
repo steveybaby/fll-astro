@@ -1,29 +1,40 @@
 ---
 import { config } from '../config';
 import { getSeasonContent } from '../utils/season';
+import { getSeason, CURRENT_SEASON } from '../config/season';
+
+export interface Props {
+  season?: string;
+}
+
+const { season = CURRENT_SEASON } = Astro.props;
+
+const seasonInfo = getSeason(season);
+/** '' for the live season, '/2025' for an archived one. */
+const prefix = seasonInfo.archived && seasonInfo.archivePath ? seasonInfo.archivePath : '';
 
 const base = import.meta.env.BASE_URL;
 
-const blogPosts = (await getSeasonContent('blog')).filter(({ data }) => data.draft !== true);
-const meetings = await getSeasonContent('meetings');
-const newsletters = await getSeasonContent('newsletter');
+const blogPosts = (await getSeasonContent('blog', season)).filter(({ data }) => data.draft !== true);
+const meetings = await getSeasonContent('meetings', season);
+const newsletters = await getSeasonContent('newsletter', season);
 
 // Combine all content types, adding a type field
 const allContent = [
   ...blogPosts.map(post => ({
     ...post,
     type: 'blog',
-    url: `/blog/${post.slug}/`
+    url: `${prefix}/blog/${post.slug}/`
   })),
   ...meetings.map(meeting => ({
     ...meeting,
     type: 'meeting',
-    url: `/meetings/${meeting.slug}/`
+    url: `${prefix}/meetings/${meeting.slug}/`
   })),
   ...newsletters.map(newsletter => ({
     ...newsletter,
     type: 'newsletter',
-    url: `/newsletters/${newsletter.slug}/`
+    url: `${prefix}/newsletters/${newsletter.slug}/`
   }))
 ];
 

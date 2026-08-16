@@ -18,6 +18,7 @@ import Header from './Header.astro';
 import Sidebar from './Sidebar.astro';
 import Footer from './Footer.astro';
 import SEO from './SEO.astro';
+import { CURRENT_SEASON } from '../config/season';
 
 export interface Props {
   title: string;
@@ -27,9 +28,20 @@ export interface Props {
   type?: 'website' | 'article';
   publishedTime?: string;
   canonical?: string;
+  /** Which season's content this page belongs to. Archived pages pin it. */
+  season?: string;
 }
 
-const { title, description, showSidebar = true, image, type, publishedTime, canonical } = Astro.props;
+const {
+  title,
+  description,
+  showSidebar = true,
+  image,
+  type,
+  publishedTime,
+  canonical,
+  season = CURRENT_SEASON,
+} = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -56,7 +68,7 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
       <main class="main-content" class:list={{ 'with-sidebar': showSidebar }}>
         {showSidebar && (
           <aside class="sidebar">
-            <Sidebar />
+            <Sidebar season={season} />
           </aside>
         )}
         

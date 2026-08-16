@@ -1,19 +1,20 @@
 ---
-import BlogPostDetail from '../../components/BlogPostDetail.astro';
-import { extractHeadings, filterHeadingsForTOC } from '../../utils/table-of-contents';
-import { calculateReadingTime, extractTextFromMarkdown } from '../../utils/reading-time';
-import { CURRENT_SEASON } from '../../config/season';
+import BlogPostDetail from '../../../components/BlogPostDetail.astro';
+import { extractHeadings, filterHeadingsForTOC } from '../../../utils/table-of-contents';
+import { calculateReadingTime, extractTextFromMarkdown } from '../../../utils/reading-time';
+
+const ARCHIVED = '2025-26';
 
 export async function getStaticPaths() {
-  // Support both .md and .mdx files
-  const mdPostsGlob = import.meta.glob('../../content/blog/*.md', { eager: true });
-  const mdxPostsGlob = import.meta.glob('../../content/blog/*.mdx', { eager: true });
+  // Blog posts come from import.meta.glob rather than a content collection,
+  // so the season filter is applied to the frontmatter directly.
+  const mdPostsGlob = import.meta.glob('../../../content/blog/*.md', { eager: true });
+  const mdxPostsGlob = import.meta.glob('../../../content/blog/*.mdx', { eager: true });
 
-  const inSeason = (post: any) => post.frontmatter.season === CURRENT_SEASON;
+  const inSeason = (post: any) => post.frontmatter.season === '2025-26';
   const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)].filter(inSeason) as any[];
 
   return allPosts.map((post: any) => {
-    // For import.meta.glob, access raw content through compiledContent or body
     const rawContent = post.body || post.rawContent?.() || '';
     const plainText = extractTextFromMarkdown(rawContent);
     const readingTime = calculateReadingTime(plainText);
@@ -34,5 +35,5 @@ const { post, readingTime, tocHeadings } = Astro.props;
   post={post}
   readingTime={readingTime}
   tocHeadings={tocHeadings}
-  season={CURRENT_SEASON}
+  season={ARCHIVED}
 />

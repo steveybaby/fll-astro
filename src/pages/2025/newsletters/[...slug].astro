@@ -1,0 +1,19 @@
+---
+import type { GetStaticPaths } from 'astro';
+import NewsletterDetail from '../../../components/NewsletterDetail.astro';
+import { getSeasonContent } from '../../../utils/season';
+
+const ARCHIVED = '2025-26';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const newsletters = await getSeasonContent('newsletter', '2025-26');
+  return newsletters.map((newsletter) => ({
+    params: { slug: newsletter.slug },
+    props: { newsletter },
+  }));
+};
+
+const { newsletter } = Astro.props;
+---
+
+<NewsletterDetail newsletter={newsletter} season={ARCHIVED} />

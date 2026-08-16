@@ -1,0 +1,140 @@
+---
+import Layout from '../../components/Layout.astro';
+import { getSeasonContent } from '../../utils/season';
+import { getSeason } from '../../config/season';
+
+const ARCHIVED = '2025-26';
+const season = getSeason(ARCHIVED);
+const meetings = (await getSeasonContent('meetings', ARCHIVED)).sort(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+---
+
+<Layout title={`${season.challenge} Season Archive`} season={ARCHIVED}>
+  <div class="archive-page">
+    <header>
+      <h1>{season.teamName} — {season.challenge}</h1>
+      <p>The {season.id} season archive. {meetings.length} meetings on record.</p>
+    </header>
+
+    <ul class="archive-meetings">
+      {meetings.map((m) => (
+        <li>
+          <a href={`/2025/meetings/${m.slug}/`}>{m.data.title}</a>
+          <time datetime={new Date(m.data.date).toISOString().split('T')[0]}>
+            {new Intl.DateTimeFormat('en-US', {
+              month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+            }).format(new Date(m.data.date))}
+          </time>
+        </li>
+      ))}
+    </ul>
+
+    <nav class="archive-links">
+      <a href="/2025/calendar/">Calendar</a>
+      <a href="/2025/newsletters/">Newsletters</a>
+      <a href="/2025/blog/">Blog</a>
+    </nav>
+  </div>
+</Layout>
+
+<style>
+  .archive-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: calc(var(--grid-unit) * 4) 0;
+  }
+
+  .archive-page header {
+    margin-bottom: calc(var(--grid-unit) * 5);
+  }
+
+  .archive-page h1 {
+    font-family: var(--font-heading-primary);
+    font-size: 2.75rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .archive-page header p {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .archive-meetings {
+    list-style: none;
+    margin: 0 0 calc(var(--grid-unit) * 5) 0;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .archive-meetings li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: calc(var(--grid-unit) * 2);
+    padding: calc(var(--grid-unit) * 1.5) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .archive-meetings a {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-text-primary);
+    text-decoration: none;
+  }
+
+  .archive-meetings a:hover,
+  .archive-meetings a:focus {
+    color: var(--color-accent);
+  }
+
+  .archive-meetings time {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .archive-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--grid-unit) * 2);
+  }
+
+  .archive-links a {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .archive-links a:hover,
+  .archive-links a:focus {
+    background-color: var(--color-accent);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .archive-meetings li {
+      flex-direction: column;
+      gap: calc(var(--grid-unit) / 2);
+    }
+  }
+</style>

@@ -1,10 +1,11 @@
 ---
-import MeetingDetail from '../../components/MeetingDetail.astro';
-import { getSeasonContent } from '../../utils/season';
-import { CURRENT_SEASON } from '../../config/season';
+import MeetingDetail from '../../../components/MeetingDetail.astro';
+import { getSeasonContent } from '../../../utils/season';
+
+const ARCHIVED = '2025-26';
 
 export async function getStaticPaths() {
-  const meetings = await getSeasonContent('meetings');
+  const meetings = await getSeasonContent('meetings', '2025-26');
 
   // Sort meetings chronologically for navigation
   const sortedMeetings = meetings.sort((a, b) => {
@@ -19,11 +20,7 @@ export async function getStaticPaths() {
 
     return {
       params: { slug: meeting.slug },
-      props: {
-        meeting,
-        prevMeeting,
-        nextMeeting
-      },
+      props: { meeting, prevMeeting, nextMeeting },
     };
   });
 }
@@ -35,5 +32,5 @@ const { meeting, prevMeeting, nextMeeting } = Astro.props;
   meeting={meeting}
   prevMeeting={prevMeeting}
   nextMeeting={nextMeeting}
-  season={CURRENT_SEASON}
+  season={ARCHIVED}
 />

@@ -10,6 +10,9 @@ const currentYear = new Date().getFullYear();
       <p class="copyright">
         © {currentYear} {config.author.name}. All rights reserved.
       </p>
+      <p class="archive-link">
+        <a href="/2025/">2025 Season Archive</a>
+      </p>
       <p class="theme-credit">
         Powered by <a href="https://astro.build" target="_blank" rel="noopener">Astro</a> 
         • <a href="https://github.com/yourusername/volks-typo" target="_blank" rel="noopener">Volks-Typo Theme</a>
@@ -86,6 +89,21 @@ const currentYear = new Date().getFullYear();
   }
 
   .copyright,
+  .archive-link {
+    margin: 0 0 calc(var(--grid-unit) / 2) 0;
+    font-size: 0.9rem;
+  }
+
+  .archive-link a {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  .archive-link a:hover,
+  .archive-link a:focus {
+    color: var(--color-text-primary);
+  }
+
   .theme-credit {
     margin: 0;
     font-size: 0.9rem;
