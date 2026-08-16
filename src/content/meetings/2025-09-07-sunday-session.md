@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "FLL Meeting in Moraga (usual location)"
 date: 2025-09-07
 startTime: "15:30" # 3:30 PM

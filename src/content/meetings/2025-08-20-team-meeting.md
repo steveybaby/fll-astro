@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "One-off Wednesday Meeting"
 date: 2025-08-20
 startTime: "17:00" # 5:00 PM

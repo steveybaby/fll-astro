@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Season Kickoff Meeting"
 date: 2025-08-10
 startTime: "14:00" # 2:00 PM

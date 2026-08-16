@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Meeting 4 - Solving Missions!"
 date: 2025-08-31
 startTime: "15:30" # 3:30 PM

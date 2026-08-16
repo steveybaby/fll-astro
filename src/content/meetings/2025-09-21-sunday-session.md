@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Post-Interview Zoom Debrief"
 date: 2025-09-21
 startTime: "15:30" # 3:30 PM

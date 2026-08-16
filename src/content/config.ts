@@ -1,4 +1,5 @@
 import { defineCollection, z } from 'astro:content';
+import { CURRENT_SEASON } from '../config/season';
 
 const blog = defineCollection({
   type: 'content',
@@ -12,6 +13,7 @@ const blog = defineCollection({
     tags: z.array(z.string()).default([]),
     author: z.string().default('Anonymous'),
     image: z.string().optional(),
+    season: z.string().default(CURRENT_SEASON),
   }),
 });
 
@@ -31,6 +33,7 @@ const meetings = defineCollection({
       due: z.coerce.date().optional(),
     })).default([]),
     photos: z.array(z.string()).default([]),
+    season: z.string().default(CURRENT_SEASON),
   }),
 });
 
@@ -44,6 +47,7 @@ const newsletter = defineCollection({
     draft: z.boolean().default(false),
     excerpt: z.string().optional(),
     tags: z.array(z.string()).default([]),
+    season: z.string().default(CURRENT_SEASON),
   }),
 });
 

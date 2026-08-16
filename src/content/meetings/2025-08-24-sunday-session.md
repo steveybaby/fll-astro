@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "FLL Meeting in Oakland"
 date: 2025-08-24
 startTime: "15:30" # 3:30 PM

@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Challenges Review"
 date: 2025-08-17
 startTime: "16:30" # 4:30 PM (Sunday meeting)

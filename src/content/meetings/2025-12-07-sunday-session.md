@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Final Practice session"
 date: 2025-12-07
 startTime: "14:30" # 2:30 PM PST

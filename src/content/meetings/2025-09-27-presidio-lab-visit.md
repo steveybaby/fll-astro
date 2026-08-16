@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Presidio Archaeology Lab Visit"
 date: 2025-09-27
 startTime: "11:00" # 11:00 AM

@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Regular FLL Meeting"
 date: 2025-10-19
 startTime: "15:30" # 3:30 PM

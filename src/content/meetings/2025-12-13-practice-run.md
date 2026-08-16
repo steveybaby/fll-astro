@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Practice Run"
 date: 2025-12-13
 startTime: "09:30"

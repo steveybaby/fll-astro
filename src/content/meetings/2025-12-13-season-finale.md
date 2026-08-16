@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Piedmont Community Tournament 2025"
 date: 2025-12-13
 startTime: "08:30"

@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: Welcome to my site
 date: 2025-12-10T08:00:00.000Z
 description: Welcome to our FLL team website!

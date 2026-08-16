@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Judged Practice, Robot Game, Wave 2"
 date: 2025-10-25
 startTime: "10:30" # 10:30 AM

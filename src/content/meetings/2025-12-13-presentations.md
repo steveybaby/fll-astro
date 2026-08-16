@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Presentations"
 date: 2025-12-13
 startTime: "10:30"

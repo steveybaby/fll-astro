@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Tournament Celebration at Dave and Busters"
 date: 2025-12-13
 startTime: "17:00"

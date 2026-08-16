@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Practice Innovation "
 date: 2025-11-15
 startTime: "8:45" # 8:45 AM

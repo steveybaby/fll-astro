@@ -1,4 +1,5 @@
 ---
+season: "2025-26"
 title: "Archaeologist Interview - Innovation Project Research"
 date: 2025-09-17
 startTime: "15:30" # 3:30 PM
