@@ -1318,7 +1318,19 @@ Run: `grep -rin "looting llamas\|unearthed" src/ public/ --include="*.astro" --i
 
 Every hit outside `src/config/season.ts` and `src/content/` must be replaced with a value read from `season.ts`. Content files under `src/content/` are historical records and must NOT be edited.
 
-Note `src/utils/calendar.ts:21` contains `PRODID:-//Looting Llamas//Meeting Calendar//EN` — change it to read from the season config.
+Note the generated calendar feed carries the old team name in THREE places, all produced by
+`src/pages/calendar.ics.ts` (not `calendar.ts`). Verify against a built feed, not just source:
+
+```bash
+npm run build && grep -n "Looting Llamas" dist/calendar.ics
+```
+
+- `PRODID:-//Looting Llamas//Team Calendar//EN`
+- `X-WR-CALNAME:Looting Llamas Team Meetings`
+- every event's `DESCRIPTION:Looting Llamas Team Meeting\n\nAgenda:...`
+
+All three must read from the season config. `src/utils/calendar.ts:21` has a fourth,
+separate `PRODID` used by the client-side download helper — change that too.
 
 - [ ] **Step 4: Verify**
 
@@ -1568,12 +1580,21 @@ grep -c "BEGIN:VEVENT" dist/calendar.ics    # expect 21
 grep -c "2025" dist/calendar.ics            # expect 0
 ```
 
-Then confirm DST correctness at the season boundary:
+Then confirm DST handling at the season boundary. Note the feed does NOT emit UTC
+timestamps — it emits floating local times plus a `VTIMEZONE` block, and the calendar
+client resolves the offset itself. That is the correct approach, and it means
+`getMeetingDateTime`'s DST logic never reaches the feed:
 
 ```bash
-grep -A3 "20261101" dist/calendar.ics   # 2pm PST on 2026-11-01 => DTSTART 20261101T220000Z
-grep -A3 "20261025" dist/calendar.ics   # 2pm PDT on 2026-10-25 => DTSTART 20261025T210000Z
+# Local times, TZID-qualified — both should read T140000 with no Z suffix
+grep -E "DTSTART;TZID=America/Los_Angeles:2026(1025|1101)" dist/calendar.ics
+
+# The VTIMEZONE rules are what actually resolve DST; both must be present
+grep -E "BYMONTH=3;BYDAY=2SU|BYMONTH=11;BYDAY=1SU" dist/calendar.ics
 ```
+
+`getMeetingDateTime` (whose March DST bug Task 4 fixed) is used for *display* only —
+`NextMeetingBanner.astro` and `meeting-plans.astro` — not for the feed.
 
 - [ ] **Step 5: Verify the derived feeds**
 
