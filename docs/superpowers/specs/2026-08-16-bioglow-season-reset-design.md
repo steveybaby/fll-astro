@@ -27,7 +27,8 @@ migration.
 
 ## Non-goals
 
-- Replacing Google Sheets as the RSVP/snack backend (spec 2).
+- Replacing Google Sheets as the RSVP/snack backend (spec 2). The *seam* that migration
+  will use is in scope — see Signup data layer — but the backend itself is untouched here.
 - Changing typography, hosting, or the photo pipeline.
 - Refactoring code unrelated to season identity.
 
@@ -126,6 +127,51 @@ being retired, and spec 2 can start from an empty database instead of migrating 
 
 **This export runs first.** It is the only step that depends on a live external service
 that spec 2 will decommission.
+
+### Signup data layer
+
+Spec 1 reworks all three signup surfaces for the new roster. Without a seam, spec 2 would
+have to re-edit those same files. So this spec introduces one.
+
+The Apps Script backend exposes exactly five operations:
+
+| Operation | Current call |
+|---|---|
+| Read RSVPs | `?action=get&date=…` |
+| Set one RSVP | `?action=update&meetingDate=…&kidName=…&status=…` |
+| Read snacks | `?action=getSnacks&date=…` |
+| Claim snack duty | `?action=assignSnack&meetingDate=…&kidName=…` |
+| Release snack duty | `?action=removeSnack&meetingDate=…&kidName=…` |
+
+All five move into `src/lib/signups.ts`, which owns the endpoint URL, request shaping,
+timeouts, and caching. Pages import named functions and never construct a URL.
+
+This consolidates three things currently duplicated across the codebase:
+
+- The endpoint URL, hardcoded in five live files: `snacks.astro`, `rsvps.astro`,
+  `coach_rsvps.astro`, `RSVPComponent.astro`, `SnackDutyComponent.astro`.
+- A hand-rolled `fetchWithTimeout` wrapper (`snacks.astro:875`).
+- A localStorage cache with TTL (`snacks.astro:1171`).
+
+The cache and timeout logic exist only to mask Apps Script latency: its web apps 302-redirect
+to `googleusercontent.com`, cold-start a runtime, then open the Spreadsheet — 1–3s per call,
+with writes serialized by `SpreadsheetApp` lock contention. This is the root cause of the
+slowness that motivates spec 2. The workarounds are preserved as-is here and deleted in
+spec 2, once the backend is fast enough not to need them.
+
+**Dead code removal.** `src/components/RSVP.astro` is imported by nothing — only
+`RSVPComponent.astro` is live, used by `pages/meetings/[...slug].astro`. The dead file
+points at a *different* Apps Script deployment than the rest of the site, plus a second
+commented-out one, so it is a stale endpoint nobody calls. It is deleted rather than
+migrated. Confirmed by `grep -rn "import.*RSVP" src/`, which returns exactly one hit.
+
+**Behavior must not change in spec 1.** This is a pure extraction against the existing
+backend, verified by audit item 9.
+
+**Spec 2 direction (recorded so the seam targets the right shape):** Cloudflare D1 with a
+Worker, on the same account already serving R2 photos. Access stays open — no login —
+matching current behavior. Spec 2 replaces `signups.ts` internals plus
+`google-apps-script.js`, and touches no page.
 
 ### Theming
 
@@ -234,7 +280,8 @@ Run after implementation:
    with no layout break.
 7. All ten resources links return 200.
 8. R2 photo gallery loads for archived meetings.
-9. RSVP and snack round-trips still work against Google Sheets.
+9. RSVP and snack round-trips still work against Google Sheets, unchanged in behavior.
+   `grep -r "script.google.com" src/` returns exactly one hit: `src/lib/signups.ts`.
 10. Theme toggle cycles light → dark → llama correctly in both seasons.
 
 ---
@@ -267,4 +314,7 @@ Run after implementation:
 4. Apply BIOGLOW theming with `data-season` override for the archive.
 5. Author the 21 meeting files for 2026-27.
 6. Rebuild resources; reword remaining pages; update branding assets.
-7. Run the audit.
+7. Extract `src/lib/signups.ts`, repoint the five live files at it, and delete the dead
+   `RSVP.astro`. *(Pure refactor, no behavior change — done after the roster work so it
+   moves settled code, not code still in flux.)*
+8. Run the audit.
