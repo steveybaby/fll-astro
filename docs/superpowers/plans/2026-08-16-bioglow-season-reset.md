@@ -542,7 +542,7 @@ tagged=$(grep -l '^season: "2025-26"' src/content/meetings/*.md src/content/news
 echo "tagged $tagged of $total"
 ```
 
-Expected: `tagged 29 of 29`.
+Expected: `tagged 30 of 30`.
 
 - [ ] **Step 4: Verify the frontmatter is still valid**
 
@@ -814,11 +814,11 @@ Run: `npm run build`
 Then:
 
 ```bash
-ls dist/2025/meetings/ | wc -l   # expect 27
+ls dist/2025/meetings/ | wc -l   # expect 28
 ls dist/meetings/ 2>/dev/null | wc -l  # expect 0 until Task 11
 ```
 
-Expected: 27 archived meeting pages generated.
+Expected: 28 archived meeting pages generated.
 
 - [ ] **Step 7: Commit**
 
@@ -1521,7 +1521,7 @@ Expected: every line `OK`.
 - [ ] **Step 3: Verify archive routes render with the 2025 palette**
 
 ```bash
-ls dist/2025/meetings/ | wc -l                          # expect 27
+ls dist/2025/meetings/ | wc -l                          # expect 28
 grep -o 'data-season="[^"]*"' dist/2025/index.html      # expect 2025-26
 grep -c "dc2626" dist/_astro/*.css                       # expect at least 1
 ```

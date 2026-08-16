@@ -83,7 +83,7 @@ All three collections (`meetings`, `newsletter`, `blog`) gain:
 season: z.string().default(CURRENT_SEASON)
 ```
 
-Existing content — 27 meetings, 1 newsletter, 1 blog post — is backfilled with
+Existing content — 28 meetings, 1 newsletter, 1 blog post — is backfilled with
 `season: "2025-26"`.
 
 A shared `src/utils/season.ts` exposes `getSeasonContent(collection, season)`. Every
