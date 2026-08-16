@@ -20,7 +20,7 @@ const mdPostsGlob = import.meta.glob('../content/blog/*.md', { eager: true });
 const mdxPostsGlob = import.meta.glob('../content/blog/*.mdx', { eager: true });
 
 const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
-const inSeason = (post: any) => post.frontmatter.season === season;
+const inSeason = (post: any) => post.frontmatter.season === season && !post.frontmatter.draft;
 const sortedPosts = allPosts
   .filter(inSeason)
   .sort((a: any, b: any) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime());
