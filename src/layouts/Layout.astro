@@ -1,15 +1,18 @@
 ---
+import { CURRENT_SEASON } from '../config/season';
+
 export interface Props {
   title: string;
+  season?: string;
 }
 
-const { title } = Astro.props;
+const { title, season = CURRENT_SEASON } = Astro.props;
 const siteTitle = "Looting Llamas";
 const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-season={season}>
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content="A simple website with blog and photos" />

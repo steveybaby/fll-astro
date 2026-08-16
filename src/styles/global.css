@@ -2,25 +2,32 @@
 
 /* Color Variables */
 :root {
-  /* Monotone Palette */
+  /* BIOGLOW Palette */
+  --color-deep-teal: #0F3A47;
+  --color-light-green: #C3E39A;
+  --color-leaf-green: #3E8E3E;
+  --color-cream: #F2E3C4;
+  --color-glow-yellow: #FFD21E;
+  --color-signal-red: #EE2027;
+  --color-near-black: #111A20;
+
+  /* Legacy aliases: still referenced directly (not just via the semantic
+     vars below) by Sidebar.astro and about.astro, which are out of scope
+     for this task, so they stay defined here rather than disappearing. */
   --color-white: #ffffff;
-  --color-light-gray: #f5f5f5;
-  --color-medium-gray: #888888;
-  --color-dark-gray: #333333;
-  --color-black: #000000;
-  
-  /* Accent Color */
-  --color-accent-red: #dc2626;
-  
-  /* Semantic Colors */
-  --color-background: var(--color-white);
-  --color-surface: var(--color-light-gray);
-  --color-text-primary: var(--color-black);
+  --color-light-gray: #e7efdd;
+  --color-medium-gray: #6f8579;
+  --color-dark-gray: #274139;
+  --color-black: var(--color-near-black);
+
+  --color-accent: var(--color-leaf-green);
+  --color-background: var(--color-cream);
+  --color-surface: #ffffff;
+  --color-text-primary: var(--color-near-black);
   --color-text-secondary: var(--color-dark-gray);
   --color-text-muted: var(--color-medium-gray);
   --color-border: var(--color-medium-gray);
-  --color-accent: var(--color-accent-red);
-  
+
   /* Typography */
   --font-heading-primary: 'Oswald', sans-serif;
   --font-heading-secondary: 'Roboto Condensed', sans-serif;
@@ -36,31 +43,60 @@
 
 /* Dark Mode Theme */
 [data-theme="dark"] {
-  /* Monotone Palette - Dark Mode */
-  --color-background: #0a0a0a;
-  --color-surface: #1a1a1a;
-  --color-text-primary: #f5f5f5;
-  --color-text-secondary: #b8b8b8;
-  --color-text-muted: #888888;
-  --color-border: #333333;
-  --color-accent: #ff3333; /* Slightly brighter red for dark mode */
+  /* BIOGLOW Palette - Dark Mode, built from deep teal */
+  --color-background: var(--color-deep-teal);
+  --color-surface: #14485a;
+  --color-text-primary: var(--color-cream);
+  --color-text-secondary: #b7d9c0;
+  --color-text-muted: #7fa396;
+  --color-border: #1c5164;
+  --color-accent: var(--color-light-green);
 }
 
 /* Llama Mode Theme */
 [data-theme="llama"] {
-  /* Llama-inspired warm palette */
-  --color-background: linear-gradient(135deg, #f4f1e8 0%, #e8ddc7 100%);
-  --color-surface: #faf8f3;
-  --color-text-primary: #4a3429;
-  --color-text-secondary: #6b4e37;
-  --color-text-muted: #8b6f47;
-  --color-border: #d4c4a8;
-  --color-accent: #cd853f; /* Warm Peru/llama color */
+  /* Bio-Llamas: bioluminescent green instead of warm Peru brown */
+  --color-background: #0a2b35;
+  --color-surface: #103c49;
+  --color-text-primary: var(--color-light-green);
+  --color-text-secondary: #8fd9b4;
+  --color-text-muted: #5e9a86;
+  --color-border: #1c4d5c;
+  --color-accent: var(--color-glow-yellow);
 }
 
 /* Override background for llama mode to use gradient */
 [data-theme="llama"] body {
   background: var(--color-background);
+}
+
+/* Archived seasons keep their original identity. 2025-26 was red-on-white.
+   Comes after the [data-theme] blocks above so it wins the cascade on
+   archive pages regardless of which theme mode is selected. */
+[data-season="2025-26"] {
+  --color-accent-red: #dc2626;
+  --color-accent: var(--color-accent-red);
+  --color-background: #ffffff;
+  --color-surface: #f9fafb;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #374151;
+  --color-text-muted: #6b7280;
+  --color-border: #9ca3af;
+  --color-light-gray: #f3f4f6;
+  --color-medium-gray: #6b7280;
+}
+
+/* Higher-specificity compound selector: archive + dark mode should be the
+   original site's dark theme (brighter red on near-black), not BIOGLOW's
+   teal dark theme. */
+[data-season="2025-26"][data-theme="dark"] {
+  --color-accent: #ff3333;
+  --color-background: #111827;
+  --color-surface: #1f2937;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-muted: #9ca3af;
+  --color-border: #374151;
 }
 
 /* Smooth theme transitions */
