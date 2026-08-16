@@ -1,12 +1,15 @@
 ---
 import Layout from '../components/Layout.astro';
+import { getCurrentSeason } from '../config/season';
+
+const season = getCurrentSeason();
 ---
 
-<Layout title="FLL Resources" description="Comprehensive collection of FIRST Lego League UNEARTHED™ season resources, including official guides, robot programming tools, and educational materials.">
+<Layout title="FLL Resources" description={`Comprehensive collection of FIRST Lego League ${season.challenge}™ season resources, including official guides, robot programming tools, and educational materials.`}>
   <div class="resources-page">
     <!-- Hero Banner -->
     <div class="banner">
-      <h1>🏆 FLL UNEARTHED™ Season Resources</h1>
+      <h1>🏆 FLL {season.challenge}™ Season Resources</h1>
       <p class="banner-text">
         <a href="https://www.firstinspires.org/resource-library/fll/challenge/challenge-and-resources" target="_blank" rel="noopener">
           🔗 OFFICIAL FLL CHALLENGE & RESOURCES 🔗
@@ -14,13 +17,13 @@ import Layout from '../components/Layout.astro';
       </p>
     </div>
 
-    
+
     <!-- Resources Grid -->
     <div class="resources">
       <section class="resource-section">
         <h2>📋 General Participation</h2>
         <ul class="resource-list">
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2024-25/fll-challenge-submerged-participation-rules.pdf" target="_blank">Participation Rules</a> - Rules and requirements for participating in FIRST LEGO League events</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-participation-rules.pdf" target="_blank">Participation Rules</a> - Rules and requirements for participating in FIRST LEGO League events</li>
           <li><a href="https://drive.google.com/file/d/1fOU9S4MvaMfxEhEQgodrbr0RNduwFCIb/view" target="_blank">Systems Flowchart</a> - Team, Event, Volunteer Registration guide</li>
           <li><a href="https://docs.google.com/presentation/d/1nFXz6UaNS1u6l3MYtT1AiZZHcRHkyUzDXeJlXl7EKAU/edit?slide=id.g36be348cf6e_0_18#slide=id.g36be348cf6e_0_18" target="_blank">Esther Innovation Deck</a> - An introduction to being innovative with the innovation project!</li>
         </ul>
@@ -29,40 +32,22 @@ import Layout from '../components/Layout.astro';
       <section class="resource-section">
         <h2>📚 Core Season Documents</h2>
         <ul class="resource-list">
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-season-overview.pdf" target="_blank">Season Overview</a> - Summary of the UNEARTHED™ theme, competition structure, and Core Values</li>
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-en.pdf" target="_blank">Engineering Notebook</a> - Notebook template for documenting the team's season progress</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-season-overview.pdf" target="_blank">Season Overview</a> - Summary of the {season.challenge}™ theme, competition structure, and Core Values</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-en.pdf" target="_blank">Engineering Notebook</a> - Notebook template for documenting the team's season progress</li>
           <li><a href="https://docs.google.com/presentation/d/1FzwarsVui1aHNld41dREQT0h-MdO2Zq48Fb6U-nSf3A/edit?slide=id.g867d32a2c2_1_168#slide=id.g867d32a2c2_1_168" target="_blank">Innovation Project Worksheets</a> - Templates to guide your team through the Innovation Project process</li>
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-rgr.pdf" target="_blank">Robot Game Rulebook</a> - Complete rules for the Robot Game, including scoring and mission details</li>
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-challenge-updates.pdf" target="_blank">Challenge Updates & Clarifications</a> - Official clarifications and rule updates issued during the season</li>
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-field-setup-reference-guide.pdf" target="_blank">Field Setup Reference Guide</a> - Instructions for assembling and placing all mission models</li>
-        </ul>
-      </section>
-
-      <section class="resource-section">
-        <h2>🏆 Judging & Awards</h2>
-        <ul class="resource-list">
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-awards.pdf" target="_blank">Awards & Allocation</a> - Descriptions of awards and recognition criteria used in FLL events</li>
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-judging-session-flowchart.pdf" target="_blank">Judging Session Flowchart</a> - Visual guide to the judging process and session flow</li>
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-rubrics-color.pdf" target="_blank">Judging Rubrics (Color)</a> - Official judging rubrics for Core Values, Innovation Project, and Robot Design</li>
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-excel-scorer.xlsm" target="_blank">Official Judging Spreadsheet</a> - Excel-based tool for recording and calculating judging results</li>
-        </ul>
-      </section>
-
-      <section class="resource-section">
-        <h2>🎬 Videos</h2>
-        <ul class="resource-list">
-          <li><a href="https://youtu.be/exWkcUBS0j8?si=iBuccvzflOIHoSUw" target="_blank">Season Reveal Video</a> - Official unveiling of the UNEARTHED™ theme and season details</li>
-          <li><a href="https://youtu.be/PlJ51XUoP-Q" target="_blank">Season Welcome Video</a> - An introduction to the season for teams, coaches, and volunteers</li>
-          <li><a href="https://youtu.be/ErDj8myI_Tg" target="_blank">Robot Game Missions Video</a> - Explanation and visual demo of the season's Robot Game missions</li>
-          <li><a href="https://youtu.be/OTmQigVHNMg" target="_blank">Preparing for Your Event</a> - Tips and guidance for getting ready for a tournament</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-rgr.pdf" target="_blank">Robot Game Rulebook</a> - Complete rules for the Robot Game, including scoring and mission details</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/interactive-rgr/index.html" target="_blank">Robot Game Rulebook (Interactive)</a> - Browsable online version of the Robot Game Rulebook</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-tmg.pdf" target="_blank">Team Meeting Guide</a> - Suggested meeting-by-meeting plan for running a season</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-updates.pdf" target="_blank">Challenge Updates</a> - Official clarifications and rule updates issued during the season</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-field-setup-reference-guide.pdf" target="_blank">Field Set-Up Reference Guide</a> - Instructions for assembling and placing all mission models</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-wireframe-grid.pdf" target="_blank">Wireframe & Grid</a> - Reference diagrams for building and placing the game field</li>
         </ul>
       </section>
 
       <section class="resource-section">
         <h2>📎 Multimedia & Support</h2>
         <ul class="resource-list">
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-multimedia-resources.pdf" target="_blank">Multimedia Resources</a> - Logos, graphics, and media resources for use in team materials</li>
-          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2025-26/fll-challenge-unearthed-welcome-certificate-letter.pptx" target="_blank">Welcome Letter / Certificate Template</a> - Customizable welcome letter and certificate template for team members</li>
+          <li><a href="https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-multimedia-resources.pdf" target="_blank">Multimedia Resources</a> - Logos, graphics, and media resources for use in team materials</li>
           <li><a href="https://education.lego.com/en-us/downloads/spike-prime/software" target="_blank">SPIKE Prime Software</a> - Official programming environment</li>
           <li><a href="https://pybricks.com/" target="_blank">Pybricks</a> - Alternative Python-based programming for advanced users</li>
         </ul>
