@@ -73,9 +73,12 @@ export const SEASONS: Record<string, Season> = {
   },
 };
 
-export const ARCHIVED_SEASONS = Object.values(SEASONS)
+/** Archived seasons, most recently ended first. Drives the archive links in
+ * Header.astro/Footer.astro so a future season reset doesn't require hunting
+ * down hardcoded `/2025`-style paths. */
+export const ARCHIVED_SEASONS: Season[] = Object.values(SEASONS)
   .filter((s) => s.archived)
-  .map((s) => s.id);
+  .sort((a, b) => b.id.localeCompare(a.id));
 
 export function getSeason(id: string): Season {
   const season = SEASONS[id];

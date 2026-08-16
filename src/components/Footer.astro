@@ -1,7 +1,13 @@
 ---
 import { config } from '../config';
+import { ARCHIVED_SEASONS } from '../config/season';
 
 const currentYear = new Date().getFullYear();
+/** e.g. { label: '2025 Season Archive', href: '/2025/' } for each archived season. */
+const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
+  label: `${s.id.split('-')[0]} Season Archive`,
+  href: `${s.archivePath!}/`,
+}));
 ---
 
 <footer class="site-footer">
@@ -10,9 +16,11 @@ const currentYear = new Date().getFullYear();
       <p class="copyright">
         © {currentYear} {config.author.name}. All rights reserved.
       </p>
-      <p class="archive-link">
-        <a href="/2025/">2025 Season Archive</a>
-      </p>
+      {archiveLinks.map((link) => (
+        <p class="archive-link">
+          <a href={link.href}>{link.label}</a>
+        </p>
+      ))}
       <p class="theme-credit">
         Powered by <a href="https://astro.build" target="_blank" rel="noopener">Astro</a>
       </p>

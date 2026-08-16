@@ -1,8 +1,14 @@
 ---
 import { config } from '../config';
+import { ARCHIVED_SEASONS } from '../config/season';
 import ThemeToggle from './ThemeToggle.astro';
 
 const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: '' };
+/** e.g. { label: '2025 Season', href: '/2025' } for each archived season. */
+const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
+  label: `${s.id.split('-')[0]} Season`,
+  href: base + s.archivePath!.replace(/^\//, ''),
+}));
 ---
 
 <header class="site-header">
@@ -51,7 +57,9 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
             </ul>
           </li>
           <li><a href={base + "about"} class="nav-link">About</a></li>
-          <li><a href={base + "2025"} class="nav-link">2025 Season</a></li>
+          {archiveLinks.map((link) => (
+            <li><a href={link.href} class="nav-link">{link.label}</a></li>
+          ))}
         </ul>
       </nav>
       
@@ -99,7 +107,9 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
       </ul>
     </li>
     <li><a href={base + "about"} class="mobile-nav-link">About</a></li>
-    <li><a href={base + "2025"} class="mobile-nav-link">2025 Season</a></li>
+    {archiveLinks.map((link) => (
+      <li><a href={link.href} class="mobile-nav-link">{link.label}</a></li>
+    ))}
   </ul>
 </nav>
 

@@ -37,6 +37,5 @@ export const config: SiteConfig = {
   siteUrl: "https://fll.sharpers.com"
 };
 
-// Export constants for SEO component
-export const SITE_TITLE = config.title;
+// Export constant for SEO component
 export const SITE_DESCRIPTION = config.description;
