@@ -4,6 +4,11 @@ export interface RosterMember {
   returning: boolean;
 }
 
+export interface CoachMember {
+  name: string;
+  initials: string;
+}
+
 export interface SeasonDefaults {
   startTime: string;
   duration: number;
@@ -17,8 +22,15 @@ export interface Season {
   archived: boolean;
   archivePath: string | null;
   roster: RosterMember[];
+  coaches: CoachMember[];
   defaults: SeasonDefaults;
 }
+
+const COACHES: CoachMember[] = [
+  { name: 'Steve H', initials: 'SH' },
+  { name: 'Steve S', initials: 'SS' },
+  { name: 'Esther R', initials: 'ER' },
+];
 
 export const CURRENT_SEASON = '2026-27';
 
@@ -39,6 +51,7 @@ export const SEASONS: Record<string, Season> = {
       { name: 'Ishaan', initials: 'IA', returning: false },
       { name: 'Hudson', initials: 'HH', returning: false },
     ],
+    coaches: COACHES,
     defaults: { startTime: '14:00', duration: 2, location: MORAGA },
   },
   '2025-26': {
@@ -55,6 +68,7 @@ export const SEASONS: Record<string, Season> = {
       { name: 'Luca', initials: 'LS', returning: false },
       { name: 'Ethan', initials: 'EM', returning: false },
     ],
+    coaches: COACHES,
     defaults: { startTime: '15:30', duration: 2.5, location: MORAGA },
   },
 };

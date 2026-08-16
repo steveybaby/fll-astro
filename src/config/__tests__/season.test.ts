@@ -52,6 +52,16 @@ describe('season config', () => {
     });
   });
 
+  it('current season has three coaches with unique initials', () => {
+    const { coaches } = getCurrentSeason();
+    expect(coaches).toHaveLength(3);
+    expect(new Set(coaches.map((c) => c.initials)).size).toBe(coaches.length);
+  });
+
+  it('coaches are the same across seasons', () => {
+    expect(getSeason('2025-26').coaches).toEqual(getCurrentSeason().coaches);
+  });
+
   it('getSeason throws on an unknown id', () => {
     expect(() => getSeason('1999-00')).toThrow();
   });

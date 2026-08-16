@@ -1,13 +1,17 @@
 ---
 // RSVP Component for FLL Meeting Pages
+import { getCurrentSeason } from '../config/season';
+
 export interface Props {
   meetingDate: string; // YYYY-MM-DD format
 }
 
 const { meetingDate } = Astro.props;
 
-// Fixed list of children in specified order
-const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
+// Roster is the single source of truth — derive the child list from it so a
+// new roster member automatically appears here without touching this file.
+const season = getCurrentSeason();
+const children = season.roster.map((m) => m.name);
 ---
 
 <script

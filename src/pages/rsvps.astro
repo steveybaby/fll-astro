@@ -2,6 +2,7 @@
 import Layout from '../components/Layout.astro';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
 import { getSeasonContent } from '../utils/season';
+import { getCurrentSeason } from '../config/season';
 
 // Get all meetings, filter for future meetings, and sort them chronologically
 const meetings = await getSeasonContent('meetings');
@@ -16,18 +17,11 @@ const sortedMeetings = futureMeetings.sort((a, b) => {
   return dateA.getTime() - dateB.getTime();
 });
 
-// Fixed list of children in specified order
-const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
-
-// Child initials for mobile display
-const childInitials = {
-  'Jasper': 'JH',
-  'Asher': 'AO', 
-  'Kai': 'KP',
-  'Jeremiah': 'JR',
-  'Luca': 'LS',
-  'Ethan': 'EM'
-};
+// Roster is the single source of truth — derive the child list (and initials)
+// from it so adding a roster member is a single edit that propagates here.
+const season = getCurrentSeason();
+const children = season.roster.map((m) => m.name);
+const childInitials = Object.fromEntries(season.roster.map((m) => [m.name, m.initials]));
 
 // Helper function to format meeting date
 const formatMeetingDisplay = (date) => {
@@ -98,7 +92,7 @@ const formatMeetingISO = (date) => {
     </div>
 
     <div class="rsvp-grid-container" id="rsvp-grid-container" style="display: none;">
-      <div class="rsvp-grid">
+      <div class="rsvp-grid" style={`--col-count: ${children.length}`}>
         <!-- Header row with children names -->
         <div class="grid-header">
           <div class="meeting-header-cell">
@@ -312,7 +306,7 @@ const formatMeetingISO = (date) => {
 
   .rsvp-grid {
     display: grid;
-    grid-template-columns: 1fr repeat(6, 1fr);
+    grid-template-columns: 1fr repeat(var(--col-count), 1fr);
     gap: 1px;
     background: var(--color-border);
     border-radius: 8px;
@@ -654,7 +648,7 @@ const formatMeetingISO = (date) => {
 
     .rsvp-grid {
       width: 100%;
-      grid-template-columns: minmax(45px, 1fr) repeat(6, minmax(30px, 1fr));
+      grid-template-columns: minmax(45px, 1fr) repeat(var(--col-count), minmax(30px, 1fr));
     }
 
     /* Switch to mobile layout */
@@ -732,7 +726,7 @@ const formatMeetingISO = (date) => {
     }
 
     .rsvp-grid {
-      grid-template-columns: minmax(35px, 1fr) repeat(6, minmax(25px, 1fr));
+      grid-template-columns: minmax(35px, 1fr) repeat(var(--col-count), minmax(25px, 1fr));
     }
 
     .meeting-header-cell,
