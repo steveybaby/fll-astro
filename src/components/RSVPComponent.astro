@@ -8,10 +8,13 @@ const { meetingDate } = Astro.props;
 
 // Fixed list of children in specified order
 const children = ['Jasper', 'Asher', 'Kai', 'Jeremiah', 'Luca', 'Ethan'];
-
-// API endpoint
-const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
 ---
+
+<script
+  type="application/json"
+  id="rsvp-component-config"
+  set:html={JSON.stringify({ meetingDate, children })}
+/>
 
 <div class="rsvp-container">
   <h3 class="rsvp-title">📋 RSVP for This Meeting</h3>
@@ -382,12 +385,18 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
   }
 </style>
 
-<script define:vars={{ meetingDate, RSVP_API_URL, children }}>
+<script>
+  // aliased: the class below has its own updateRSVP method
+  import { getRSVPs, updateRSVP as sendRSVPUpdate } from '../lib/signups';
+
+  const cfg = JSON.parse(document.getElementById('rsvp-component-config').textContent);
+  const meetingDate = cfg.meetingDate;
+  const children = cfg.children;
+
   // RSVP Component JavaScript
   class RSVPComponent {
     constructor() {
       this.meetingDate = meetingDate;
-      this.apiUrl = RSVP_API_URL;
       this.children = children;
       this.currentData = null;
       this.cacheKey = `rsvps:${this.meetingDate}`;
@@ -454,37 +463,9 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
       opts = opts || {};
       if (!opts.background) this.showLoading();
       
-      // Helper with timeout (no object spread)
-      function fetchWithTimeout(input, init, timeoutMs) {
-        init = init || {};
-        timeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 5000;
-        const supportsAbort = typeof AbortController !== 'undefined';
-        const controller = supportsAbort ? new AbortController() : null;
-        const timer = setTimeout(function(){ if (controller) controller.abort(); }, timeoutMs);
-        var p = Promise.race([
-          fetch(input, (function(){
-            var merged = {};
-            for (var k in init) { if (Object.prototype.hasOwnProperty.call(init, k)) merged[k] = init[k]; }
-            if (controller) merged.signal = controller.signal;
-            return merged;
-          })()),
-          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
-        ]);
-        return p.finally(function(){ clearTimeout(timer); });
-      }
-      
       try {
-        // Build filtered URL to reduce payload and add a cache buster
-        const url = new URL(this.apiUrl);
-        url.searchParams.set('action', 'get');
-        url.searchParams.set('meetingDate', this.meetingDate);
-        url.searchParams.set('_cb', String(Date.now()));
-        
-        const response = await fetchWithTimeout(url.toString(), { method: 'GET', redirect: 'follow', cache: 'no-store' }, 5000);
-        
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        
-        const data = await response.json();
+        // Filtered request to reduce payload (cache buster + timeout live in the seam)
+        const data = await getRSVPs(this.meetingDate, 5000);
         this.currentData = data;
         
         // Find data for this meeting - handle enhanced date formats
@@ -543,32 +524,21 @@ const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1U
         console.log('Updating RSVP:', { meetingDate: this.meetingDate, kidName: childName, status });
         
         // Try the real API call
-        const updateUrl = new URL(this.apiUrl);
-        updateUrl.searchParams.set('action', 'update');
-        updateUrl.searchParams.set('meetingDate', this.meetingDate);
-        updateUrl.searchParams.set('kidName', childName);
-        updateUrl.searchParams.set('status', status);
+        const result = await sendRSVPUpdate(this.meetingDate, childName, status);
 
-        const response = await fetch(updateUrl.toString());
-        
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            // Update cache so next view is instant
-            const cached = this.getCached();
-            if (cached && Array.isArray(cached.kids)) {
-              const idx = cached.kids.findIndex(k => k.name === childName);
-              if (idx >= 0) cached.kids[idx].status = status;
-              this.setCached({ kids: cached.kids, fetchedAt: Date.now() });
-            }
-            // Real API call succeeded - no need to reload, UI is already updated
-            this.hideUpdating();
-            return;
+        if (result.success) {
+          // Update cache so next view is instant
+          const cached = this.getCached();
+          if (cached && Array.isArray(cached.kids)) {
+            const idx = cached.kids.findIndex(k => k.name === childName);
+            if (idx >= 0) cached.kids[idx].status = status;
+            this.setCached({ kids: cached.kids, fetchedAt: Date.now() });
           }
-        } else if (response.status === 401 || response.status === 403) {
-          throw new Error('Authentication required - please use /exec URL instead of /dev URL');
+          // Real API call succeeded - no need to reload, UI is already updated
+          this.hideUpdating();
+          return;
         }
-        
+
         // If API call failed, UI is already updated optimistically
         console.warn('API call failed, keeping optimistic update');
         this.hideUpdating();
