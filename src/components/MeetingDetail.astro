@@ -5,7 +5,7 @@ import RSVPComponent from './RSVPComponent.astro';
 import SnackDutyComponent from './SnackDutyComponent.astro';
 import ArchivedSignups from './ArchivedSignups.astro';
 import ModelCard from './ModelCard.astro';
-import { formatMeetingTime } from '../utils/meeting-time.ts';
+import { formatMeetingTimeOrTBD } from '../utils/meeting-time.ts';
 import { getSeason, CURRENT_SEASON } from '../config/season';
 
 export interface Props {
@@ -65,7 +65,7 @@ const isFutureMeeting = raw >= now;
         <div class="meeting-datetime">
           <time datetime={isoDate}>{displayWithDay}</time>
           {data.startTime && (
-            <span class="meeting-start-time">{formatMeetingTime(data.startTime, data.duration)}</span>
+            <span class="meeting-start-time">{formatMeetingTimeOrTBD(data.startTime, data.duration, data.timeTBD)}</span>
           )}
         </div>
         

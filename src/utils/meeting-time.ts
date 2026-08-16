@@ -17,3 +17,15 @@ export function formatMeetingTime(startTime?: string, duration?: number): string
   
   return timeString;
 }
+
+export function formatMeetingTimeOrTBD(
+  startTime?: string,
+  duration?: number,
+  timeTBD = false
+): string {
+  if (timeTBD) {
+    const durationText = duration === 1 ? '1 hour' : `${duration} hours`;
+    return duration ? `Time TBD (${durationText})` : 'Time TBD';
+  }
+  return formatMeetingTime(startTime, duration);
+}

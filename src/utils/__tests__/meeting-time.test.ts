@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatMeetingTime } from '../meeting-time';
+import { formatMeetingTime, formatMeetingTimeOrTBD } from '../meeting-time';
 
 describe('formatMeetingTime', () => {
   it('formats an afternoon start time', () => {
@@ -20,5 +20,15 @@ describe('formatMeetingTime', () => {
 
   it('returns empty string when startTime is missing', () => {
     expect(formatMeetingTime(undefined, 2)).toBe('');
+  });
+});
+
+describe('formatMeetingTimeOrTBD', () => {
+  it('reports TBD with duration when the time is unconfirmed', () => {
+    expect(formatMeetingTimeOrTBD('09:00', 2, true)).toBe('Time TBD (2 hours)');
+  });
+
+  it('falls through to the normal format when confirmed', () => {
+    expect(formatMeetingTimeOrTBD('14:00', 2, false)).toBe('2pm (2 hours)');
   });
 });

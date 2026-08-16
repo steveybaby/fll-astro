@@ -25,6 +25,7 @@ const meetings = defineCollection({
     startTime: z.string().optional(), // Format: "16:30" (4:30 PM)
     duration: z.number().optional(), // Duration in hours (e.g., 1.5)
     location: z.string().optional(), // Meeting location
+    timeTBD: z.boolean().default(false), // True when startTime is a placeholder, not confirmed
     agenda: z.array(z.string()).default([]),
     assignments: z.array(z.object({
       name: z.string(),

@@ -1,6 +1,5 @@
 ---
 import Layout from './Layout.astro';
-import { formatMeetingTime } from '../utils/meeting-time.ts';
 import { getSeasonContent } from '../utils/season';
 import { getSeason, CURRENT_SEASON } from '../config/season';
 
@@ -31,6 +30,7 @@ const processedMeetings = meetings.map(meeting => {
     startTime: meeting.data.startTime,
     duration: meeting.data.duration,
     location: meeting.data.location,
+    timeTBD: meeting.data.timeTBD,
     agenda: meeting.data.agenda || []
   };
 });
@@ -866,7 +866,16 @@ const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime
       const durationText = duration ? ` (${duration}${duration === 1 ? ' hour' : ' hours'})` : '';
       return timeStr + durationText;
     }
-    
+
+    // Renders honestly rather than showing a placeholder time as fact.
+    function formatMeetingTimeOrTBD(startTime, duration, timeTBD) {
+      if (timeTBD) {
+        const durationText = duration ? ` (${duration}${duration === 1 ? ' hour' : ' hours'})` : '';
+        return `Time TBD${durationText}`;
+      }
+      return formatMeetingTime(startTime, duration);
+    }
+
     function generateCalendarData(year, month) {
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
@@ -921,7 +930,7 @@ const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime
               ${day.meetings.map(meeting => `
                 <a href="${prefix}/meetings/${meeting.slug}/" class="meeting-event">
                   <div class="meeting-title">${meeting.title}</div>
-                  ${meeting.startTime ? `<div class="meeting-time">${formatMeetingTime(meeting.startTime, meeting.duration)}</div>` : ''}
+                  ${meeting.startTime ? `<div class="meeting-time">${formatMeetingTimeOrTBD(meeting.startTime, meeting.duration, meeting.timeTBD)}</div>` : ''}
                 </a>
               `).join('')}
             </div>`
@@ -957,7 +966,7 @@ const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime
                 <a href="${prefix}/meetings/${meeting.slug}/" class="upcoming-meeting">
                   <div class="upcoming-title">${meeting.title}</div>
                   <div class="upcoming-date">${dayStr}, ${dateStr}</div>
-                  ${meeting.startTime ? `<div class="upcoming-time">${formatMeetingTime(meeting.startTime, meeting.duration)}</div>` : ''}
+                  ${meeting.startTime ? `<div class="upcoming-time">${formatMeetingTimeOrTBD(meeting.startTime, meeting.duration, meeting.timeTBD)}</div>` : ''}
                 </a>
               `;
             }).join('')}

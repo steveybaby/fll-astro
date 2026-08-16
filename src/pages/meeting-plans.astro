@@ -1,6 +1,6 @@
 ---
 import Layout from '../components/Layout.astro';
-import { formatMeetingTime } from '../utils/meeting-time.ts';
+import { formatMeetingTimeOrTBD } from '../utils/meeting-time.ts';
 import { getMeetingDateTime } from '../utils/calendar.ts';
 import { getSeasonContent } from '../utils/season';
 
@@ -109,7 +109,7 @@ const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meeting
               <div class="meeting-time-info">
                 <time datetime={nextMeeting._iso}>{nextMeeting._display}</time>
                 {nextMeeting.data.startTime && (
-                  <span class="start-time">{formatMeetingTime(nextMeeting.data.startTime, nextMeeting.data.duration)}</span>
+                  <span class="start-time">{formatMeetingTimeOrTBD(nextMeeting.data.startTime, nextMeeting.data.duration, nextMeeting.data.timeTBD)}</span>
                 )}
               </div>
             </header>
@@ -160,7 +160,7 @@ const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meeting
                 <div class="compact-time-info">
                   <time datetime={meeting._iso}>{meeting._display}</time>
                   {meeting.data.startTime && (
-                    <span class="compact-start-time">{formatMeetingTime(meeting.data.startTime, meeting.data.duration)}</span>
+                    <span class="compact-start-time">{formatMeetingTimeOrTBD(meeting.data.startTime, meeting.data.duration, meeting.data.timeTBD)}</span>
                   )}
                 </div>
               </header>
@@ -192,7 +192,7 @@ const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meeting
                 <div class="compact-time-info">
                   <time datetime={meeting._iso}>{meeting._display}</time>
                   {meeting.data.startTime && (
-                    <span class="compact-start-time">{formatMeetingTime(meeting.data.startTime, meeting.data.duration)}</span>
+                    <span class="compact-start-time">{formatMeetingTimeOrTBD(meeting.data.startTime, meeting.data.duration, meeting.data.timeTBD)}</span>
                   )}
                 </div>
               </header>
