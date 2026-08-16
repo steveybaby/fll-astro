@@ -1,28 +1,28 @@
 ---
-// Calendar subscription component for embedding in content
-import { getCurrentSeason } from '../config/season';
-
+// Calendar subscription component for embedding in content.
+// Deliberately does NOT name the team: this is embedded in archived newsletter
+// content, where naming the current team would retroactively rebrand the
+// archive, and the season cannot be threaded in through MDX.
 interface Props {
   size?: 'small' | 'medium' | 'large';
   style?: 'button' | 'card' | 'inline';
 }
 
 const { size = 'medium', style = 'button' } = Astro.props;
-const teamName = getCurrentSeason().teamName;
 ---
 
 <div class={`calendar-subscribe ${style} ${size}`}>
   <button
     class="calendar-subscribe-btn"
     id={`calendar-subscribe-btn-${Math.random().toString(36).substr(2, 9)}`}
-    title={`Subscribe to ${teamName} meeting calendar`}
+    title="Subscribe to the team meeting calendar"
   >
     📅 Subscribe to Team Calendar
   </button>
 
   <div class="calendar-subscribe-popup" style="display: none;">
     <div class="calendar-popup-content">
-      <h4>Subscribe to {teamName} Calendar</h4>
+      <h4>Subscribe to Team Calendar</h4>
       <p>Copy this URL and add it to your calendar app:</p>
       
       <div class="url-copy-container">
