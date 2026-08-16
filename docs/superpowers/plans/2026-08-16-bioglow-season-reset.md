@@ -633,10 +633,21 @@ export function filterBySeason<T extends { data: { season: string } }>(
 }
 
 /** Load one collection, filtered to a season. Defaults to the current season. */
-export async function getSeasonContent(collection: any, season: string = CURRENT_SEASON) {
+export async function getSeasonContent<C extends CollectionKey>(
+  collection: C,
+  season: string = CURRENT_SEASON
+): Promise<CollectionEntry<C>[]> {
   const entries = await getCollection(collection);
-  return filterBySeason(entries as any[], season);
+  return filterBySeason(entries, season);
 }
+```
+
+The generic matters: typing `collection` as `any` collapses `getCollection`'s return to `any`
+and silently disables field-level type checking at every call site. `CollectionKey` is the
+exported form of `keyof AnyEntryMap` (`AnyEntryMap` itself is not exported), so the import is:
+
+```ts
+import { getCollection, type CollectionEntry, type CollectionKey } from 'astro:content';
 ```
 
 - [ ] **Step 4: Run the test to verify it passes**
