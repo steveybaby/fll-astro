@@ -29,9 +29,6 @@ const childInitials = {
   'Ethan': 'EM'
 };
 
-// API endpoint
-const RSVP_API_URL = 'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
-
 // Helper function to format meeting date
 const formatMeetingDisplay = (date) => {
   const raw = date instanceof Date ? date : new Date(`${date}T00:00:00Z`);
@@ -793,10 +790,17 @@ const formatMeetingISO = (date) => {
   }
 </style>
 
-<script define:vars={{ RSVP_API_URL, children }}>
+<script type="application/json" id="rsvps-config" set:html={JSON.stringify({ children })} />
+
+<script>
+  // aliased: RSVPGrid has its own updateRSVP method
+  import { getRSVPs, updateRSVP as sendRSVPUpdate } from '../lib/signups';
+
   (function(){
+    var cfg = JSON.parse(document.getElementById('rsvps-config').textContent);
+    var children = cfg.children;
+
     function RSVPGrid() {
-      this.apiUrl = RSVP_API_URL;
       this.children = children;
       this.currentData = null;
       this.cacheKey = 'rsvps:all';
@@ -856,35 +860,10 @@ const formatMeetingISO = (date) => {
     RSVPGrid.prototype.loadAllRSVPData = function(opts) {
       opts = opts || {};
       if (!opts.background) this.showLoading();
-      function fetchWithTimeout(input, init, timeoutMs) {
-        init = init || {};
-        timeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 5000;
-        var supportsAbort = typeof AbortController !== 'undefined';
-        var controller = supportsAbort ? new AbortController() : null;
-        var timer = setTimeout(function(){ if (controller) controller.abort(); }, timeoutMs);
-        var p = Promise.race([
-          fetch(input, (function(){
-            var merged = {};
-            for (var k in init) { if (Object.prototype.hasOwnProperty.call(init, k)) merged[k] = init[k]; }
-            if (controller) merged.signal = controller.signal;
-            return merged;
-          })()),
-          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
-        ]);
-        return p.finally(function(){ clearTimeout(timer); });
-      }
-
       var self = this;
       try {
-        var url = new URL(this.apiUrl);
-        url.searchParams.set('action', 'get');
-        url.searchParams.set('_cb', String(Date.now()));
-        console.log('Making RSVP API request to:', url.toString());
-        fetchWithTimeout(url.toString(), { cache: 'no-store' }, 15000)
-          .then(function(response){
-            if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + response.statusText);
-            return response.json();
-          })
+        console.log('Making RSVP API request');
+        getRSVPs(undefined, 15000)
           .then(function(data){
             self.currentData = data;
             self.setCached(data);
@@ -912,13 +891,7 @@ const formatMeetingISO = (date) => {
       this.showUpdating();
       var self = this;
       try {
-        var updateUrl = new URL(this.apiUrl);
-        updateUrl.searchParams.set('action', 'update');
-        updateUrl.searchParams.set('meetingDate', meetingDate);
-        updateUrl.searchParams.set('kidName', childName);
-        updateUrl.searchParams.set('status', status);
-        fetch(updateUrl.toString())
-          .then(function(response){ return response.ok ? response.json() : { success: false }; })
+        sendRSVPUpdate(meetingDate, childName, status)
           .then(function(result){
             if (result && result.success) {
               var cached = self.getCached();
