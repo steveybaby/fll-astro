@@ -1,0 +1,121 @@
+---
+// Read-only, frozen signup history for archived-season meetings.
+// Renders straight from the exported JSON snapshot — no network call.
+import history from '../data/2025-26-history.json';
+
+interface Props {
+  meetingDate: string; // YYYY-MM-DD
+}
+
+const { meetingDate } = Astro.props;
+
+const rsvpRecord = history.rsvps.find((r) => r.meetingDate === meetingDate);
+const snackRecord = history.snacks.find((r) => r.meetingDate === meetingDate);
+const snackFamily = snackRecord?.kids.find((k) => k.status && k.status !== '')?.name ?? null;
+const attendees = rsvpRecord?.kids ?? [];
+const hasContent = attendees.length > 0 || Boolean(snackFamily);
+---
+
+{hasContent && (
+  <section class="archived-signups">
+    <h3 class="archived-signups-title">📋 Attendance &amp; Snacks</h3>
+    <p class="archived-note">Historical record from the 2025-26 season.</p>
+
+    {attendees.length > 0 && (
+      <ul class="archived-rsvps">
+        {attendees.map((kid) => (
+          <li class="archived-rsvp-item">
+            <span class="kid-name">{kid.name}</span>
+            <span class="kid-status">{kid.status}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    {snackFamily && (
+      <p class="archived-snack">🍰 Snacks: <span class="snack-family">{snackFamily}</span></p>
+    )}
+  </section>
+)}
+
+<style>
+  .archived-signups {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    padding: calc(var(--grid-unit) * 3);
+    margin: calc(var(--grid-unit) * 4) 0;
+  }
+
+  .archived-signups-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 calc(var(--grid-unit)) 0;
+    line-height: 1.2;
+  }
+
+  .archived-note {
+    color: var(--color-text-muted);
+    font-style: italic;
+    font-size: 0.9rem;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+  }
+
+  .archived-rsvps {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--grid-unit));
+  }
+
+  .archived-rsvp-item {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit) / 2);
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+  }
+
+  .kid-name {
+    font-family: var(--font-heading-secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+  }
+
+  .kid-status {
+    font-size: 1rem;
+  }
+
+  .archived-snack {
+    border-top: 1px solid var(--color-border);
+    padding-top: calc(var(--grid-unit) * 2);
+    margin: 0;
+    color: var(--color-text-primary);
+    font-weight: 600;
+  }
+
+  .snack-family {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  @media (max-width: 768px) {
+    .archived-signups {
+      padding: calc(var(--grid-unit) * 2);
+      margin: calc(var(--grid-unit) * 3) 0;
+    }
+
+    .archived-signups-title {
+      font-size: 1.25rem;
+    }
+  }
+</style>

@@ -3,6 +3,7 @@ import Layout from './Layout.astro';
 import R2PhotoGallery from './R2PhotoGallery.astro';
 import RSVPComponent from './RSVPComponent.astro';
 import SnackDutyComponent from './SnackDutyComponent.astro';
+import ArchivedSignups from './ArchivedSignups.astro';
 import ModelCard from './ModelCard.astro';
 import { formatMeetingTime } from '../utils/meeting-time.ts';
 import { getSeason, CURRENT_SEASON } from '../config/season';
@@ -134,14 +135,17 @@ const isFutureMeeting = raw >= now;
       )}
     </div>
 
-    <!-- RSVP Component - Show at top for future meetings -->
+    <!-- RSVP + Snack Duty - Show at top for future meetings. Archived seasons render
+         frozen history instead of the live, network-backed components. -->
     {isFutureMeeting && (
-      <RSVPComponent meetingDate={isoDate} />
-    )}
-
-    <!-- Snack Duty Component - Show for future meetings -->
-    {isFutureMeeting && (
-      <SnackDutyComponent meetingDate={isoDate} />
+      season === CURRENT_SEASON ? (
+        <>
+          <RSVPComponent meetingDate={isoDate} />
+          <SnackDutyComponent meetingDate={isoDate} />
+        </>
+      ) : (
+        <ArchivedSignups meetingDate={isoDate} />
+      )
     )}
 
     <div class="meeting-content">
@@ -172,14 +176,17 @@ const isFutureMeeting = raw >= now;
       <ModelCard assignments={data.assignments} />
     )}
 
-    <!-- RSVP Component - Show at bottom for past meetings -->
+    <!-- RSVP + Snack Duty - Show at bottom for past meetings. Archived seasons render
+         frozen history instead of the live, network-backed components. -->
     {!isFutureMeeting && (
-      <RSVPComponent meetingDate={isoDate} />
-    )}
-
-    <!-- Snack Duty Component - Show for past meetings -->
-    {!isFutureMeeting && (
-      <SnackDutyComponent meetingDate={isoDate} />
+      season === CURRENT_SEASON ? (
+        <>
+          <RSVPComponent meetingDate={isoDate} />
+          <SnackDutyComponent meetingDate={isoDate} />
+        </>
+      ) : (
+        <ArchivedSignups meetingDate={isoDate} />
+      )
     )}
 
     <!-- R2 Photo Gallery System -->
