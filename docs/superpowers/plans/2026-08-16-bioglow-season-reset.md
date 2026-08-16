@@ -1369,7 +1369,7 @@ git commit -m "feat: rebrand to Bio-Llamas and derive identity from season confi
   - `removeSnack(meetingDate: string, kidName: string): Promise<{ success: boolean }>`
   - `SignupAction = 'get' | 'update' | 'getSnacks' | 'assignSnack' | 'removeSnack'`
 
-**Behavior must not change.** This is a pure extraction against the existing Apps Script backend. Query parameter names must match exactly what `google-apps-script.js` reads: `action`, `meetingDate`, `kidName`, `status`, `date`.
+**Behavior must not change.** This is a pure extraction against the existing Apps Script backend. Query parameter names must match exactly what `google-apps-script.js` reads: `action`, `meetingDate`, `kidName`, `status` (there is no `date` param — Apps Script reads `e.parameter.meetingDate` for list filtering too).
 
 **Astro constraint — read before starting.** The current code lives in `<script define:vars={...}>` blocks. Astro inlines `define:vars` scripts, and **inline scripts cannot use `import`**. Converting these to bundled `<script>` blocks that import from `src/lib/signups.ts` requires passing server data through the DOM instead. Use a JSON script tag:
 
