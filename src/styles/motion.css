@@ -1,1 +1,53 @@
-/* Motion layer. Populated in Task 3. */
+/* Motion layer.
+   Reveal styling is scoped to html.js — set by public/theme-init.js before
+   first paint — so a visitor without JavaScript never has content hidden. */
+
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+}
+
+html.js [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+html.js [data-reveal-delay="1"] { transition-delay: 70ms; }
+html.js [data-reveal-delay="2"] { transition-delay: 140ms; }
+html.js [data-reveal-delay="3"] { transition-delay: 210ms; }
+html.js [data-reveal-delay="4"] { transition-delay: 280ms; }
+
+[data-parallax] {
+  will-change: auto;
+  pointer-events: none;
+}
+
+/* The declarative half of the reduced-motion guarantee. motion.ts enforces the
+   same thing imperatively; both are needed, because the media query can flip
+   after init. */
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal],
+  html.js [data-reveal].is-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    transition-delay: 0ms !important;
+  }
+
+  [data-parallax] {
+    transform: none !important;
+  }
+
+  html { scroll-behavior: auto !important; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
