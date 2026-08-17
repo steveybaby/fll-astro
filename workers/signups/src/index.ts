@@ -7,6 +7,7 @@
  * strand its UI on.
  */
 import { type Env, CORS, json } from './http';
+import { getSignups } from './handlers';
 
 export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
@@ -19,6 +20,10 @@ export default {
     try {
       if (url.pathname === '/health') {
         return json({ ok: true });
+      }
+
+      if (url.pathname === '/signups' && request.method === 'GET') {
+        return getSignups(env, url.searchParams.get('date') ?? '');
       }
 
       return json({ error: 'not found' }, 404);
