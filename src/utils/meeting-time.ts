@@ -52,3 +52,23 @@ export function isUpcomingMeeting(
     meetingDate instanceof Date ? meetingDate : new Date(`${meetingDate}T00:00:00Z`);
   return calendarDay(date, 'UTC') >= calendarDay(now, TEAM_TIMEZONE);
 }
+
+/**
+ * True when a meeting's calendar day has arrived — today or already past.
+ *
+ * Deliberately NOT the complement of isUpcomingMeeting: both are true on the
+ * day itself, because a meeting happening today is simultaneously "upcoming"
+ * (it has not finished) and "arrived" (its day is here). Deriving one from the
+ * other by shifting the reference time by a fixed 24h is wrong twice a year —
+ * the Pacific fall-back Sunday is 25 hours long, so the shift lands inside the
+ * same calendar day and the answer flips. Comparing the day strings directly
+ * has no such edge.
+ */
+export function hasMeetingDayArrived(
+  meetingDate: Date | string,
+  now: Date = new Date()
+): boolean {
+  const date =
+    meetingDate instanceof Date ? meetingDate : new Date(`${meetingDate}T00:00:00Z`);
+  return calendarDay(date, 'UTC') <= calendarDay(now, TEAM_TIMEZONE);
+}

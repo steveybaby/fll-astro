@@ -121,6 +121,22 @@ describe('deriveMilestones', () => {
     expect(result.find((m) => m.slug === 'tournament')?.done).toBe(false);
   });
 
+  it('handles the Pacific fall-back Sunday, which is a 25-hour day', () => {
+    // 2026-11-01 is the DST fall-back. Deriving "done" by shifting `now` forward
+    // a fixed 24h lands inside the SAME Pacific day here, so a milestone dated
+    // that day read as upcoming for the first hour after local midnight.
+    const justAfterMidnight = new Date('2026-11-01T00:30:00-07:00');
+    const result = deriveMilestones(
+      [
+        meeting('kickoff', '2026-08-16', 'Kickoff', 'Kickoff'),
+        meeting('fallback', '2026-11-01', 'Fall-back day', 'Fallback'),
+      ],
+      justAfterMidnight
+    );
+
+    expect(result.find((m) => m.slug === 'fallback')?.done).toBe(true);
+  });
+
   it('marks a milestone done on its own Pacific calendar day', () => {
     const sameDay = new Date('2026-12-05T10:00:00-08:00');
     const result = deriveMilestones(
