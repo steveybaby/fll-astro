@@ -259,11 +259,11 @@ const calPath = seasonCalendarPath();
 <style>
   .meeting-article {
     max-width: 800px;
-    margin: 0 auto calc(var(--grid-unit) * 6) auto;
+    margin: 0 auto var(--space-xl) auto;
   }
 
   .meeting-header {
-    margin-bottom: calc(var(--grid-unit) * 6);
+    margin-bottom: var(--space-xl);
   }
 
   .meeting-header h1 {
@@ -271,19 +271,17 @@ const calPath = seasonCalendarPath();
     font-size: 3rem;
     font-weight: 900;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     line-height: 1.1;
-    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+    margin: 0 0 var(--space-m) 0;
   }
 
   .meeting-header time {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: calc(var(--grid-unit) * 2);
+    letter-spacing: 0.18em;
+    margin-bottom: var(--space-s);
     display: block;
   }
 
@@ -291,44 +289,42 @@ const calPath = seasonCalendarPath();
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: calc(var(--grid-unit) * 2);
-    margin-bottom: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
+    margin-bottom: var(--space-s);
   }
 
   .meeting-datetime {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--grid-unit) / 2);
+    gap: var(--space-3xs);
     flex: 1;
   }
 
   .meeting-start-time {
-    font-family: var(--font-heading-secondary);
-    font-size: 1.1rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 700;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .quicklinks {
     display: flex;
     justify-content: space-between;
-    margin: calc(var(--grid-unit) * 2) 0 calc(var(--grid-unit) * 4) 0;
-    padding: 0 calc(var(--grid-unit) * 2);
+    margin: var(--space-s) 0 var(--space-l) 0;
+    padding: 0 var(--space-s);
   }
 
   .quicklink {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: var(--step--2);
     font-weight: 600;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     text-decoration: none;
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .quicklink:hover {
@@ -350,89 +346,83 @@ const calPath = seasonCalendarPath();
   }
 
   .calendar-button {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--color-accent);
     background-color: transparent;
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    padding: var(--space-2xs) var(--space-s);
     border: 2px solid var(--color-accent);
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--1);
     cursor: pointer;
   }
 
   .calendar-button:hover,
   .calendar-button:focus {
     background-color: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
   }
 
   .calendar-popup {
     position: absolute;
-    top: calc(100% + calc(var(--grid-unit)));
+    top: calc(100% + var(--space-2xs));
     left: 0;
     right: 0;
     background: var(--color-surface);
     border: 2px solid var(--color-accent);
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-m);
     z-index: 1000;
     max-width: 500px;
   }
 
   .calendar-popup-content {
-    padding: calc(var(--grid-unit) * 3);
+    padding: var(--space-m);
   }
 
   .calendar-popup h4 {
     font-family: var(--font-heading-secondary);
-    font-size: 1.25rem;
+    font-size: var(--step-0);
     font-weight: 700;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    margin: 0 0 var(--space-s) 0;
   }
 
   .calendar-popup p {
     color: var(--color-text-secondary);
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    margin: 0 0 var(--space-s) 0;
     line-height: 1.5;
   }
 
   .url-copy-container {
     display: flex;
-    gap: calc(var(--grid-unit));
-    margin-bottom: calc(var(--grid-unit) * 3);
+    gap: var(--space-2xs);
+    margin-bottom: var(--space-m);
   }
 
   .calendar-url-input {
     flex: 1;
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    padding: var(--space-2xs) var(--space-xs);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: var(--radius-s);
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     background: var(--color-background);
     color: var(--color-text-primary);
   }
 
   .copy-button {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     background: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     border: none;
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
-    border-radius: 4px;
+    padding: var(--space-2xs) var(--space-s);
+    border-radius: var(--radius-s);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.85rem;
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--2);
   }
 
   .copy-button:hover,
@@ -442,40 +432,38 @@ const calPath = seasonCalendarPath();
   }
 
   .calendar-instructions {
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .calendar-instructions h5 {
     font-family: var(--font-heading-secondary);
-    font-size: 1rem;
+    font-size: var(--step--1);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 calc(var(--grid-unit)) 0;
+    margin: 0 0 var(--space-2xs) 0;
   }
 
   .calendar-instructions ul {
     margin: 0;
-    padding-left: calc(var(--grid-unit) * 3);
+    padding-left: var(--space-m);
     color: var(--color-text-secondary);
     line-height: 1.6;
   }
 
   .calendar-instructions li {
-    margin-bottom: calc(var(--grid-unit) / 2);
+    margin-bottom: var(--space-3xs);
   }
 
   .popup-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
   }
 
   .download-fallback {
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     text-decoration: underline;
   }
 
@@ -484,18 +472,16 @@ const calPath = seasonCalendarPath();
   }
 
   .close-button {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     background: transparent;
     color: var(--color-text-muted);
     border: 1px solid var(--color-border);
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit) * 1.5);
-    border-radius: 4px;
+    padding: var(--space-3xs) var(--space-xs);
+    border-radius: var(--radius-s);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.8rem;
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--2);
   }
 
   .close-button:hover,
@@ -510,62 +496,56 @@ const calPath = seasonCalendarPath();
     height: 6px;
     background-color: var(--color-accent);
     border: none;
-    margin: calc(var(--grid-unit) * 4) 0;
+    margin: var(--space-l) 0;
     width: 100%;
     display: block;
   }
 
   .meeting-content {
-    font-size: 1.125rem;
+    font-size: var(--step-0);
     line-height: 1.7;
-    margin-bottom: calc(var(--grid-unit) * 6);
+    margin-bottom: var(--space-xl);
   }
 
   .meeting-content :global(h1) {
     font-family: var(--font-heading-primary);
-    font-size: 2.5rem;
+    font-size: var(--step-3);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-top: calc(var(--grid-unit) * 6);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-m);
   }
 
   .meeting-content :global(h2) {
     font-family: var(--font-heading-secondary);
-    font-size: 2rem;
+    font-size: var(--step-3);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-top: calc(var(--grid-unit) * 6);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-m);
   }
 
   .meeting-content :global(h3) {
     font-family: var(--font-heading-secondary);
-    font-size: 1.5rem;
+    font-size: var(--step-1);
     font-weight: 600;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-top: calc(var(--grid-unit) * 4);
-    margin-bottom: calc(var(--grid-unit) * 2);
+    margin-top: var(--space-l);
+    margin-bottom: var(--space-s);
   }
 
   .meeting-content :global(ul),
   .meeting-content :global(ol) {
-    margin-bottom: calc(var(--grid-unit) * 3);
-    padding-left: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
+    padding-left: var(--space-m);
   }
 
   .meeting-content :global(li) {
-    margin-bottom: calc(var(--grid-unit) / 2);
+    margin-bottom: var(--space-3xs);
   }
 
   .meeting-content :global(p) {
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .meeting-content :global(strong) {
@@ -580,7 +560,7 @@ const calPath = seasonCalendarPath();
   /* Code block styling */
   .meeting-content :global(.code-block-container) {
     position: relative;
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .meeting-content :global(.code-block-header) {
@@ -590,32 +570,30 @@ const calPath = seasonCalendarPath();
     background: var(--color-surface);
     border: 2px solid var(--color-border);
     border-bottom: none;
-    border-radius: 8px 8px 0 0;
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    border-radius: var(--radius-m) var(--radius-m) 0 0;
+    padding: var(--space-2xs) var(--space-s);
   }
 
   .meeting-content :global(.code-block-language) {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
     font-weight: 600;
   }
 
   .meeting-content :global(.code-copy-btn) {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     font-size: 0.7rem;
     background: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     border: none;
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
-    border-radius: 4px;
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-s);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .meeting-content :global(.code-copy-btn:hover),
@@ -625,30 +603,31 @@ const calPath = seasonCalendarPath();
   }
 
   .meeting-content :global(.code-copy-btn.copied) {
-    background: #22c55e;
+    background: var(--color-action);
+    color: var(--color-action-contrast);
   }
 
   .meeting-content :global(pre) {
     margin: 0;
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 var(--radius-m) var(--radius-m);
     border: 2px solid var(--color-border);
     border-top: none;
   }
 
   .meeting-content :global(.code-block-container pre) {
     background: var(--color-background);
-    padding: calc(var(--grid-unit) * 2);
+    padding: var(--space-s);
     overflow-x: auto;
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     line-height: 1.5;
   }
 
   .meeting-content :global(code) {
     font-family: var(--font-mono);
     background: var(--color-surface);
-    padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2);
-    border-radius: 4px;
+    padding: calc(var(--grid-unit) / 4) var(--space-3xs);
+    border-radius: var(--radius-s);
     font-size: 0.9em;
     color: var(--color-accent);
   }
@@ -661,30 +640,28 @@ const calPath = seasonCalendarPath();
   }
 
   .meeting-photos {
-    margin-top: calc(var(--grid-unit) * 6);
+    margin-top: var(--space-xl);
   }
 
   .meeting-photos h3 {
     font-family: var(--font-heading-secondary);
-    font-size: 1.5rem;
+    font-size: var(--step-1);
     font-weight: 600;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+    margin: 0 0 var(--space-m) 0;
   }
 
   .meeting-nav {
     border-top: 1px solid var(--color-border);
-    padding-top: calc(var(--grid-unit) * 3);
-    margin-top: calc(var(--grid-unit) * 6);
+    padding-top: var(--space-m);
+    margin-top: var(--space-xl);
   }
 
   .meeting-pagination {
     display: flex;
     justify-content: space-between;
-    gap: calc(var(--grid-unit) * 2);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    gap: var(--space-s);
+    margin-bottom: var(--space-m);
   }
 
   .nav-link {
@@ -692,19 +669,19 @@ const calPath = seasonCalendarPath();
     max-width: 300px;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--grid-unit) / 2);
-    padding: calc(var(--grid-unit) * 2);
+    gap: var(--space-3xs);
+    padding: var(--space-s);
     background: var(--color-surface);
     border: 2px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-m);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .nav-link:hover {
     border-color: var(--color-accent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-m);
   }
 
   .prev-meeting {
@@ -718,20 +695,18 @@ const calPath = seasonCalendarPath();
 
   .nav-label {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
     font-weight: 600;
   }
 
   .nav-title {
     font-family: var(--font-heading-secondary);
-    font-size: 1rem;
+    font-size: var(--step--1);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     line-height: 1.2;
   }
 
@@ -741,22 +716,20 @@ const calPath = seasonCalendarPath();
 
   .nav-date {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .back-link {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--color-accent);
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    padding: var(--space-2xs) var(--space-s);
     border: 2px solid var(--color-accent);
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
     display: inline-block;
     text-decoration: none;
   }
@@ -764,7 +737,7 @@ const calPath = seasonCalendarPath();
   .back-link:hover,
   .back-link:focus {
     background-color: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     text-decoration: none;
   }
 
@@ -772,26 +745,26 @@ const calPath = seasonCalendarPath();
     .meeting-header h1 {
       font-size: 2.25rem;
     }
-    
+
     .meeting-content {
-      font-size: 1rem;
+      font-size: var(--step--1);
     }
-    
+
     .meeting-content :global(h1) {
-      font-size: 2rem;
+      font-size: var(--step-3);
     }
-    
+
     .meeting-content :global(h2) {
       font-size: 1.75rem;
     }
-    
+
     .meeting-content :global(h3) {
-      font-size: 1.25rem;
+      font-size: var(--step-0);
     }
 
     .meeting-pagination {
       flex-direction: column;
-      gap: calc(var(--grid-unit) * 1.5);
+      gap: var(--space-xs);
     }
 
     .nav-link {
@@ -803,22 +776,22 @@ const calPath = seasonCalendarPath();
     }
 
     .nav-title {
-      font-size: 0.9rem;
+      font-size: var(--step--1);
     }
 
     .quicklinks {
-      margin: calc(var(--grid-unit) * 1.5) 0 calc(var(--grid-unit) * 3) 0;
-      padding: 0 calc(var(--grid-unit));
+      margin: var(--space-xs) 0 var(--space-m) 0;
+      padding: 0 var(--space-2xs);
     }
 
     .quicklink {
-      font-size: 0.8rem;
-      padding: calc(var(--grid-unit) / 2);
+      font-size: var(--step--2);
+      padding: var(--space-3xs);
     }
 
     .meeting-header-info {
       flex-direction: column;
-      gap: calc(var(--grid-unit) * 1.5);
+      gap: var(--space-xs);
       align-items: flex-start;
     }
 
@@ -838,15 +811,15 @@ const calPath = seasonCalendarPath();
       right: calc(var(--grid-unit) * -2);
       max-width: none;
     }
-    
+
     .url-copy-container {
       flex-direction: column;
     }
-    
+
     .popup-actions {
       flex-direction: column;
       align-items: stretch;
-      gap: calc(var(--grid-unit));
+      gap: var(--space-2xs);
     }
   }
 </style>

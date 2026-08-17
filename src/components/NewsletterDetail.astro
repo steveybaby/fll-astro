@@ -131,11 +131,11 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
 <style>
   .newsletter-article {
     max-width: 800px;
-    margin: 0 auto calc(var(--grid-unit) * 6) auto;
+    margin: 0 auto var(--space-xl) auto;
   }
 
   .newsletter-header {
-    margin-bottom: calc(var(--grid-unit) * 6);
+    margin-bottom: var(--space-xl);
   }
 
   .newsletter-header h1 {
@@ -143,39 +143,37 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
     font-size: 3rem;
     font-weight: 900;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     line-height: 1.1;
-    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+    margin: 0 0 var(--space-m) 0;
   }
 
   .newsletter-meta {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: calc(var(--grid-unit) * 2);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    gap: var(--space-s);
+    margin-bottom: var(--space-m);
   }
 
   .newsletter-date-author {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--grid-unit) / 2);
+    gap: var(--space-3xs);
     flex: 1;
   }
 
   .newsletter-date-author time {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
     font-weight: 600;
   }
 
   .newsletter-author {
     font-family: var(--font-heading-secondary);
-    font-size: 1rem;
+    font-size: var(--step--1);
     font-weight: 600;
     color: var(--color-text-secondary);
   }
@@ -186,15 +184,13 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
 
   .back-to-newsletters {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     font-weight: 600;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     text-decoration: none;
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .back-to-newsletters:hover {
@@ -205,38 +201,37 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
   .newsletter-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: calc(var(--grid-unit));
+    gap: var(--space-2xs);
   }
 
   .tag {
     background: var(--color-accent);
-    color: white;
-    font-size: 0.8rem;
+    color: var(--color-accent-contrast);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 600;
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    padding: var(--space-3xs) var(--space-2xs);
     border-radius: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .quicklinks {
     display: flex;
     justify-content: space-between;
-    margin: calc(var(--grid-unit) * 2) 0 calc(var(--grid-unit) * 4) 0;
-    padding: 0 calc(var(--grid-unit) * 2);
+    margin: var(--space-s) 0 var(--space-l) 0;
+    padding: 0 var(--space-s);
   }
 
   .quicklink {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: var(--step--2);
     font-weight: 600;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     text-decoration: none;
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .quicklink:hover {
@@ -257,62 +252,56 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
     height: 6px;
     background-color: var(--color-accent);
     border: none;
-    margin: calc(var(--grid-unit) * 4) 0;
+    margin: var(--space-l) 0;
     width: 100%;
     display: block;
   }
 
   .newsletter-content {
-    font-size: 1.125rem;
+    font-size: var(--step-0);
     line-height: 1.7;
-    margin-bottom: calc(var(--grid-unit) * 6);
+    margin-bottom: var(--space-xl);
   }
 
   .newsletter-content :global(h1) {
     font-family: var(--font-heading-primary);
-    font-size: 2.5rem;
+    font-size: var(--step-3);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-top: calc(var(--grid-unit) * 6);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-m);
   }
 
   .newsletter-content :global(h2) {
     font-family: var(--font-heading-secondary);
-    font-size: 2rem;
+    font-size: var(--step-3);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-top: calc(var(--grid-unit) * 6);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-m);
   }
 
   .newsletter-content :global(h3) {
     font-family: var(--font-heading-secondary);
-    font-size: 1.5rem;
+    font-size: var(--step-1);
     font-weight: 600;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-top: calc(var(--grid-unit) * 4);
-    margin-bottom: calc(var(--grid-unit) * 2);
+    margin-top: var(--space-l);
+    margin-bottom: var(--space-s);
   }
 
   .newsletter-content :global(ul),
   .newsletter-content :global(ol) {
-    margin-bottom: calc(var(--grid-unit) * 3);
-    padding-left: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
+    padding-left: var(--space-m);
   }
 
   .newsletter-content :global(li) {
-    margin-bottom: calc(var(--grid-unit) / 2);
+    margin-bottom: var(--space-3xs);
   }
 
   .newsletter-content :global(p) {
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .newsletter-content :global(strong) {
@@ -326,15 +315,15 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
 
   .newsletter-nav {
     border-top: 1px solid var(--color-border);
-    padding-top: calc(var(--grid-unit) * 3);
-    margin-top: calc(var(--grid-unit) * 6);
+    padding-top: var(--space-m);
+    margin-top: var(--space-xl);
   }
 
   .newsletter-pagination {
     display: flex;
     justify-content: space-between;
-    gap: calc(var(--grid-unit) * 2);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    gap: var(--space-s);
+    margin-bottom: var(--space-m);
   }
 
   .nav-link {
@@ -342,19 +331,19 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
     max-width: 300px;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--grid-unit) / 2);
-    padding: calc(var(--grid-unit) * 2);
+    gap: var(--space-3xs);
+    padding: var(--space-s);
     background: var(--color-surface);
     border: 2px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-m);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .nav-link:hover {
     border-color: var(--color-accent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-m);
   }
 
   .prev-newsletter {
@@ -368,20 +357,18 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
 
   .nav-label {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
     font-weight: 600;
   }
 
   .nav-title {
     font-family: var(--font-heading-secondary);
-    font-size: 1rem;
+    font-size: var(--step--1);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     line-height: 1.2;
   }
 
@@ -391,22 +378,20 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
 
   .nav-date {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .back-link {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--color-accent);
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    padding: var(--space-2xs) var(--space-s);
     border: 2px solid var(--color-accent);
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
     display: inline-block;
     text-decoration: none;
   }
@@ -414,7 +399,7 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
   .back-link:hover,
   .back-link:focus {
     background-color: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     text-decoration: none;
   }
 
@@ -424,11 +409,11 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
     }
 
     .newsletter-content {
-      font-size: 1rem;
+      font-size: var(--step--1);
     }
 
     .newsletter-content :global(h1) {
-      font-size: 2rem;
+      font-size: var(--step-3);
     }
 
     .newsletter-content :global(h2) {
@@ -436,12 +421,12 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
     }
 
     .newsletter-content :global(h3) {
-      font-size: 1.25rem;
+      font-size: var(--step-0);
     }
 
     .newsletter-pagination {
       flex-direction: column;
-      gap: calc(var(--grid-unit) * 1.5);
+      gap: var(--space-xs);
     }
 
     .nav-link {
@@ -453,22 +438,22 @@ const nextNewsletter = currentIndex > 0 ? allNewsletters[currentIndex - 1] : nul
     }
 
     .nav-title {
-      font-size: 0.9rem;
+      font-size: var(--step--1);
     }
 
     .quicklinks {
-      margin: calc(var(--grid-unit) * 1.5) 0 calc(var(--grid-unit) * 3) 0;
-      padding: 0 calc(var(--grid-unit));
+      margin: var(--space-xs) 0 var(--space-m) 0;
+      padding: 0 var(--space-2xs);
     }
 
     .quicklink {
-      font-size: 0.8rem;
-      padding: calc(var(--grid-unit) / 2);
+      font-size: var(--step--2);
+      padding: var(--space-3xs);
     }
 
     .newsletter-meta {
       flex-direction: column;
-      gap: calc(var(--grid-unit) * 1.5);
+      gap: var(--space-xs);
       align-items: flex-start;
     }
 
