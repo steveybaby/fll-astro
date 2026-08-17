@@ -1,21 +1,16 @@
 /**
  * The single seam between the site and the signup backend.
  *
- * Today this talks to Google Apps Script. Spec 2 replaces the internals with a
- * Cloudflare Worker backed by D1; no page should need to change when it does.
- * The timeout and cache-busting logic below exists to mask Apps Script latency
- * (1-3s per call) and is expected to be deleted with that migration.
+ * Talks to the Cloudflare Worker in workers/signups. The previous Apps Script
+ * backend took ~2.25s per call and returned all 32 meetings on every request;
+ * this fetches one meeting.
  *
- * Wire-format note: `google-apps-script.js` reads the optional list filter from
- * `e.parameter.meetingDate` for BOTH `get` and `getSnacks` — it never reads a
- * parameter named `date`. The `date` argument below is therefore sent on the
- * wire as `meetingDate`, which is what the callers were already doing.
+ * The five exported functions keep the signatures their callers already use, so
+ * RSVPComponent, SnackDutyComponent, rsvps.astro, coach_rsvps.astro and
+ * snacks.astro did not change when the backend did.
  */
 
-export const SIGNUP_API_URL =
-  'https://script.google.com/macros/s/AKfycbwFpY_VgGndIStuh1UOu1wA--QXMDWjVLaiLAjqMDOO58x9dA2H4RkOJ8daCtyc8BNPfQ/exec';
-
-export type SignupAction = 'get' | 'update' | 'getSnacks' | 'assignSnack' | 'removeSnack';
+export const SIGNUP_API_URL = 'https://fll-signups.fll-sharpers.workers.dev';
 
 export interface KidRecord {
   name: string;
@@ -27,84 +22,105 @@ export interface MeetingRecord {
   kids: KidRecord[];
 }
 
-export function buildSignupUrl(
-  action: SignupAction,
-  params: Record<string, string> = {},
-): string {
-  const url = new URL(SIGNUP_API_URL);
-  url.searchParams.set('action', action);
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null) url.searchParams.set(key, value);
-  }
-  return url.toString();
-}
-
-/** Matches the timeout the read call sites used before this file existed. */
-const DEFAULT_TIMEOUT_MS = 5000;
-
-/**
- * List reads: cache-busted, no-store, aborted after `timeoutMs`, and throwing on
- * a non-2xx response. Every previous call site did exactly this by hand.
- */
-async function readList(
-  action: SignupAction,
-  params: Record<string, string> = {},
-  timeoutMs: number = DEFAULT_TIMEOUT_MS,
-): Promise<MeetingRecord[]> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const url = buildSignupUrl(action, { ...params, _cb: String(Date.now()) });
-    const response = await fetch(url, {
-      method: 'GET',
-      cache: 'no-store',
-      redirect: 'follow',
-      signal: controller.signal,
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    return (await response.json()) as MeetingRecord[];
-  } finally {
-    clearTimeout(timer);
-  }
+interface SignupsResponse {
+  meetingDate: string;
+  rsvps: KidRecord[];
+  snack: string | null;
 }
 
 /**
- * Writes: a plain GET with no timeout, matching the previous call sites. A
- * non-2xx response resolves to `{ success: false }` rather than throwing, which
- * is how every caller already interpreted it. Network failures still reject.
+ * One in-flight request per meeting.
+ *
+ * A meeting page calls getRSVPs and getSnacks, which both need the same
+ * response. Whichever arrives first starts the fetch; the second awaits the
+ * same promise. Entries are dropped once settled and whenever that date is
+ * written to, so a write is always followed by fresh data.
  */
-async function write(
-  action: SignupAction,
-  params: Record<string, string>,
-): Promise<{ success: boolean }> {
-  const response = await fetch(buildSignupUrl(action, params), {
-    method: 'GET',
-    redirect: 'follow',
+const inFlight = new Map<string, Promise<SignupsResponse>>();
+
+function fetchMeeting(date: string): Promise<SignupsResponse> {
+  const existing = inFlight.get(date);
+  if (existing) return existing;
+
+  const url = new URL('/signups', SIGNUP_API_URL);
+  url.searchParams.set('date', date);
+
+  const promise = fetch(url.toString(), { method: 'GET', cache: 'no-store' })
+    .then(async (response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return (await response.json()) as SignupsResponse;
+    })
+    .finally(() => inFlight.delete(date));
+
+  inFlight.set(date, promise);
+  return promise;
+}
+
+function invalidate(date: string): void {
+  inFlight.delete(date);
+}
+
+async function post(path: string, body: unknown): Promise<{ success: boolean }> {
+  const response = await fetch(new URL(path, SIGNUP_API_URL).toString(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
   });
-  if (!response.ok) return { success: false };
-  return (await response.json()) as { success: boolean };
+  return { success: response.ok };
 }
 
-export const getRSVPs = (date?: string, timeoutMs?: number): Promise<MeetingRecord[]> =>
-  readList('get', date ? { meetingDate: date } : {}, timeoutMs);
+export async function getRSVPs(date: string): Promise<MeetingRecord[]> {
+  const data = await fetchMeeting(date);
+  return [{ meetingDate: data.meetingDate, kids: data.rsvps }];
+}
 
-export const updateRSVP = (
+/**
+ * Callers expect the snack assignee expressed as a 🍰 status on a kid record,
+ * which is how the sheet stored it.
+ */
+export async function getSnacks(date: string): Promise<MeetingRecord[]> {
+  const data = await fetchMeeting(date);
+  return [
+    {
+      meetingDate: data.meetingDate,
+      kids: data.rsvps.map((k) => ({
+        name: k.name,
+        status: k.name === data.snack ? '🍰' : '',
+      })),
+    },
+  ];
+}
+
+export async function updateRSVP(
   meetingDate: string,
   kidName: string,
-  status: string,
-): Promise<{ success: boolean }> => write('update', { meetingDate, kidName, status });
+  status: string
+): Promise<{ success: boolean }> {
+  invalidate(meetingDate);
+  return post('/rsvp', { date: meetingDate, name: kidName, status });
+}
 
-export const getSnacks = (date?: string, timeoutMs?: number): Promise<MeetingRecord[]> =>
-  readList('getSnacks', date ? { meetingDate: date } : {}, timeoutMs);
-
-export const assignSnack = (
+export async function assignSnack(
   meetingDate: string,
-  kidName: string,
-): Promise<{ success: boolean }> => write('assignSnack', { meetingDate, kidName });
+  kidName: string
+): Promise<{ success: boolean }> {
+  invalidate(meetingDate);
+  return post('/snack', { date: meetingDate, name: kidName });
+}
 
-export const removeSnack = (
+export async function removeSnack(
   meetingDate: string,
-  kidName: string,
-): Promise<{ success: boolean }> => write('removeSnack', { meetingDate, kidName });
+  kidName: string
+): Promise<{ success: boolean }> {
+  invalidate(meetingDate);
+  const url = new URL('/snack', SIGNUP_API_URL);
+  url.searchParams.set('date', meetingDate);
+  url.searchParams.set('name', kidName);
+  const response = await fetch(url.toString(), { method: 'DELETE' });
+  return { success: response.ok };
+}
+
+/** Test seam: clears the in-flight map between cases. */
+export function resetSignupCache(): void {
+  inFlight.clear();
+}
