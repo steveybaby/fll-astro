@@ -58,7 +58,30 @@ const fillPercent =
     position: relative;
   }
 
-  .timeline__stop { margin: 0; }
+  .timeline__stop {
+    margin: 0;
+    position: relative;
+  }
+
+  /* Vertical rail joining each dot to the next. Without it the stacked layout
+     reads as a bulleted list, not a timeline — the connector is the thing that
+     makes a row of dots a sequence. The horizontal rail below replaces this at
+     wider widths. */
+  .timeline__stop:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    width: 2px;
+    top: calc(0.34em + 14px);
+    bottom: calc((var(--space-s) + 0.34em) * -1);
+    background-color: var(--color-border);
+    border-radius: 1px;
+  }
+
+  /* A segment counts as travelled once the stop BELOW it is done. */
+  .timeline__stop:has(+ .is-done)::before {
+    background-color: var(--color-accent);
+  }
 
   .timeline__link {
     display: flex;
@@ -76,6 +99,10 @@ const fillPercent =
     background-color: transparent;
     border: 2px solid var(--color-border);
     flex-shrink: 0;
+    /* Pinned to the first line rather than the shared baseline, so the rail
+       above and below it lines up predictably even when the row wraps. */
+    align-self: flex-start;
+    margin-top: 0.34em;
     transition: background-color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
   }
 
@@ -98,8 +125,13 @@ const fillPercent =
     color: var(--color-text-muted);
   }
 
-  /* Horizontal rail once there is room for one. */
+  /* Horizontal rail once there is room for one. The vertical connectors are
+     retired here — the ::before/::after pair on the rail takes over. */
   @media (min-width: 760px) {
+    .timeline__stop:not(:last-child)::before {
+      content: none;
+    }
+
     .timeline__rail {
       grid-auto-flow: column;
       grid-auto-columns: 1fr;
@@ -136,6 +168,9 @@ const fillPercent =
       padding-right: var(--space-s);
     }
 
-    .timeline__dot { margin-top: -6px; }
+    .timeline__dot {
+      align-self: auto;
+      margin-top: -6px;
+    }
   }
 </style>
