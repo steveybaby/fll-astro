@@ -17,6 +17,27 @@ const PAYLOAD = {
   snack: 'Jasper',
 };
 
+const ALL_PAYLOAD = {
+  meetings: [
+    {
+      meetingDate: '2026-08-16',
+      rsvps: [
+        { name: 'Jasper', status: '' },
+        { name: 'Eli', status: '👍' },
+      ],
+      snack: 'Eli',
+    },
+    {
+      meetingDate: '2026-09-13',
+      rsvps: [
+        { name: 'Jasper', status: '👍' },
+        { name: 'Eli', status: '' },
+      ],
+      snack: null,
+    },
+  ],
+};
+
 function mockFetch(payload: unknown = PAYLOAD, ok = true) {
   const spy = vi.fn(async () =>
     ok
@@ -68,6 +89,69 @@ describe('reads', () => {
   });
 });
 
+describe('bulk reads (no date)', () => {
+  it('hits /signups/all and returns one MeetingRecord per meeting', async () => {
+    const spy = mockFetch(ALL_PAYLOAD);
+    const out = await getRSVPs();
+    const [url] = spy.mock.calls[0] as any;
+    expect(String(url)).toMatch(/\/signups\/all$/);
+    expect(out).toEqual([
+      {
+        meetingDate: '2026-08-16',
+        kids: [
+          { name: 'Jasper', status: '' },
+          { name: 'Eli', status: '👍' },
+        ],
+      },
+      {
+        meetingDate: '2026-09-13',
+        kids: [
+          { name: 'Jasper', status: '👍' },
+          { name: 'Eli', status: '' },
+        ],
+      },
+    ]);
+  });
+
+  it('maps the snack assignee per meeting into the legacy shape', async () => {
+    mockFetch(ALL_PAYLOAD);
+    const out = await getSnacks();
+    expect(out).toEqual([
+      {
+        meetingDate: '2026-08-16',
+        kids: [
+          { name: 'Jasper', status: '' },
+          { name: 'Eli', status: '🍰' },
+        ],
+      },
+      {
+        meetingDate: '2026-09-13',
+        kids: [
+          { name: 'Jasper', status: '' },
+          { name: 'Eli', status: '' },
+        ],
+      },
+    ]);
+  });
+
+  it('issues ONE request when both bulk readers are called together', async () => {
+    const spy = mockFetch(ALL_PAYLOAD);
+    await Promise.all([getRSVPs(), getSnacks()]);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('issues a separate request for a bulk read vs. a single-date read', async () => {
+    const spy = mockFetch(ALL_PAYLOAD);
+    await Promise.all([getRSVPs(), getRSVPs('2026-09-13')]);
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws on a non-2xx bulk response', async () => {
+    mockFetch(ALL_PAYLOAD, false);
+    await expect(getRSVPs()).rejects.toThrow();
+  });
+});
+
 describe('writes', () => {
   it('posts an rsvp and reports success', async () => {
     const spy = mockFetch({ ok: true });
@@ -85,6 +169,14 @@ describe('writes', () => {
     await updateRSVP('2026-09-13', 'Eli', '👍');
     await getRSVPs('2026-09-13');
     expect(spy).toHaveBeenCalledTimes(3);
+  });
+
+  it('invalidates the bulk cache too, so a season grid refetches after a write', async () => {
+    const spy = mockFetch(ALL_PAYLOAD);
+    await getRSVPs(); // populates the bulk cache
+    await updateRSVP('2026-09-13', 'Eli', '👍'); // write, mockFetch payload is reused for the POST body too
+    await getRSVPs(); // must refetch, not reuse the stale bulk entry
+    expect(spy).toHaveBeenCalledTimes(3); // bulk read, write, bulk read
   });
 
   it('assigns a snack by POST', async () => {

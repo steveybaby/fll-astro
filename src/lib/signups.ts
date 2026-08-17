@@ -28,36 +28,80 @@ interface SignupsResponse {
   snack: string | null;
 }
 
+interface AllSignupsResponse {
+  meetings: SignupsResponse[];
+}
+
 /**
- * One in-flight request per meeting.
+ * Key for the bulk ("every meeting") request in the in-flight/cache map below.
+ *
+ * Real entries are keyed by meeting date, always a strict `YYYY-MM-DD` string
+ * (see `isValidDate` on the Worker side). This key is not a calendar date at
+ * all, so it can never collide with one.
+ */
+const ALL_KEY = '*';
+
+/**
+ * One in-flight request per key — either a meeting date or ALL_KEY.
  *
  * A meeting page calls getRSVPs and getSnacks, which both need the same
  * response. Whichever arrives first starts the fetch; the second awaits the
- * same promise. Entries are dropped once settled and whenever that date is
- * written to, so a write is always followed by fresh data.
+ * same promise. Entries are dropped once settled and whenever that date (or
+ * everything, via ALL_KEY) is written to, so a write is always followed by
+ * fresh data.
+ *
+ * Values are `unknown` rather than a single response type because this map
+ * holds both per-meeting and bulk responses; each caller casts back to the
+ * type it knows it asked for via `coalesce`'s type parameter.
  */
-const inFlight = new Map<string, Promise<SignupsResponse>>();
+const inFlight = new Map<string, Promise<unknown>>();
 
-function fetchMeeting(date: string): Promise<SignupsResponse> {
-  const existing = inFlight.get(date);
+/**
+ * Coalesces concurrent requests for the same key and self-evicts.
+ *
+ * The `.finally` only deletes the map entry if it still holds *this*
+ * promise. Without that check, a write's `invalidate()` racing a fresh read
+ * could delete the new read's live promise out from under it the moment the
+ * old one settles.
+ */
+function coalesce<T>(key: string, run: () => Promise<T>): Promise<T> {
+  const existing = inFlight.get(key) as Promise<T> | undefined;
   if (existing) return existing;
 
-  const url = new URL('/signups', SIGNUP_API_URL);
-  url.searchParams.set('date', date);
+  const promise = run().finally(() => {
+    if (inFlight.get(key) === promise) inFlight.delete(key);
+  });
 
-  const promise = fetch(url.toString(), { method: 'GET', cache: 'no-store' })
-    .then(async (response) => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return (await response.json()) as SignupsResponse;
-    })
-    .finally(() => inFlight.delete(date));
-
-  inFlight.set(date, promise);
+  inFlight.set(key, promise);
   return promise;
 }
 
+function fetchMeeting(date: string): Promise<SignupsResponse> {
+  return coalesce(date, async () => {
+    const url = new URL('/signups', SIGNUP_API_URL);
+    url.searchParams.set('date', date);
+
+    const response = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return (await response.json()) as SignupsResponse;
+  });
+}
+
+/** Bulk counterpart of `fetchMeeting`: every meeting in one request. */
+function fetchAll(): Promise<AllSignupsResponse> {
+  return coalesce(ALL_KEY, async () => {
+    const url = new URL('/signups/all', SIGNUP_API_URL);
+
+    const response = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return (await response.json()) as AllSignupsResponse;
+  });
+}
+
+/** A write invalidates both its own meeting and the season-wide bulk entry. */
 function invalidate(date: string): void {
   inFlight.delete(date);
+  inFlight.delete(ALL_KEY);
 }
 
 async function post(path: string, body: unknown): Promise<{ success: boolean }> {
@@ -69,16 +113,36 @@ async function post(path: string, body: unknown): Promise<{ success: boolean }> 
   return { success: response.ok };
 }
 
-export async function getRSVPs(date: string): Promise<MeetingRecord[]> {
+/**
+ * With a date, returns that one meeting. With no date, returns every meeting
+ * in the season — the old Apps Script backend's "no date" read mode, still
+ * relied on by the season-wide grids in rsvps.astro and coach_rsvps.astro.
+ */
+export async function getRSVPs(date?: string): Promise<MeetingRecord[]> {
+  if (date === undefined) {
+    const data = await fetchAll();
+    return data.meetings.map((m) => ({ meetingDate: m.meetingDate, kids: m.rsvps }));
+  }
   const data = await fetchMeeting(date);
   return [{ meetingDate: data.meetingDate, kids: data.rsvps }];
 }
 
 /**
  * Callers expect the snack assignee expressed as a 🍰 status on a kid record,
- * which is how the sheet stored it.
+ * which is how the sheet stored it. With no date, mirrors that mapping across
+ * every meeting for the season-wide grid in snacks.astro.
  */
-export async function getSnacks(date: string): Promise<MeetingRecord[]> {
+export async function getSnacks(date?: string): Promise<MeetingRecord[]> {
+  if (date === undefined) {
+    const data = await fetchAll();
+    return data.meetings.map((m) => ({
+      meetingDate: m.meetingDate,
+      kids: m.rsvps.map((k) => ({
+        name: k.name,
+        status: k.name === m.snack ? '🍰' : '',
+      })),
+    }));
+  }
   const data = await fetchMeeting(date);
   return [
     {
