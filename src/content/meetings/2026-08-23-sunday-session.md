@@ -6,8 +6,9 @@ startTime: "14:00"
 duration: 2.5
 location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:
-  - "Robot Game progress"
-  - "Innovation Project work"
+  - "Tutorial Activities (optional)"
+  - "Training Camp 1: Driving Around"
+  - "Explore Project Sparks"
 assignments: []
 ---
 
@@ -15,9 +16,11 @@ assignments: []
 
 ## Meeting Agenda
 
-### Robot Game progress
+### Tutorial Activities (optional)
 
-### Innovation Project work
+### Training Camp 1: Driving Around
+
+### Explore Project Sparks
 
 ## Meeting Notes
 

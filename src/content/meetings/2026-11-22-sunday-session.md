@@ -6,8 +6,8 @@ startTime: "14:00"
 duration: 2.5
 location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:
-  - "Robot Game progress"
-  - "Innovation Project work"
+  - "Full run-through: robot rounds and both presentations"
+  - "Fix whatever the run-through exposes"
 assignments: []
 ---
 
@@ -15,9 +15,9 @@ assignments: []
 
 ## Meeting Agenda
 
-### Robot Game progress
+### Full run-through: robot rounds and both presentations
 
-### Innovation Project work
+### Fix whatever the run-through exposes
 
 ## Meeting Notes
 
