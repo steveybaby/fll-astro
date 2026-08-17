@@ -1,0 +1,107 @@
+---
+/**
+ * The site wordmark: the team name flanked by thorn sprigs.
+ *
+ * This replaces the old `public/site-title.svg`, which was loaded through an
+ * `<img>` and had three problems that live text fixes:
+ *   - it hardcoded `fill="#0F3A47"`, so in dark mode the title was dark teal on
+ *     a near-black ground and effectively invisible;
+ *   - it asked for Oswald, which an `<img>`-loaded SVG cannot resolve from the
+ *     page, so it silently fell back to a generic sans;
+ *   - it baked in the team name, bypassing season.ts — where the name is
+ *     explicitly a placeholder that will change.
+ *
+ * The sprigs are decorative and aria-hidden; the name is the accessible text.
+ */
+import { getCurrentSeason } from '../config/season';
+
+export interface Props {
+  /** Override the displayed name. Defaults to the current season's team name. */
+  name?: string;
+}
+
+const { name = getCurrentSeason().teamName } = Astro.props;
+---
+
+<span class="wordmark">
+  <svg class="wordmark__sprig wordmark__sprig--left" viewBox="0 0 50 22" aria-hidden="true" focusable="false">
+    <g class="wordmark__stem">
+      <path d="M2 15.2 C 12 16.2, 20 10.6, 30 9.2 C 35 8.5, 39 8.1, 41.5 8" />
+    </g>
+    <g class="wordmark__thorns">
+      <path d="M10 15.6 C 10.8 12.6, 11.6 9.6, 12.2 7.4 C 13.2 10.6, 14 13.2, 14.6 14.6 Z" />
+      <path d="M20 11.6 C 21.2 14.2, 22.6 16.8, 23.4 18.4 C 23.9 15.6, 24.2 12.4, 24.4 10 Z" />
+      <path d="M32 9.6 C 32.9 6.9, 33.9 4.2, 34.6 1.8 C 35.5 4.6, 36.1 7, 36.4 8.4 Z" />
+      <path d="M41.5 8 C 43.6 3.6, 47.6 2.4, 49 3.2 C 48.4 7.6, 45 9.6, 41.5 8 Z" />
+  </svg>
+
+  <span class="wordmark__name">{name}</span>
+
+  <svg class="wordmark__sprig wordmark__sprig--right" viewBox="0 0 50 22" aria-hidden="true" focusable="false">
+    <g class="wordmark__stem">
+      <path d="M2 15.2 C 12 16.2, 20 10.6, 30 9.2 C 35 8.5, 39 8.1, 41.5 8" />
+    </g>
+    <g class="wordmark__thorns">
+      <path d="M10 15.6 C 10.8 12.6, 11.6 9.6, 12.2 7.4 C 13.2 10.6, 14 13.2, 14.6 14.6 Z" />
+      <path d="M20 11.6 C 21.2 14.2, 22.6 16.8, 23.4 18.4 C 23.9 15.6, 24.2 12.4, 24.4 10 Z" />
+      <path d="M32 9.6 C 32.9 6.9, 33.9 4.2, 34.6 1.8 C 35.5 4.6, 36.1 7, 36.4 8.4 Z" />
+      <path d="M41.5 8 C 43.6 3.6, 47.6 2.4, 49 3.2 C 48.4 7.6, 45 9.6, 41.5 8 Z" />
+  </svg>
+</span>
+
+<style>
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    color: var(--color-accent);
+    line-height: 1;
+  }
+
+  .wordmark__name {
+    font-family: var(--font-heading-primary);
+    font-size: var(--step-2);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-variation-settings: 'opsz' 144, 'SOFT' 40, 'WONK' 1;
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .wordmark__sprig {
+    width: 52px;
+    height: 23px;
+    flex-shrink: 0;
+    /* Ornament, not signal — it should never compete with the name. */
+    opacity: 0.7;
+  }
+
+  /* Mirrored so the two sprigs curve toward the name rather than away. */
+  .wordmark__sprig--right {
+    transform: scaleX(-1);
+  }
+
+  .wordmark__stem path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+
+  .wordmark__thorns path {
+    fill: currentColor;
+  }
+
+  a:hover .wordmark,
+  a:focus .wordmark {
+    color: var(--color-text-primary);
+  }
+
+  /* Below this the sprigs crowd the name on a phone, and the name is what
+     matters. */
+  @media (max-width: 600px) {
+    .wordmark__sprig {
+      display: none;
+    }
+  }
+</style>

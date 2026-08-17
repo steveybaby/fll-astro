@@ -2,6 +2,7 @@
 import { config } from '../config';
 import { ARCHIVED_SEASONS } from '../config/season';
 import ThemeToggle from './ThemeToggle.astro';
+import Wordmark from './Wordmark.astro';
 
 const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: '' };
 /** e.g. { label: '2025 Season', href: '/2025' } for each archived season. */
@@ -24,7 +25,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     
     <div class="site-title">
       <a href={base}>
-        <img src={base + "site-title.svg"} alt={config.title} class="title-svg" />
+        <Wordmark />
       </a>
     </div>
     
@@ -348,16 +349,8 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   }
 
   .site-title a {
-    display: block;
-    line-height: 0;
-  }
-
-  .title-svg {
-    height: 48px;
-    width: auto;
-    max-width: 280px;
-    border: none !important; /* Override global img styles */
-    margin: 0 !important; /* Override global img styles */
+    display: inline-flex;
+    text-decoration: none;
   }
 
   .header-controls {
@@ -871,13 +864,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     }
 
     .site-title a {
-      display: inline-block;
-    }
-
-    .title-svg {
-      height: 36px;
-      width: auto;
-      max-width: 180px;
+      display: inline-flex;
     }
     
     .header-controls {
@@ -964,10 +951,6 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     .header-content {
       gap: var(--space-3xs);
       padding: 0 var(--space-xs);
-    }
-
-    .title-svg {
-      max-width: 130px;
     }
 
     .mobile-controls {
