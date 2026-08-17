@@ -16,19 +16,25 @@ const newsletters = (await getSeasonContent('newsletter')).filter(({ data }) => 
 
 const TYPE_LABEL = { blog: 'Blog post', meeting: 'Meeting notes', newsletter: 'Newsletter' } as const;
 
-const now = new Date();
+// Frontmatter dates are date-only strings (e.g. `2026-08-16`), which
+// z.coerce.date() parses as UTC midnight. Comparing that against a Pacific
+// "now" — or formatting it in the Pacific zone — shifts the calendar date
+// back a day after 5pm Pacific. Compare and format using the UTC calendar
+// date instead, which is the date the frontmatter actually authored.
+const todayPacific = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date());
+
 const recentContent = [
   ...blogPosts.map((p) => ({ ...p, type: 'blog' as const, url: `/blog/${p.slug}/` })),
   ...meetings.map((m) => ({ ...m, type: 'meeting' as const, url: `/meetings/${m.slug}/` })),
   ...newsletters.map((n) => ({ ...n, type: 'newsletter' as const, url: `/newsletters/${n.slug}/` })),
 ]
-  .filter((item) => item.data.date <= now)
+  .filter((item) => item.data.date.toISOString().slice(0, 10) <= todayPacific)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 3);
 
 const fmtDate = new Intl.DateTimeFormat('en-US', {
   weekday: 'short', year: 'numeric', month: 'long', day: 'numeric',
-  timeZone: 'America/Los_Angeles',
+  timeZone: 'UTC',
 });
 
 const work = [
