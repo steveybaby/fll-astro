@@ -1,10 +1,12 @@
 ---
 import Layout from '../components/Layout.astro';
-import NextMeetingBanner from '../components/NextMeetingBanner.astro';
+import SplitHero from '../components/home/SplitHero.astro';
+import QuickActions from '../components/home/QuickActions.astro';
+import SeasonTimeline from '../components/home/SeasonTimeline.astro';
+import PhotoStrip from '../components/home/PhotoStrip.astro';
+import Canopy from '../components/Canopy.astro';
 import { getSeasonContent } from '../utils/season';
 import { getCurrentSeason } from '../config/season';
-import fs from 'fs';
-import path from 'path';
 
 const season = getCurrentSeason();
 
@@ -12,779 +14,183 @@ const blogPosts = (await getSeasonContent('blog')).filter(({ data }) => data.dra
 const meetings = await getSeasonContent('meetings');
 const newsletters = (await getSeasonContent('newsletter')).filter(({ data }) => data.draft !== true);
 
-// Helper function to get file modification time
-function getFileModTime(filePath: string): Date {
-  try {
-    const stats = fs.statSync(filePath);
-    return stats.mtime;
-  } catch (error) {
-    // Fallback to current time if file not found
-    return new Date();
-  }
-}
+const TYPE_LABEL = { blog: 'Blog post', meeting: 'Meeting notes', newsletter: 'Newsletter' } as const;
 
-// Combine blog posts, meetings, and newsletters, adding a type field and modification time
-const allContent = [
-  ...blogPosts.map(post => ({
-    ...post,
-    type: 'blog',
-    url: `/blog/${post.slug}/`,
-    modTime: getFileModTime(path.join(process.cwd(), 'src', 'content', 'blog', `${post.id}.md`))
-  })),
-  ...meetings.map(meeting => ({
-    ...meeting,
-    type: 'meeting',
-    url: `/meetings/${meeting.slug}/`,
-    modTime: getFileModTime(path.join(process.cwd(), 'src', 'content', 'meetings', `${meeting.id}.md`))
-  })),
-  ...newsletters.map(newsletter => ({
-    ...newsletter,
-    type: 'newsletter',
-    url: `/newsletters/${newsletter.slug}/`,
-    modTime: getFileModTime(path.join(process.cwd(), 'src', 'content', 'newsletter', `${newsletter.id}.mdx`))
-  }))
+const now = new Date();
+const recentContent = [
+  ...blogPosts.map((p) => ({ ...p, type: 'blog' as const, url: `/blog/${p.slug}/` })),
+  ...meetings.map((m) => ({ ...m, type: 'meeting' as const, url: `/meetings/${m.slug}/` })),
+  ...newsletters.map((n) => ({ ...n, type: 'newsletter' as const, url: `/newsletters/${n.slug}/` })),
+]
+  .filter((item) => item.data.date <= now)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+const fmtDate = new Intl.DateTimeFormat('en-US', {
+  weekday: 'short', year: 'numeric', month: 'long', day: 'numeric',
+  timeZone: 'America/Los_Angeles',
+});
+
+const work = [
+  {
+    title: 'Robot design',
+    body: 'Building and programming a LEGO robot to run missions on the competition mat — chassis, attachments, and the code that drives them.',
+  },
+  {
+    title: 'Innovation project',
+    body: `Researching a real biodiversity problem and prototyping a solution. This season's ${season.challenge} theme is bioluminescence and the ecosystems that depend on it.`,
+  },
+  {
+    title: 'Core values',
+    body: 'Discovery, Innovation, Impact, Inclusion, Teamwork, and Fun — judged as seriously as the robot, and the reason the team works at all.',
+  },
 ];
-
-// Smart ordering: Only show past/completed content, prioritize by what actually happened most recently
-function createSmartOrdering(content: any[]) {
-  const now = new Date();
-  
-  // Filter to only show past/completed content
-  const pastContent = content.filter(item => {
-    const itemDate = new Date(item.data.date);
-    return itemDate <= now; // Only show content from today or earlier
-  });
-  
-  // Separate content types (already filtered to past only)
-  const newsletters = pastContent.filter(item => item.type === 'newsletter')
-    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-  const meetings = pastContent.filter(item => item.type === 'meeting')
-    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-  const blogs = pastContent.filter(item => item.type === 'blog')
-    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-
-  const smartOrder = [];
-  
-  // For each newsletter, add it and find the closest meeting
-  newsletters.forEach(newsletter => {
-    smartOrder.push(newsletter);
-    
-    // Find meeting that's closest in date to this newsletter
-    const newsletterDate = new Date(newsletter.data.date);
-    let closestMeeting = null;
-    let closestDistance = Infinity;
-    
-    meetings.forEach(meeting => {
-      const meetingDate = new Date(meeting.data.date);
-      const distance = Math.abs(meetingDate.getTime() - newsletterDate.getTime());
-      
-      // Prefer meetings that are on or before the newsletter date (meetings that the newsletter reports on)
-      const isPriorMeeting = meetingDate <= newsletterDate;
-      const adjustedDistance = isPriorMeeting ? distance : distance * 2; // Favor prior meetings
-      
-      if (adjustedDistance < closestDistance && !smartOrder.includes(meeting)) {
-        closestMeeting = meeting;
-        closestDistance = adjustedDistance;
-      }
-    });
-    
-    if (closestMeeting) {
-      smartOrder.push(closestMeeting);
-    }
-  });
-  
-  // Add any remaining meetings not already included
-  meetings.forEach(meeting => {
-    if (!smartOrder.includes(meeting)) {
-      smartOrder.push(meeting);
-    }
-  });
-  
-  // Add any blog posts
-  blogs.forEach(blog => {
-    smartOrder.push(blog);
-  });
-  
-  return smartOrder;
-}
-
-// For now, let's just show the most recent past content first (simple approach)
-const recentContent = allContent
-  .filter(item => {
-    // Always reparse dates to ensure Pacific time handling
-    const dateStr = item.data.date instanceof Date 
-      ? item.data.date.toISOString().split('T')[0]  // Convert Date back to YYYY-MM-DD
-      : item.data.date;
-    const itemDate = new Date(`${dateStr}T12:00:00-07:00`); // Parse as noon Pacific Time
-    const now = new Date();
-    return itemDate <= now; // Only show past/completed content
-  })
-  .sort((a: any, b: any) => {
-    const aDateStr = a.data.date instanceof Date ? a.data.date.toISOString().split('T')[0] : a.data.date;
-    const bDateStr = b.data.date instanceof Date ? b.data.date.toISOString().split('T')[0] : b.data.date;
-    const aDate = new Date(`${aDateStr}T12:00:00-07:00`);
-    const bDate = new Date(`${bDateStr}T12:00:00-07:00`);
-    return bDate.getTime() - aDate.getTime();
-  })
-  .slice(0, 4);
 ---
 
-<Layout title="Piedmont Makers Club FLL Challenge Team" description={`Welcome to our FIRST LEGO League team website! Follow our journey through the FLL ${season.challenge}™ season with meeting notes, robot builds, and competition preparations.`} showSidebar={false}>
-  <div class="landing-page">
-    <!-- Next Meeting Banner -->
-    <NextMeetingBanner />
+<Layout
+  title="Piedmont Makers Club FLL Challenge Team"
+  description={`Follow the ${season.teamName} through the FIRST LEGO League ${season.challenge} season — meeting notes, robot builds, and competition prep.`}
+  showSidebar={false}
+>
+  <SplitHero />
+  <QuickActions />
 
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="hero-content">
-        <h1 class="hero-title">{season.teamName.toUpperCase()}</h1>
-        <p class="hero-subtitle">Piedmont Makers Club</p>
-        <p class="hero-description">
-          Welcome to our FIRST LEGO League Challenge Team website! Follow our journey
-          through the FLL {season.challenge}™ season as we build, code, and compete.
-        </p>
-        <hr class="hero-rule" />
-        <div class="hero-actions">
-          <a href="/newsletters" class="btn btn-primary">Newsletters</a>
-          <a href="/meeting-plans" class="btn btn-primary">Meetings</a>
-          <a href="/resources" class="btn btn-primary">Resources</a>
-          <a href="/calendar" class="btn btn-primary">Calendar</a>
-        </div>
+  <section class="updates" aria-labelledby="updates-heading">
+    <div class="shell">
+      <div class="updates__head" data-reveal>
+        <h2 id="updates-heading">Latest updates</h2>
+        <a href="/newsletters" class="updates__all">All newsletters →</a>
       </div>
-    </section>
 
-    <!-- Latest Updates Section -->
-    <section class="demo-section" id="latest">
-      <div class="container">
-        <h2 class="section-title">Latest Updates</h2>
-        <p class="demo-description">
-          Stay up-to-date with our team's progress through the FLL season, including 
-          recent meeting notes, blog posts, and important announcements.
-        </p>
-        
-        {recentContent.length > 0 && (
-          <div class="recent-content-grid">
-            {recentContent.map(item => (
-              <article class="demo-post-card">
-                <div class="content-type-badge">
-                  {item.type === 'blog' ? '📝 Blog Post' : 
-                   item.type === 'meeting' ? '📅 Meeting Notes' : 
-                   '📧 Newsletter'}
-                </div>
-                
-                <h3 class="demo-post-title">
-                  <a href={item.url}>{item.data.title}</a>
-                </h3>
-                
-                <div class="demo-post-meta">
-                  <time class="demo-post-date" datetime={item.data.date}>
-                    {(() => {
-                      // Always reparse dates to ensure Pacific time handling
-                      const dateStr = item.data.date instanceof Date 
-                        ? item.data.date.toISOString().split('T')[0]  // Convert Date back to YYYY-MM-DD
-                        : item.data.date;
-                      
-                      let dateObj = new Date(`${dateStr}T12:00:00-07:00`); // Parse as noon Pacific Time to avoid date shifts
-                      
-                      // Check if date is valid
-                      if (isNaN(dateObj.getTime())) {
-                        return 'Invalid date';
-                      }
-                      
-                      return dateObj.toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        timeZone: 'America/Los_Angeles' // Force Pacific Time display
-                      });
-                    })()}
-                  </time>
-                </div>
-                
-                {item.data.description && (
-                  <p class="demo-post-excerpt">{item.data.description}</p>
-                )}
-                
-                {item.type === 'meeting' && item.data.agenda && (
-                  <div class="meeting-preview">
-                    <p class="agenda-count">📅 {item.data.agenda.length} agenda items</p>
-                    {item.data.photos && item.data.photos.length > 0 && (
-                      <p class="photo-count">📷 {item.data.photos.length} photos</p>
-                    )}
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
-        )}
-        
-        <div class="demo-actions">
-          <a href="/newsletters" class="btn btn-primary">View Newsletters</a>
-          <a href="/meeting-plans" class="btn btn-primary">All Meetings</a>
-          <a href="/blog" class="btn btn-secondary">View All Posts</a>
+      {recentContent.length > 0 ? (
+        <div class="updates__grid">
+          {recentContent.map((item, i) => (
+            <article class="card" data-reveal data-reveal-delay={String(Math.min(i + 1, 4))}>
+              <span class="eyebrow">{TYPE_LABEL[item.type]}</span>
+              <h3 class="card__title"><a href={item.url}>{item.data.title}</a></h3>
+              <time class="card__date" datetime={item.data.date.toISOString().slice(0, 10)}>
+                {fmtDate.format(item.data.date)}
+              </time>
+              {item.data.description && <p class="card__excerpt">{item.data.description}</p>}
+            </article>
+          ))}
         </div>
-      </div>
-    </section>
+      ) : (
+        <p class="updates__empty">The season is just getting started — updates will appear here after the first meeting.</p>
+      )}
+    </div>
+  </section>
 
-    <!-- About Our Team Section -->
-    <section class="features" id="features">
-      <div class="container">
-        <h2 class="section-title">About Our Team</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <h3 class="feature-title">FLL {season.challenge}™</h3>
-            <p class="feature-description">This season's theme is bioluminescence and ecosystems. We're exploring how innovation can support biodiversity and healthier, more connected communities.</p>
-          </div>
-          <div class="feature-card">
-            <h3 class="feature-title">Robot Design</h3>
-            <p class="feature-description">Building and programming LEGO robots to complete challenging missions on the FLL game board.</p>
-          </div>
-          <div class="feature-card">
-            <h3 class="feature-title">Innovation Project</h3>
-            <p class="feature-description">Researching and developing solutions to real-world energy challenges facing our community.</p>
-          </div>
-          <div class="feature-card">
-            <h3 class="feature-title">Core Values</h3>
-            <p class="feature-description">Discovery, Innovation, Impact, Inclusion, Teamwork, and Fun - the foundation of everything we do.</p>
-          </div>
-          <div class="feature-card">
-            <h3 class="feature-title">Competition Ready</h3>
-            <p class="feature-description">Preparing for regional tournaments with strategy, practice, and teamwork every step of the way.</p>
-          </div>
-          <div class="feature-card">
-            <h3 class="feature-title">Learning Together</h3>
-            <p class="feature-description">Developing STEM skills, leadership abilities, and lifelong friendships through hands-on challenges.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+  <SeasonTimeline />
 
-  </div>
+  <section class="work" aria-labelledby="work-heading">
+    <Canopy variant="sparse" rate={0.18} />
+    <div class="shell">
+      <h2 id="work-heading" data-reveal>What we work on</h2>
+      <div class="work__grid">
+        {work.map((item, i) => (
+          <div class="work__card" data-reveal data-reveal-delay={String(Math.min(i + 1, 4))}>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <PhotoStrip />
 </Layout>
 
 <style>
-  .landing-page {
-    width: 100%;
-  }
-
-  .container {
-    max-width: 1200px;
+  .shell {
+    max-width: var(--max-width);
     margin: 0 auto;
     padding: 0 var(--content-padding);
+    position: relative;
+    z-index: 1;
   }
 
-  .hero {
-    text-align: center;
-    padding: calc(var(--grid-unit) * 12) 0 calc(var(--grid-unit) * 8);
-    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+  .updates { padding: var(--space-2xl) 0 0; }
+
+  .updates__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-s);
+    margin-bottom: var(--space-m);
   }
 
-  .hero-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 var(--content-padding);
-  }
+  .updates__head h2 { margin-bottom: 0; }
 
-  .hero-title {
-    font-family: var(--font-heading-primary);
-    font-size: 4.5rem;
-    font-weight: 700;
-    color: var(--color-accent);
+  .updates__all {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    line-height: 0.9;
-    margin-bottom: calc(var(--grid-unit) * 2);
+    letter-spacing: 0.14em;
+    white-space: nowrap;
   }
 
-  .hero-subtitle {
-    font-family: var(--font-heading-secondary);
-    font-size: 1.5rem;
-    font-weight: 700;
+  .updates__empty { color: var(--color-text-muted); }
+
+  .updates__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-s);
+  }
+
+  .card {
+    background-color: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-l);
+    padding: var(--space-m);
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+
+  .card:hover {
+    border-color: var(--color-border-strong);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-m);
+  }
+
+  .card__title { font-size: var(--step-1); margin: var(--space-3xs) 0 var(--space-3xs); }
+  .card__title a { color: var(--color-text-primary); }
+  .card__title a:hover { color: var(--color-accent); text-decoration: none; }
+
+  .card__date {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    margin-bottom: calc(var(--grid-unit) * 3);
+    display: block;
+    margin-bottom: var(--space-2xs);
   }
 
-  .hero-description {
-    font-size: 1.375rem;
-    line-height: 1.6;
-    color: var(--color-text-primary);
-    margin-bottom: calc(var(--grid-unit) * 4);
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+  .card__excerpt { color: var(--color-text-secondary); font-size: var(--step--1); margin-bottom: 0; }
 
-  .hero-rule {
-    height: 6px;
-    background-color: var(--color-accent);
-    border: none;
-    width: 150px;
-    margin: 0 auto calc(var(--grid-unit) * 4);
-  }
-
-  .hero-actions {
-    display: flex;
-    gap: calc(var(--grid-unit) * 2);
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    font-family: var(--font-heading-secondary);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 0.95rem;
-  }
-
-  .btn-primary {
-    background-color: var(--color-accent);
-    color: white;
-    border: 2px solid var(--color-accent);
-  }
-
-  .btn-primary:hover,
-  .btn-primary:focus {
-    background-color: transparent;
-    color: var(--color-accent);
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    background-color: transparent;
-    color: var(--color-text-primary);
-    border: 2px solid var(--color-border);
-  }
-
-  .btn-secondary:hover,
-  .btn-secondary:focus {
-    background-color: var(--color-text-primary);
-    color: var(--color-background);
-    transform: translateY(-2px);
-  }
-
-  /* Dark mode button styles */
-  :global([data-theme="dark"]) .btn-primary {
-    background-color: var(--color-accent);
-    color: white;
-    border-color: var(--color-accent);
-  }
-
-  :global([data-theme="dark"]) .btn-primary:hover,
-  :global([data-theme="dark"]) .btn-primary:focus {
-    background-color: transparent;
-    color: var(--color-accent);
-  }
-
-  :global([data-theme="dark"]) .btn-secondary {
-    background-color: transparent;
-    color: var(--color-text-primary);
-    border-color: var(--color-border);
-  }
-
-  :global([data-theme="dark"]) .btn-secondary:hover,
-  :global([data-theme="dark"]) .btn-secondary:focus {
-    background-color: var(--color-accent);
-    color: white;
-    border-color: var(--color-accent);
-  }
-
-  .features {
-    padding: calc(var(--grid-unit) * 8) 0;
-  }
-
-  .section-title {
-    font-family: var(--font-heading-secondary);
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: calc(var(--grid-unit) * 6);
-    text-align: center;
-  }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: calc(var(--grid-unit) * 4);
-  }
-
-  .feature-card {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    padding: calc(var(--grid-unit) * 4);
-    text-align: center;
-    transition: transform 0.3s ease, border-color 0.3s ease;
-  }
-
-  .feature-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--color-accent);
-  }
-
-  .feature-icon {
-    font-size: 3rem;
-    margin-bottom: calc(var(--grid-unit) * 2);
-  }
-
-  .feature-title {
-    font-family: var(--font-heading-secondary);
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: calc(var(--grid-unit) * 1.5);
-  }
-
-  .feature-description {
-    color: var(--color-text-secondary);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  /* Typography Showcase */
-  .typography-showcase {
-    padding: calc(var(--grid-unit) * 8) 0;
+  .work {
+    position: relative;
+    overflow: hidden;
+    padding: var(--space-2xl) 0;
     background-color: var(--color-surface);
   }
 
-  .typography-description {
-    text-align: center;
-    font-size: 1.125rem;
-    color: var(--color-text-secondary);
-    margin-bottom: calc(var(--grid-unit) * 6);
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .typography-samples {
+  .work__grid {
     display: grid;
-    gap: calc(var(--grid-unit) * 6);
+    grid-template-columns: 1fr;
+    gap: var(--space-m);
   }
 
-  .type-sample {
-    text-align: center;
-    padding: calc(var(--grid-unit) * 4);
-    background-color: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
+  .work__card h3 { font-size: var(--step-1); margin-bottom: var(--space-2xs); }
+  .work__card p { color: var(--color-text-secondary); font-size: var(--step--1); margin-bottom: 0; }
+
+  @media (min-width: 720px) {
+    .updates__grid { grid-template-columns: repeat(3, 1fr); gap: var(--space-m); }
+    .work__grid { grid-template-columns: repeat(3, 1fr); gap: var(--space-l); }
   }
 
-  .sample-h1 {
-    font-family: var(--font-heading-primary);
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    line-height: 1.1;
-    margin-bottom: calc(var(--grid-unit) * 2);
-  }
-
-  .sample-h2 {
-    font-family: var(--font-heading-secondary);
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    line-height: 1.2;
-    margin-bottom: calc(var(--grid-unit) * 2);
-  }
-
-  .sample-body {
-    font-family: var(--font-body);
-    font-size: 1.125rem;
-    line-height: 1.6;
-    color: var(--color-text-primary);
-    margin-bottom: calc(var(--grid-unit) * 2);
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .sample-code {
-    font-family: var(--font-mono);
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
-    border-radius: 4px;
-    display: inline-block;
-    margin-bottom: calc(var(--grid-unit) * 2);
-    color: var(--color-text-primary);
-  }
-
-  .type-meta {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0;
-  }
-
-  .demo-section {
-    padding: calc(var(--grid-unit) * 8) 0;
-  }
-
-  .demo-description {
-    text-align: center;
-    font-size: 1.125rem;
-    line-height: 1.6;
-    color: var(--color-text-secondary);
-    margin-bottom: calc(var(--grid-unit) * 6);
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .demo-posts {
-    display: grid;
-    gap: calc(var(--grid-unit) * 4);
-    margin-bottom: calc(var(--grid-unit) * 6);
-  }
-
-  .demo-post-card {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    padding: calc(var(--grid-unit) * 3);
-    transition: transform 0.2s ease, border-color 0.2s ease;
-  }
-
-  .demo-post-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--color-accent);
-  }
-
-  .demo-post-title {
-    font-family: var(--font-heading-secondary);
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: calc(var(--grid-unit));
-  }
-
-  .demo-post-title a {
-    color: var(--color-text-primary);
-    text-decoration: none;
-  }
-
-  .demo-post-title a:hover,
-  .demo-post-title a:focus {
-    color: var(--color-accent);
-  }
-
-  .demo-post-meta {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: calc(var(--grid-unit));
-    margin-bottom: calc(var(--grid-unit) * 1.5);
-  }
-
-  .demo-post-date {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .demo-post-reading-time {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .demo-post-reading-time::before {
-    content: "•";
-    margin: 0 calc(var(--grid-unit) / 2);
-    color: var(--color-border);
-  }
-
-  .demo-post-excerpt {
-    color: var(--color-text-secondary);
-    line-height: 1.6;
-    margin-bottom: calc(var(--grid-unit) * 2);
-  }
-
-  .demo-post-categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: calc(var(--grid-unit) / 2);
-  }
-
-  .demo-category {
-    background-color: var(--color-text-primary);
-    color: white;
-    padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2);
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-radius: 2px;
-  }
-
-  /* Dark mode demo category styles */
-  :global([data-theme="dark"]) .demo-category {
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
-  }
-
-  .demo-actions {
-    text-align: center;
-    gap: calc(var(--grid-unit) * 2);
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  /* Recent Content Grid Layout */
-  .recent-content-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: calc(var(--grid-unit) * 4);
-    margin-bottom: calc(var(--grid-unit) * 6);
-  }
-
-  .content-type-badge {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: calc(var(--grid-unit) * 2);
-    font-weight: 600;
-  }
-
-  .meeting-preview {
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--grid-unit) / 2);
-  }
-
-  .agenda-count,
-  .photo-count {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0;
-  }
-
-  @media (max-width: 768px) {
-    .recent-content-grid {
-      grid-template-columns: 1fr;
-      gap: calc(var(--grid-unit) * 3);
-    }
-    
-    .demo-actions {
-      flex-direction: column;
-      align-items: center;
-    }
-  }
-
-  .installation {
-    padding: calc(var(--grid-unit) * 8) 0;
-    background-color: var(--color-surface);
-  }
-
-  .install-steps {
-    display: grid;
-    gap: calc(var(--grid-unit) * 4);
-  }
-
-  .step {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: calc(var(--grid-unit) * 2);
-    align-items: start;
-  }
-
-  .step-number {
-    font-family: var(--font-heading-primary);
-    font-size: 3rem;
-    font-weight: 900;
-    color: var(--color-accent);
-    margin: 0;
-  }
-
-  .step-content {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .step-title {
-    font-family: var(--font-heading-secondary);
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: calc(var(--grid-unit));
-  }
-
-  .code-block {
-    background-color: var(--color-text-primary);
-    color: var(--color-background);
-    padding: calc(var(--grid-unit) * 2);
-    border-radius: 8px;
-    overflow-x: auto;
-    margin: 0;
-  }
-
-  .code-block code {
-    font-family: var(--font-mono);
-    background: none;
-    border: none;
-    color: inherit;
-  }
-
-  @media (max-width: 768px) {
-    .hero-title {
-      font-size: 3rem;
-    }
-
-    .hero-subtitle {
-      font-size: 1.25rem;
-    }
-
-    .hero-description {
-      font-size: 1.125rem;
-    }
-
-    .hero-actions {
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .features-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .step {
-      grid-template-columns: 1fr;
-      text-align: center;
-    }
-
-    .step-number {
-      font-size: 2rem;
-    }
+  @media (prefers-reduced-motion: reduce) {
+    .card:hover { transform: none; }
   }
 </style>

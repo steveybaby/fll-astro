@@ -1,0 +1,95 @@
+---
+import manifest from '../../data/photo-manifest.json';
+import { getSeasonContent } from '../../utils/season';
+import { selectStripPhotos } from '../../utils/photo-strip';
+
+const meetings = await getSeasonContent('meetings');
+const seasonDates = meetings.map((m) => m.data.date.toISOString().slice(0, 10));
+const photos = selectStripPhotos(manifest as any, seasonDates);
+---
+
+{photos.length > 0 && (
+  <section class="strip" aria-labelledby="strip-heading">
+    <div class="strip__inner">
+      <div class="strip__head" data-reveal>
+        <h2 id="strip-heading">Recently</h2>
+        <a href="/photos" class="strip__all">All photos →</a>
+      </div>
+
+      <ul class="strip__grid">
+        {photos.map((photo, i) => (
+          <li data-reveal data-reveal-delay={String(Math.min(i + 1, 4))}>
+            <a href="/photos" class="strip__item">
+              <img src={photo.thumbnail} alt={`Team photo from ${photo.meetingDate}`} loading="lazy" decoding="async" width="400" height="300" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  .strip { padding: var(--space-2xl) 0; }
+
+  .strip__inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--content-padding);
+  }
+
+  .strip__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-s);
+    margin-bottom: var(--space-m);
+  }
+
+  .strip__head h2 { margin-bottom: 0; }
+
+  .strip__all {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+  }
+
+  .strip__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2xs);
+  }
+
+  .strip__grid li { margin: 0; }
+
+  .strip__item {
+    display: block;
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+  }
+
+  .strip__item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin: 0;
+    border-radius: 0;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .strip__item:hover img { transform: scale(1.04); }
+
+  @media (min-width: 720px) {
+    .strip__grid { grid-template-columns: repeat(3, 1fr); gap: var(--space-s); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .strip__item:hover img { transform: none; }
+  }
+</style>

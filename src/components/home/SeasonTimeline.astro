@@ -1,0 +1,136 @@
+---
+import { getSeasonContent } from '../../utils/season';
+import { deriveMilestones } from '../../utils/timeline';
+
+const meetings = await getSeasonContent('meetings');
+const milestones = deriveMilestones(
+  meetings.map((m) => ({ slug: m.slug, data: m.data as any }))
+);
+
+const doneCount = milestones.filter((m) => m.done).length;
+// Fill reaches the last completed dot, not past it.
+const fillPercent =
+  milestones.length > 1 && doneCount > 0
+    ? ((doneCount - 1) / (milestones.length - 1)) * 100
+    : 0;
+---
+
+{milestones.length > 0 && (
+  <section class="timeline" aria-labelledby="timeline-heading">
+    <div class="timeline__inner">
+      <h2 id="timeline-heading" class="timeline__heading" data-reveal>The season</h2>
+
+      <ol class="timeline__rail" style={`--fill:${fillPercent}%`}>
+        {milestones.map((m, i) => (
+          <li class:list={['timeline__stop', { 'is-done': m.done }]} data-reveal data-reveal-delay={String(Math.min(i + 1, 4))}>
+            <a href={`/meetings/${m.slug}/`} class="timeline__link">
+              <span class="timeline__dot" aria-hidden="true"></span>
+              <span class="timeline__label">{m.label}</span>
+              <time class="timeline__date" datetime={m.date.toISOString().slice(0, 10)}>
+                {m.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' })}
+              </time>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+)}
+
+<style>
+  .timeline { padding: var(--space-2xl) 0; }
+
+  .timeline__inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--content-padding);
+  }
+
+  .timeline__heading { margin-bottom: var(--space-l); }
+
+  .timeline__rail {
+    list-style: none;
+    padding: var(--space-s) 0 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-s);
+    position: relative;
+  }
+
+  .timeline__stop { margin: 0; }
+
+  .timeline__link {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2xs);
+    text-decoration: none;
+    color: var(--color-text-secondary);
+  }
+
+  .timeline__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--color-border);
+    flex-shrink: 0;
+    transition: background-color var(--dur-base) var(--ease-out);
+  }
+
+  .is-done .timeline__dot {
+    background-color: var(--color-action);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-action) 25%, transparent);
+  }
+
+  .timeline__label {
+    font-family: var(--font-heading-primary);
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .timeline__date {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    color: var(--color-text-muted);
+  }
+
+  /* Horizontal rail once there is room for one. */
+  @media (min-width: 760px) {
+    .timeline__rail {
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: 0;
+      padding-top: var(--space-m);
+    }
+
+    .timeline__rail::before,
+    .timeline__rail::after {
+      content: '';
+      position: absolute;
+      top: var(--space-m);
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .timeline__rail::before {
+      left: 0;
+      right: 0;
+      background-color: var(--color-border);
+    }
+
+    .timeline__rail::after {
+      left: 0;
+      width: var(--fill, 0%);
+      background-color: var(--color-accent);
+      transition: width var(--dur-slow) var(--ease-out);
+    }
+
+    .timeline__link {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-3xs);
+      padding-right: var(--space-s);
+    }
+
+    .timeline__dot { margin-top: -6px; }
+  }
+</style>
