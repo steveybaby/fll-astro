@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="A leaf built from LEGO bricks, on a thorned stem">
+  <title>The Thorns — brick-built leaf emblem</title>
+
+  <!-- Opaque ground. The old avatar.jpg was a photo and carried its own
+       background; keeping one means the emblem reads on the cream light surface
+       and the near-black dark one alike, without needing CSS it cannot reach as
+       an img-loaded asset.
+       Everything is sized for the 80px the sidebar actually renders it at, not
+       for the 128px viewBox — hence four courses rather than six, and studs big
+       enough to survive the downscale. -->
+  <circle cx="64" cy="64" r="64" fill="#2E6B2E"/>
+  <circle cx="64" cy="64" r="59" fill="none" stroke="#C3E39A" stroke-opacity="0.4" stroke-width="2"/>
+
+  <!-- Stem and thorns, dark against the mid-green ground so the barbs read as
+       silhouette at any size. Drawn first so the brick courses overlap the stem. -->
+  <g fill="#14261B">
+    <rect x="60" y="58" width="8" height="54" rx="4"/>
+    <!-- Barbs sit ON the stem and stay short. Longer ones read as a V or a
+         checkmark once they converge near the base. -->
+    <path d="M61 97 L 38 86 L 61 91 Z"/>
+    <path d="M67 107 L 90 96 L 67 101 Z"/>
+  </g>
+
+  <!-- Leaf: four brick courses, each a plate with studs along its top edge.
+       The stud is what makes a rectangle read as LEGO. -->
+  <g>
+    <!-- course 1 -->
+    <circle cx="57" cy="30" r="5" fill="#C3E39A"/>
+    <circle cx="71" cy="30" r="5" fill="#C3E39A"/>
+    <rect x="50" y="30" width="28" height="15" rx="2" fill="#C3E39A"/>
+
+    <!-- course 2 -->
+    <circle cx="43" cy="45" r="5" fill="#A8D47F"/>
+    <circle cx="57" cy="45" r="5" fill="#A8D47F"/>
+    <circle cx="71" cy="45" r="5" fill="#A8D47F"/>
+    <circle cx="85" cy="45" r="5" fill="#A8D47F"/>
+    <rect x="36" y="45" width="56" height="15" rx="2" fill="#A8D47F"/>
+
+    <!-- course 3 -->
+    <circle cx="43" cy="60" r="5" fill="#C3E39A"/>
+    <circle cx="57" cy="60" r="5" fill="#C3E39A"/>
+    <circle cx="71" cy="60" r="5" fill="#C3E39A"/>
+    <circle cx="85" cy="60" r="5" fill="#C3E39A"/>
+    <rect x="36" y="60" width="56" height="15" rx="2" fill="#C3E39A"/>
+
+    <!-- course 4, tapering back to the stem. One stud is glow yellow — the
+         season's action colour, and the single point of warmth in the mark. -->
+    <circle cx="57" cy="75" r="5" fill="#FFD21E"/>
+    <circle cx="71" cy="75" r="5" fill="#A8D47F"/>
+    <rect x="50" y="75" width="28" height="15" rx="2" fill="#A8D47F"/>
+  </g>
+
+  <!-- Midrib, over the courses so the leaf reads as one shape rather than four
+       stacked bricks. -->
+  <path d="M64 32 L64 90" stroke="#2E6B2E" stroke-width="3" stroke-linecap="round" stroke-opacity="0.5"/>
+</svg>

@@ -26,7 +26,7 @@ export const config: SiteConfig = {
   author: {
     name: "FLL Team",
     bio: `FIRST LEGO League robotics team sharing our ${season.challenge} season journey.`,
-    avatar: "/images/avatar.jpg"
+    avatar: "/images/avatar.svg"
   },
   social: {
     // github: "https://github.com/yourusername",
