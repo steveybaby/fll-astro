@@ -248,11 +248,7 @@ const children = season.roster.map((m) => m.name);
       let assignedChild = null;
       
       allData.forEach(meetingData => {
-        const apiDateOnly = meetingData.meetingDate.includes('T') 
-          ? meetingData.meetingDate.split('T')[0] 
-          : meetingData.meetingDate;
-        
-        if (apiDateOnly === this.meetingDate) {
+        if (meetingData.meetingDate === this.meetingDate) {
           // Find who has the cake assignment
           meetingData.kids.forEach(kid => {
             if (kid.status === '🍰') {

@@ -475,40 +475,22 @@ const children = season.roster.map((m) => m.name);
         const data = await getRSVPs(this.meetingDate, 5000);
         this.currentData = data;
         
-        // Find data for this meeting - handle enhanced date formats
-        const meetingData = data.find(meeting => {
-          const apiDate = meeting.meetingDate;
-          
-          let apiDateOnly;
-          if (apiDate.match(/^\d{4}-\d{2}-\d{2}(T|$)/)) {
-            // Already in ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
-            apiDateOnly = apiDate.split('T')[0];
-          } else if (apiDate.includes(' ')) {
-            // Full date string like "Sun Aug 10 2025 00:00:00 GMT-0700 (Pacific Daylight Time)"
-            const dateObj = new Date(apiDate);
-            if (!isNaN(dateObj.getTime())) {
-              apiDateOnly = dateObj.toISOString().split('T')[0];
-            } else {
-              apiDateOnly = apiDate;
-            }
-          } else {
-            // Assume it's already in the right format
-            apiDateOnly = apiDate;
-          }
-          
-          return apiDateOnly === this.meetingDate;
-        });
-        
+        // Find data for this meeting
+        const meetingData = data.find((m) => m.meetingDate === this.meetingDate);
+
+        // The API always returns the full roster, blanks included, so there is
+        // normally something to render. If a response ever arrives without this
+        // meeting, render an empty roster rather than an error: showing an
+        // error here used to hide the RSVP controls, and because the backend
+        // only created a row once somebody had RSVP'd, the first RSVP for a
+        // meeting could never be made.
+        const kids = meetingData ? meetingData.kids : [];
+        this.renderRSVPData(kids);
         if (meetingData) {
-          this.renderRSVPData(meetingData.kids);
-          this.setCached({ kids: meetingData.kids, fetchedAt: Date.now() });
-          this.showContent();
-        } else {
-          if (!opts.background) {
-            this.showError(`No RSVP data found for meeting date: ${this.meetingDate}`);
-          }
+          this.setCached({ kids, fetchedAt: Date.now() });
         }
-        
+        this.showContent();
+
       } catch (error) {
         const cached = this.getCached();
         if (cached) {
