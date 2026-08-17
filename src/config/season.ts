@@ -51,7 +51,7 @@ export const SEASONS: Record<string, Season> = {
     id: '2026-27',
     challenge: 'BIOGLOW',
     // Placeholder name. This is the only place the team name is defined.
-    teamName: 'Bio-Llamas',
+    teamName: 'The Thorns',
     archived: false,
     archivePath: null,
     roster: [

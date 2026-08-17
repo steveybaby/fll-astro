@@ -60,7 +60,7 @@
 
 /* Llama Mode Theme */
 [data-theme="llama"] {
-  /* Bio-Llamas: bioluminescent green instead of warm Peru brown */
+  /* Bioluminescent green instead of the old warm Peru brown. */
   --color-background: #0a2b35;
   --color-surface: #103c49;
   --color-text-primary: var(--color-light-green);
