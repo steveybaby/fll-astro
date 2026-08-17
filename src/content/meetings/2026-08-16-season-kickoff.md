@@ -6,9 +6,10 @@ startTime: "14:00"
 duration: 2
 location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:
-  - "Watch the season reveal"
-  - "Unbox and assemble mission models"
   - "Meet the team"
+  - "Watch the season reveal videos"
+  - "Brainstorm team names"
+  - "Build the mission models"
 assignments: []
 ---
 
@@ -16,11 +17,13 @@ assignments: []
 
 ## Meeting Agenda
 
-### Watch the season reveal
-
-### Unbox and assemble mission models
-
 ### Meet the team
+
+### Watch the season reveal videos
+
+### Brainstorm team names
+
+### Build the mission models
 
 ## Meeting Notes
 
