@@ -65,7 +65,10 @@ export async function GET() {
       `PRODID:-//${teamName}//Team Calendar//EN`,
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
-      `X-WR-CALNAME:${teamName} Team Meetings`,
+      // The name a calendar app shows for the subscription. Note that most
+      // clients cache this at subscribe time and never re-read it, so changing
+      // it only affects people who subscribe from now on.
+      `X-WR-CALNAME:${teamName} Lego Team`,
       'X-WR-CALDESC:FIRST Lego League team meeting schedule',
       'X-WR-TIMEZONE:America/Los_Angeles',
       'BEGIN:VTIMEZONE',
