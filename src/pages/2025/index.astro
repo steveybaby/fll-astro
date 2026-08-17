@@ -49,14 +49,19 @@ const meetings = (await getSeasonContent('meetings', ARCHIVED)).sort(
     margin-bottom: calc(var(--grid-unit) * 5);
   }
 
+  /* Fluid rather than a fixed 2.75rem: "UNEARTHED" is a single unbreakable
+     word, and at 320px it rendered 328px wide inside a 272px box — 56px of the
+     title clipped off screen. The uppercase, weight and colour are the
+     archive's own identity and stay; only the size scales. */
   .archive-page h1 {
     font-family: var(--font-heading-primary);
-    font-size: 2.75rem;
+    font-size: var(--step-4);
     font-weight: 900;
     color: var(--color-accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     line-height: 1.1;
+    overflow-wrap: break-word;
     margin: 0 0 calc(var(--grid-unit) * 2) 0;
   }
 

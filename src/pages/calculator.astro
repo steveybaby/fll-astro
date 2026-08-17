@@ -59,14 +59,18 @@ import Layout from '../components/Layout.astro';
     margin-bottom: calc(var(--grid-unit) * 4);
   }
 
+  /* Fluid rather than a fixed 3rem: at 320px this rendered 318px wide inside a
+     240px box, clipping the title. The ≤768px override that used to step it to
+     2.5rem is gone — the clamp covers that range and more. */
   .calculator-header h1 {
     font-family: var(--font-heading-primary);
-    font-size: 3rem;
+    font-size: var(--step-4);
     font-weight: 900;
     color: var(--color-accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     line-height: 1.1;
+    overflow-wrap: break-word;
     margin: 0 0 calc(var(--grid-unit) * 2) 0;
   }
 
@@ -197,10 +201,6 @@ import Layout from '../components/Layout.astro';
   @media (max-width: 768px) {
     .calculator-container {
       padding: calc(var(--grid-unit) * 2);
-    }
-
-    .calculator-header h1 {
-      font-size: 2.5rem;
     }
 
     .calculator-form {

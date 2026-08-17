@@ -460,7 +460,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     display: none;
   }
 
-  .search-results-header {
+  .search-results :global(.search-results-header) {
     padding: var(--space-m) var(--space-l);
     margin: calc(var(--space-m) * -1) calc(var(--space-l) * -1) var(--space-m) calc(var(--space-l) * -1);
     border-bottom: 1px solid var(--color-border);
@@ -470,7 +470,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     z-index: 1;
   }
 
-  .search-results-header p {
+  .search-results :global(.search-results-header p) {
     margin: 0;
     font-family: var(--font-mono);
     font-size: var(--step--2);
@@ -479,39 +479,39 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     letter-spacing: 0.18em;
   }
 
-  .search-result {
+  .search-results :global(.search-result) {
     padding: var(--space-xl) var(--space-xl);
     margin-bottom: var(--space-s);
     border-bottom: 1px solid var(--color-border);
     transition: background-color var(--dur-fast) var(--ease-out);
   }
 
-  .search-result:hover {
+  .search-results :global(.search-result:hover) {
     background-color: var(--color-surface);
   }
 
-  .search-result:last-child {
+  .search-results :global(.search-result:last-child) {
     border-bottom: none;
   }
 
-  .search-result-title {
+  .search-results :global(.search-result-title) {
     font-family: var(--font-heading-secondary);
     font-size: var(--step-0);
     font-weight: 700;
     margin-bottom: var(--space-m);
   }
 
-  .search-result-title a {
+  .search-results :global(.search-result-title a) {
     color: var(--color-text-primary);
     text-decoration: none;
   }
 
-  .search-result-title a:hover,
-  .search-result-title a:focus {
+  .search-results :global(.search-result-title a:hover),
+  .search-results :global(.search-result-title a:focus) {
     color: var(--color-accent);
   }
 
-  .search-result-date {
+  .search-results :global(.search-result-date) {
     font-family: var(--font-mono);
     font-size: var(--step--2);
     color: var(--color-text-muted);
@@ -519,20 +519,20 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     margin-bottom: var(--space-l);
   }
 
-  .search-result-excerpt {
+  .search-results :global(.search-result-excerpt) {
     color: var(--color-text-secondary);
     line-height: 1.8;
     margin-bottom: calc(var(--grid-unit) * 5);
   }
 
-  .search-result-categories {
+  .search-results :global(.search-result-categories) {
     display: flex;
     flex-wrap: wrap;
     gap: calc(var(--grid-unit) * 2.5);
     margin-top: var(--space-m);
   }
 
-  .search-category {
+  .search-results :global(.search-category) {
     background-color: var(--color-accent);
     color: var(--color-accent-contrast);
     padding: var(--space-xs) calc(var(--grid-unit) * 2.5);
@@ -545,18 +545,18 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     transition: all var(--dur-fast) var(--ease-out);
   }
 
-  .search-category:hover {
+  .search-results :global(.search-category:hover) {
     background-color: var(--color-accent);
     color: var(--color-accent-contrast);
     opacity: 0.85;
   }
 
-  .search-no-results {
+  .search-results :global(.search-no-results) {
     padding: calc(var(--grid-unit) * 10) var(--space-xl);
     text-align: center;
   }
 
-  .search-no-results p {
+  .search-results :global(.search-no-results p) {
     color: var(--color-text-muted);
     font-style: italic;
     margin: 0;
@@ -884,7 +884,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
       padding: 0 var(--space-s);
     }
 
-    .search-result {
+    .search-results :global(.search-result) {
       padding: var(--space-l) var(--space-m);
       margin-bottom: var(--space-xs);
     }
@@ -893,28 +893,28 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
       padding: var(--space-s) calc(var(--grid-unit) * 2.5) var(--space-m) calc(var(--grid-unit) * 2.5);
     }
 
-    .search-results-header {
+    .search-results :global(.search-results-header) {
       padding: var(--space-s) calc(var(--grid-unit) * 2.5);
       margin: calc(var(--space-s) * -1) calc(var(--grid-unit) * -2.5) var(--space-s) calc(var(--grid-unit) * -2.5);
     }
 
-    .search-result-categories {
+    .search-results :global(.search-result-categories) {
       gap: var(--space-s);
     }
 
-    .search-category {
+    .search-results :global(.search-category) {
       padding: calc(var(--grid-unit)) var(--space-s);
     }
 
-    .search-result-title {
+    .search-results :global(.search-result-title) {
       margin-bottom: var(--space-s);
     }
 
-    .search-result-date {
+    .search-results :global(.search-result-date) {
       margin-bottom: var(--space-m);
     }
 
-    .search-result-excerpt {
+    .search-results :global(.search-result-excerpt) {
       margin-bottom: var(--space-l);
     }
     
