@@ -32,7 +32,7 @@ export const config: SiteConfig = {
     // github: "https://github.com/yourusername",
     // twitter: "https://twitter.com/yourusername",
     // linkedin: "https://linkedin.com/in/yourusername",
-    // email: "" — no verified team email on file; add one here when available.
+    email: "steve@sharpers.com",
   },
   siteUrl: "https://fll.sharpers.com"
 };

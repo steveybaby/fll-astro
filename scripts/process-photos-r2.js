@@ -15,6 +15,11 @@ import sharp from 'sharp';
 import ExifReader from 'exifreader';
 import { S3Client, PutObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { fileURLToPath } from 'url';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+import os from 'os';
+
+const execFileAsync = promisify(execFile);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -143,6 +148,93 @@ async function extractPhotoDate(filePath, filename) {
   } catch (error) {
     console.warn(`Could not extract date from ${filePath}:`, error.message);
     return null;
+  }
+}
+
+
+/**
+ * Video handling.
+ *
+ * Phones record HEVC in a .mov container, often at 4K. Chrome and Firefox
+ * cannot play HEVC, and a 48-second 4K clip runs to ~150MB — which the gallery
+ * would happily start pulling just to render its tile. So videos get the same
+ * treatment images already get: normalised to something every browser can play
+ * at a size that suits a phone on mobile data.
+ *
+ * Output is H.264/AAC in MP4, capped at 1080p, with +faststart so playback can
+ * begin before the whole file arrives. A poster frame is extracted so the
+ * gallery tile never has to touch the video at all.
+ */
+const VIDEO_MAX_HEIGHT = 1080;
+
+async function hasFfmpeg() {
+  try {
+    await execFileAsync('ffmpeg', ['-version']);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Probe a video's codec and height so we can skip re-encoding what is already fine. */
+async function probeVideo(filePath) {
+  try {
+    const { stdout } = await execFileAsync('ffprobe', [
+      '-v', 'error', '-select_streams', 'v:0',
+      '-show_entries', 'stream=codec_name,height',
+      '-of', 'default=noprint_wrappers=1:nokey=1', filePath,
+    ]);
+    const [codec, height] = stdout.trim().split('\n');
+    return { codec, height: parseInt(height, 10) };
+  } catch {
+    return { codec: null, height: null };
+  }
+}
+
+/**
+ * Produce a web-ready MP4 and a poster frame.
+ * Returns { videoBuffer, posterBuffer, transcoded }.
+ */
+async function processVideo(filePath, baseName) {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'fll-video-'));
+  const mp4Path = path.join(tmpDir, `${baseName}.mp4`);
+  const posterPath = path.join(tmpDir, `thumb_${baseName}.jpg`);
+
+  try {
+    const { codec, height } = await probeVideo(filePath);
+    // Already a web-friendly H.264 at a sane size? Copy it rather than re-encode,
+    // which would only lose quality.
+    const needsTranscode = codec !== 'h264' || !height || height > VIDEO_MAX_HEIGHT;
+
+    if (needsTranscode) {
+      console.log(`  🎞️  Transcoding (${codec || 'unknown'}${height ? ` ${height}p` : ''} → h264 ${VIDEO_MAX_HEIGHT}p)...`);
+      await execFileAsync('ffmpeg', [
+        '-y', '-loglevel', 'error', '-i', filePath,
+        '-vf', `scale=-2:'min(${VIDEO_MAX_HEIGHT},ih)'`,
+        '-c:v', 'libx264', '-preset', 'medium', '-crf', '23', '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac', '-b:a', '128k',
+        '-movflags', '+faststart',
+        mp4Path,
+      ], { maxBuffer: 1024 * 1024 * 64 });
+    } else {
+      console.log(`  🎞️  Already h264 ${height}p, copying without re-encoding...`);
+      await fs.copyFile(filePath, mp4Path);
+    }
+
+    console.log(`  🖼️  Extracting poster frame...`);
+    await execFileAsync('ffmpeg', [
+      '-y', '-loglevel', 'error', '-ss', '2', '-i', mp4Path,
+      '-frames:v', '1', '-vf', `scale=-2:${config.thumbnailHeight}`, '-q:v', '3',
+      posterPath,
+    ], { maxBuffer: 1024 * 1024 * 16 });
+
+    const [videoBuffer, posterBuffer] = await Promise.all([
+      fs.readFile(mp4Path),
+      fs.readFile(posterPath),
+    ]);
+    return { videoBuffer, posterBuffer, transcoded: needsTranscode };
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true });
   }
 }
 
@@ -295,6 +387,18 @@ async function processPhotos() {
     console.log('No media files found to process.');
     return;
   }
+
+  // Fail loudly rather than uploading an unplayable original: without ffmpeg we
+  // cannot normalise video, and a raw phone capture is HEVC that Chrome and
+  // Firefox refuse to play.
+  const videoFiles = mediaFiles.filter(isVideoFile);
+  if (videoFiles.length > 0 && !(await hasFfmpeg())) {
+    console.error(`\n❌ ${videoFiles.length} video file(s) found but ffmpeg is not installed.`);
+    console.error('   Videos need transcoding to H.264 or most browsers cannot play them.');
+    console.error('   Install it with: brew install ffmpeg');
+    console.error(`   Affected: ${videoFiles.join(', ')}\n`);
+    process.exit(1);
+  }
   
   console.log(`Found ${mediaFiles.length} media files to process`);
   
@@ -349,12 +453,12 @@ async function processPhotos() {
       const normalizedBaseName = baseName.toLowerCase();
       const isVideo = isVideoFile(filename);
       
-      const fullImageKey = isVideo 
-        ? `meetings/${meetingDate}/${baseName}${originalExt}` 
+      // Videos are normalised to .mp4 regardless of source container, and get a
+      // poster frame just like images get a thumbnail.
+      const fullImageKey = isVideo
+        ? `meetings/${meetingDate}/${baseName}.mp4`
         : `meetings/${meetingDate}/${baseName}.jpg`;
-      const thumbnailKey = isVideo
-        ? null // Videos don't have thumbnails for now
-        : `meetings/${meetingDate}/thumbnails/thumb_${baseName}.jpg`;
+      const thumbnailKey = `meetings/${meetingDate}/thumbnails/thumb_${baseName}.jpg`;
       
       // Check for duplicates based on basename and meeting date
       const photoKey = `${meetingDate}:${normalizedBaseName}`;
@@ -365,7 +469,7 @@ async function processPhotos() {
       }
       
       // Check if already exists in manifest
-      const expectedFilename = isVideo ? baseName + originalExt : baseName + '.jpg';
+      const expectedFilename = isVideo ? baseName + '.mp4' : baseName + '.jpg';
       const existingInManifest = photosByMeeting[meetingDate]?.some(item => 
         item.filename.toLowerCase() === expectedFilename.toLowerCase()
       );
@@ -378,9 +482,7 @@ async function processPhotos() {
       }
       
       // Check if already uploaded to R2
-      const alreadyUploaded = isVideo 
-        ? existingPhotos.has(fullImageKey)
-        : (existingPhotos.has(fullImageKey) && existingPhotos.has(thumbnailKey));
+      const alreadyUploaded = existingPhotos.has(fullImageKey) && existingPhotos.has(thumbnailKey);
       
       if (alreadyUploaded) {
         console.log(`  ⏭️  Already uploaded to R2, adding to manifest: ${baseName}`);
@@ -394,7 +496,7 @@ async function processPhotos() {
         photosByMeeting[meetingDate].push({
           filename: expectedFilename,
           type: isVideo ? 'video' : 'image',
-          thumbnail: isVideo ? null : `${config.publicUrl}/${thumbnailKey}`,
+          thumbnail: `${config.publicUrl}/${thumbnailKey}`,
           fullImage: `${config.publicUrl}/${fullImageKey}`,
           dateFound: photoDate,
           uploadedAt: new Date().toISOString()
@@ -410,9 +512,11 @@ async function processPhotos() {
       
       if (isVideo) {
         console.log(`  🎬 Processing video file...`);
-        // For videos, upload the original file directly
-        const videoBuffer = await fs.readFile(filePath);
-        fullImageUrl = await uploadToR2(videoBuffer, fullImageKey, getContentType(filename));
+        const { videoBuffer, posterBuffer } = await processVideo(filePath, baseName);
+
+        console.log(`  ☁️  Uploading to R2...`);
+        thumbnailUrl = await uploadToR2(posterBuffer, thumbnailKey, 'image/jpeg');
+        fullImageUrl = await uploadToR2(videoBuffer, fullImageKey, 'video/mp4');
       } else {
         console.log(`  📸 Creating thumbnail...`);
         const thumbnailBuffer = await createOptimizedImage(filePath, true);
