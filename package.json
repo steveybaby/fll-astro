@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:worker": "npm --prefix workers/signups test",
+    "test:worker:types": "npm --prefix workers/signups run typecheck",
     "worker:dev": "npm --prefix workers/signups run dev",
     "worker:deploy": "npm --prefix workers/signups run deploy"
   },
