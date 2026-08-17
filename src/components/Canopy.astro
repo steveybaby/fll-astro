@@ -1,0 +1,64 @@
+---
+/**
+ * Decorative foliage silhouette. Purely presentational — aria-hidden, no text,
+ * never load-bearing for comprehension.
+ *
+ * Placement: the host element needs `position: relative` and `overflow: hidden`.
+ * Opacity comes from --canopy-opacity, which the archive theme sets to 0, so
+ * archive pages suppress foliage without knowing this component exists.
+ */
+export interface Props {
+  /** top = leaf cluster hanging from above; bottom = undergrowth rising from below; sparse = a light diagonal frond. */
+  variant?: 'top' | 'bottom' | 'sparse';
+  /** Parallax rate. Positive drifts down, negative drifts up. 0 disables. */
+  rate?: number;
+  class?: string;
+}
+
+const { variant = 'top', rate = 0, class: className = '' } = Astro.props;
+---
+
+<svg
+  class:list={['canopy', `canopy--${variant}`, className]}
+  data-parallax={rate !== 0 ? String(rate) : undefined}
+  viewBox={variant === 'top' ? '0 0 200 46' : '0 0 200 44'}
+  preserveAspectRatio="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  {variant === 'top' && (
+    <g fill="var(--color-canopy)">
+      <ellipse cx="18" cy="0" rx="36" ry="17" />
+      <ellipse cx="78" cy="-6" rx="42" ry="19" />
+      <ellipse cx="142" cy="1" rx="35" ry="16" />
+      <ellipse cx="192" cy="-4" rx="32" ry="18" />
+    </g>
+  )}
+  {variant === 'bottom' && (
+    <path
+      fill="var(--color-canopy)"
+      d="M0 44 C26 18 48 31 72 15 C96 2 122 20 148 9 C172 0 186 18 200 9 L200 44Z"
+    />
+  )}
+  {variant === 'sparse' && (
+    <path
+      fill="var(--color-canopy)"
+      d="M0 0 C30 21 56 8 84 23 C110 35 138 17 166 27 C182 33 192 23 200 29 L200 0Z"
+    />
+  )}
+</svg>
+
+<style>
+  .canopy {
+    position: absolute;
+    left: -6%;
+    width: 112%;
+    opacity: var(--canopy-opacity);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .canopy--top { top: -14px; }
+  .canopy--bottom { bottom: -6px; }
+  .canopy--sparse { top: -10px; opacity: calc(var(--canopy-opacity) * 0.6); }
+</style>
