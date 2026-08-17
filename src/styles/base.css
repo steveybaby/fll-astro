@@ -10,6 +10,10 @@
 
 html {
   font-family: var(--font-body);
+  /* Fraunces at a text optical size: shorter ascenders, open counters, less of
+     the display cut's flourish. This is what makes one family workable for body
+     copy as well as headings. */
+  font-variation-settings: var(--fv-text);
   font-size: 16px;
   line-height: 1.6;
   color: var(--color-text-primary);
@@ -156,7 +160,8 @@ hr {
 /* Small uppercase labels — the only place uppercase and tracking belong. */
 .eyebrow,
 .label {
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
+  font-variation-settings: var(--fv-label);
   font-size: var(--step--2);
   font-weight: 600;
   text-transform: uppercase;

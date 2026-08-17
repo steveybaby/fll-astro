@@ -81,7 +81,7 @@ import Layout from '../components/Layout.astro';
   }
 
   .ratio-info {
-    font-family: var(--font-mono);
+    font-family: var(--font-label);
     font-size: 1rem;
     font-weight: 600;
     color: var(--color-accent);
@@ -124,6 +124,8 @@ import Layout from '../components/Layout.astro';
     padding: calc(var(--grid-unit) * 1.5);
     border: 2px solid var(--color-border);
     border-radius: 8px;
+    /* Numeric entry keeps monospace: digits need equal advance widths so the
+       value does not jitter as you type. */
     font-family: var(--font-mono);
     font-size: 1.1rem;
     background: var(--color-background);

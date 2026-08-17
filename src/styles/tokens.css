@@ -43,10 +43,22 @@
   --hero-gradient: linear-gradient(170deg, var(--bio-paper) 0%, #EFE6CB 100%);
 
   /* ---- Typography ---- */
+  /* One family everywhere. Fraunces has an optical-size axis, so the same font
+     is drawn differently at 12px and 96px — that is what lets a single family
+     carry display, body and label roles without looking repetitive, and it is
+     why there is no second family to clash with.
+     --font-mono is now reserved for things that genuinely need fixed advance
+     widths: code blocks and the copyable calendar URL. */
   --font-heading-primary: 'Fraunces Variable', Fraunces, Georgia, serif;
   --font-heading-secondary: 'Fraunces Variable', Fraunces, Georgia, serif;
-  --font-body: 'Work Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Fraunces Variable', Fraunces, Georgia, serif;
+  --font-label: 'Fraunces Variable', Fraunces, Georgia, serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Optical sizes. Fraunces reads as a text face low and a display face high. */
+  --fv-text: 'opsz' 14;
+  --fv-label: 'opsz' 12;
+  --fv-display: 'opsz' 144, 'SOFT' 40, 'WONK' 1;
 
   /* Fluid type scale. Every step interpolates between 360px and 1280px. */
   --step--2: clamp(0.69rem, 0.67rem + 0.09vw, 0.75rem);
