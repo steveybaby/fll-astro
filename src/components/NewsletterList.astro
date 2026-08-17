@@ -85,12 +85,12 @@ newsletters.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
   .newsletters-page {
     max-width: 900px;
     margin: 0 auto;
-    padding: calc(var(--grid-unit) * 4) 0;
+    padding: var(--space-l) 0;
   }
 
   .page-header {
     text-align: center;
-    margin-bottom: calc(var(--grid-unit) * 6);
+    margin-bottom: var(--space-xl);
   }
 
   .page-header h1 {
@@ -98,13 +98,11 @@ newsletters.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
     font-size: 3rem;
     font-weight: 900;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    margin: 0 0 var(--space-s) 0;
   }
 
   .page-description {
-    font-size: 1.125rem;
+    font-size: var(--step-0);
     color: var(--color-text-secondary);
     line-height: 1.6;
     max-width: 600px;
@@ -113,30 +111,30 @@ newsletters.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
   .newsletters-grid {
     display: grid;
-    gap: calc(var(--grid-unit) * 4);
+    gap: var(--space-l);
   }
 
   .newsletter-card {
     background: var(--color-surface);
     border: 2px solid var(--color-border);
-    border-radius: 8px;
-    padding: calc(var(--grid-unit) * 4);
-    transition: all 0.2s ease;
+    border-radius: var(--radius-m);
+    padding: var(--space-l);
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .newsletter-card:hover {
     border-color: var(--color-accent);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-m);
   }
 
   .newsletter-meta {
     display: flex;
     align-items: center;
-    gap: calc(var(--grid-unit) * 2);
-    margin-bottom: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
+    margin-bottom: var(--space-s);
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     color: var(--color-text-muted);
   }
 
@@ -148,14 +146,14 @@ newsletters.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
     font-family: var(--font-heading-secondary);
     font-size: 1.75rem;
     font-weight: 700;
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    margin: 0 0 var(--space-s) 0;
     line-height: 1.2;
   }
 
   .newsletter-link {
     color: var(--color-text-primary);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color var(--dur-fast) var(--ease-out);
   }
 
   .newsletter-link:hover {
@@ -165,7 +163,7 @@ newsletters.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
   .newsletter-excerpt {
     color: var(--color-text-secondary);
     line-height: 1.6;
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
     font-size: 1.1rem;
   }
 
@@ -173,52 +171,51 @@ newsletters.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
     display: flex;
     flex-wrap: wrap;
     gap: calc(var(--grid-unit));
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .tag {
     background: var(--color-accent);
-    color: white;
-    font-size: 0.8rem;
+    color: var(--color-accent-contrast);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 600;
     padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
-    border-radius: 12px;
+    border-radius: var(--radius-pill);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .read-more-btn {
     display: inline-block;
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--color-accent);
     text-decoration: none;
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    padding: calc(var(--grid-unit)) var(--space-s);
     border: 2px solid var(--color-accent);
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--1);
   }
 
   .read-more-btn:hover,
   .read-more-btn:focus {
     background: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     transform: translateY(-1px);
   }
 
   .no-newsletters {
     text-align: center;
-    padding: calc(var(--grid-unit) * 6);
+    padding: var(--space-xl);
     color: var(--color-text-muted);
     font-style: italic;
   }
 
   @media (max-width: 768px) {
     .newsletters-page {
-      padding: calc(var(--grid-unit) * 3) var(--content-padding);
+      padding: var(--space-m) var(--content-padding);
     }
 
     .page-header h1 {
@@ -226,11 +223,11 @@ newsletters.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
     }
 
     .newsletter-card {
-      padding: calc(var(--grid-unit) * 3);
+      padding: var(--space-m);
     }
 
     .newsletter-card h2 {
-      font-size: 1.5rem;
+      font-size: var(--step-1);
     }
 
     .newsletter-meta {

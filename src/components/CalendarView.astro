@@ -148,15 +148,15 @@ const calPath = seasonCalendarPath();
 <style>
   .calendar-page {
     min-height: 100vh;
-    padding: calc(var(--grid-unit) * 3);
+    padding: var(--space-m);
   }
 
   .calendar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: calc(var(--grid-unit) * 4);
-    padding-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-l);
+    padding-bottom: var(--space-m);
     border-bottom: 3px solid var(--color-accent);
   }
 
@@ -165,8 +165,6 @@ const calPath = seasonCalendarPath();
     font-size: 3rem;
     font-weight: 900;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     margin: 0 0 calc(var(--grid-unit)) 0;
   }
 
@@ -181,17 +179,15 @@ const calPath = seasonCalendarPath();
   }
 
   .subscribe-button {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: white;
+    color: var(--color-accent-contrast);
     background-color: var(--color-accent);
-    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
+    padding: var(--space-xs) var(--space-m);
     border: 2px solid var(--color-accent);
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    font-size: 1rem;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--1);
     cursor: pointer;
     display: inline-block;
   }
@@ -209,62 +205,58 @@ const calPath = seasonCalendarPath();
     right: 0;
     background: var(--color-surface);
     border: 2px solid var(--color-accent);
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-m);
     z-index: 1000;
     min-width: 400px;
   }
 
   .calendar-popup-content {
-    padding: calc(var(--grid-unit) * 3);
+    padding: var(--space-m);
   }
 
   .calendar-popup h4 {
     font-family: var(--font-heading-secondary);
-    font-size: 1.25rem;
+    font-size: var(--step-0);
     font-weight: 700;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    margin: 0 0 var(--space-s) 0;
   }
 
   .calendar-popup p {
     color: var(--color-text-secondary);
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    margin: 0 0 var(--space-s) 0;
     line-height: 1.5;
   }
 
   .url-copy-container {
     display: flex;
     gap: calc(var(--grid-unit));
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .calendar-url-input {
     flex: 1;
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    padding: calc(var(--grid-unit)) var(--space-xs);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: var(--radius-s);
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     background: var(--color-background);
     color: var(--color-text-primary);
   }
 
   .copy-button {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     background: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     border: none;
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
-    border-radius: 4px;
+    padding: calc(var(--grid-unit)) var(--space-s);
+    border-radius: var(--radius-s);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.85rem;
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--2);
   }
 
   .copy-button:hover,
@@ -274,22 +266,20 @@ const calPath = seasonCalendarPath();
   }
 
   .calendar-instructions {
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .calendar-instructions h5 {
     font-family: var(--font-heading-secondary);
-    font-size: 1rem;
+    font-size: var(--step--1);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     margin: 0 0 calc(var(--grid-unit)) 0;
   }
 
   .calendar-instructions ul {
     margin: 0;
-    padding-left: calc(var(--grid-unit) * 3);
+    padding-left: var(--space-m);
     color: var(--color-text-secondary);
     line-height: 1.6;
   }
@@ -302,12 +292,12 @@ const calPath = seasonCalendarPath();
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
   }
 
   .download-fallback {
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     text-decoration: underline;
   }
 
@@ -316,18 +306,16 @@ const calPath = seasonCalendarPath();
   }
 
   .close-button {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     background: transparent;
     color: var(--color-text-muted);
     border: 1px solid var(--color-border);
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit) * 1.5);
-    border-radius: 4px;
+    padding: calc(var(--grid-unit) / 2) var(--space-xs);
+    border-radius: var(--radius-s);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.8rem;
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--2);
   }
 
   .close-button:hover,
@@ -339,21 +327,21 @@ const calPath = seasonCalendarPath();
   .calendar-container {
     display: grid;
     grid-template-columns: 1fr 300px;
-    gap: calc(var(--grid-unit) * 4);
+    gap: var(--space-l);
     min-height: 70vh;
   }
 
   .calendar-main {
     background: var(--color-surface);
     border: 2px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-m);
     overflow: hidden;
   }
 
   .calendar-month-header {
     background: var(--color-accent);
-    color: white;
-    padding: calc(var(--grid-unit) * 2);
+    color: var(--color-accent-contrast);
+    padding: var(--space-s);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -361,27 +349,25 @@ const calPath = seasonCalendarPath();
 
   .calendar-month-header h2 {
     font-family: var(--font-heading-secondary);
-    font-size: 1.5rem;
+    font-size: var(--step-1);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     margin: 0;
     flex: 1;
     text-align: center;
-    color: white !important;
-    background: rgba(0,0,0,0.1);
+    color: var(--color-accent-contrast) !important;
+    background: color-mix(in srgb, black 10%, transparent);
     padding: calc(var(--grid-unit) / 2);
-    border-radius: 4px;
+    border-radius: var(--radius-s);
   }
 
   .month-nav-btn {
     background: none;
     border: none;
-    color: white;
+    color: var(--color-accent-contrast);
     padding: calc(var(--grid-unit) / 2);
     cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -391,7 +377,7 @@ const calPath = seasonCalendarPath();
 
   .month-nav-btn:hover,
   .month-nav-btn:focus {
-    background: rgba(255, 255, 255, 0.2);
+    background: color-mix(in srgb, var(--color-accent-contrast) 20%, transparent);
     outline: none;
   }
 
@@ -419,7 +405,7 @@ const calPath = seasonCalendarPath();
 
   .calendar-weekdays {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     background: var(--color-background);
     border-bottom: 1px solid var(--color-border);
   }
@@ -427,12 +413,12 @@ const calPath = seasonCalendarPath();
   .weekday {
     padding: calc(var(--grid-unit)) calc(var(--grid-unit) / 2);
     text-align: center;
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
     border-right: 1px solid var(--color-border);
   }
 
@@ -442,7 +428,7 @@ const calPath = seasonCalendarPath();
 
   .calendar-days {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     grid-template-rows: repeat(6, 1fr);
     flex: 1;
   }
@@ -467,25 +453,28 @@ const calPath = seasonCalendarPath();
     opacity: 0.5;
   }
 
-  .calendar-day.today {
-    background: rgba(220, 38, 38, 0.05);
-    border-color: var(--color-accent);
+  .calendar-day.has-meetings {
+    background: color-mix(in srgb, var(--color-accent) 6%, transparent);
   }
 
-  .calendar-day.has-meetings {
-    background: rgba(220, 38, 38, 0.02);
+  /* Comes after .has-meetings so a day that is both today and has a
+     meeting still gets the bold today treatment, not the faint wash. */
+  .calendar-day.today {
+    background: var(--color-action);
+    border-color: var(--color-action);
+    color: var(--color-action-contrast);
   }
 
   .day-number {
     font-family: var(--font-heading-secondary);
     font-weight: 700;
-    font-size: 1rem;
+    font-size: var(--step--1);
     color: var(--color-text-primary);
     margin-bottom: calc(var(--grid-unit) / 2);
   }
 
   .today .day-number {
-    color: var(--color-accent);
+    color: var(--color-action-contrast);
     font-size: 1.1rem;
   }
 
@@ -498,13 +487,14 @@ const calPath = seasonCalendarPath();
 
   .meeting-event {
     background: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2);
-    border-radius: 3px;
+    border-radius: var(--radius-s);
     text-decoration: none;
-    font-size: 0.75rem;
+    font-size: var(--step--2);
     line-height: 1.2;
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
+    overflow-wrap: break-word;
   }
 
   .meeting-event:hover {
@@ -544,25 +534,28 @@ const calPath = seasonCalendarPath();
     opacity: 0.5 !important;
   }
 
-  :global(.calendar-day.today) {
-    background: rgba(220, 38, 38, 0.05) !important;
-    border-color: var(--color-accent) !important;
+  :global(.calendar-day.has-meetings) {
+    background: color-mix(in srgb, var(--color-accent) 6%, transparent) !important;
   }
 
-  :global(.calendar-day.has-meetings) {
-    background: rgba(220, 38, 38, 0.02) !important;
+  /* Comes after .has-meetings so a day that is both today and has a
+     meeting still gets the bold today treatment, not the faint wash. */
+  :global(.calendar-day.today) {
+    background: var(--color-action) !important;
+    border-color: var(--color-action) !important;
+    color: var(--color-action-contrast) !important;
   }
 
   :global(.day-number) {
     font-family: var(--font-heading-secondary) !important;
     font-weight: 700 !important;
-    font-size: 1rem !important;
+    font-size: var(--step--1) !important;
     color: var(--color-text-primary) !important;
     margin-bottom: calc(var(--grid-unit) / 2) !important;
   }
 
   :global(.today .day-number) {
-    color: var(--color-accent) !important;
+    color: var(--color-action-contrast) !important;
     font-size: 1.1rem !important;
   }
 
@@ -575,13 +568,14 @@ const calPath = seasonCalendarPath();
 
   :global(.meeting-event) {
     background: var(--color-accent) !important;
-    color: white !important;
+    color: var(--color-accent-contrast) !important;
     padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2) !important;
-    border-radius: 3px !important;
+    border-radius: var(--radius-s) !important;
     text-decoration: none !important;
-    font-size: 0.75rem !important;
+    font-size: var(--step--2) !important;
     line-height: 1.2 !important;
-    transition: all 0.2s ease !important;
+    transition: all var(--dur-fast) var(--ease-out) !important;
+    overflow-wrap: break-word !important;
   }
 
   :global(.meeting-event:hover) {
@@ -603,19 +597,19 @@ const calPath = seasonCalendarPath();
   .calendar-sidebar {
     background: var(--color-surface);
     border: 2px solid var(--color-border);
-    border-radius: 8px;
-    padding: calc(var(--grid-unit) * 3);
+    border-radius: var(--radius-m);
+    padding: var(--space-m);
     height: fit-content;
   }
 
   .calendar-sidebar h3 {
-    font-family: var(--font-heading-secondary);
-    font-size: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 700;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    letter-spacing: 0.18em;
+    margin: 0 0 var(--space-s) 0;
     border-bottom: 2px solid var(--color-accent);
     padding-bottom: calc(var(--grid-unit) / 2);
   }
@@ -623,27 +617,27 @@ const calPath = seasonCalendarPath();
   .upcoming-list {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--grid-unit) * 1.5);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    gap: var(--space-xs);
+    margin-bottom: var(--space-m);
   }
 
   :global(.upcoming-list) {
     display: flex !important;
     flex-direction: column !important;
-    gap: calc(var(--grid-unit) * 1.5) !important;
-    margin-bottom: calc(var(--grid-unit) * 3) !important;
+    gap: var(--space-xs) !important;
+    margin-bottom: var(--space-m) !important;
   }
 
   .upcoming-meeting {
     display: flex;
     flex-direction: column;
     gap: calc(var(--grid-unit) / 4);
-    padding: calc(var(--grid-unit) * 1.5);
+    padding: var(--space-xs);
     background: var(--color-background);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: var(--radius-s);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   /* Ensure styles work for dynamically generated content */
@@ -651,12 +645,12 @@ const calPath = seasonCalendarPath();
     display: flex !important;
     flex-direction: column !important;
     gap: calc(var(--grid-unit) / 4) !important;
-    padding: calc(var(--grid-unit) * 1.5) !important;
+    padding: var(--space-xs) !important;
     background: var(--color-background) !important;
     border: 1px solid var(--color-border) !important;
-    border-radius: 4px !important;
+    border-radius: var(--radius-s) !important;
     text-decoration: none !important;
-    transition: all 0.2s ease !important;
+    transition: all var(--dur-fast) var(--ease-out) !important;
   }
 
   :global(.upcoming-meeting:hover) {
@@ -665,12 +659,12 @@ const calPath = seasonCalendarPath();
   }
 
   :global(.upcoming-title) {
-    font-family: var(--font-heading-secondary) !important;
+    font-family: var(--font-mono) !important;
     font-weight: 700 !important;
-    font-size: 0.9rem !important;
+    font-size: var(--step--2) !important;
     color: var(--color-text-primary) !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
+    letter-spacing: 0.18em !important;
     line-height: 1.2 !important;
   }
 
@@ -680,15 +674,15 @@ const calPath = seasonCalendarPath();
 
   :global(.upcoming-date) {
     font-family: var(--font-mono) !important;
-    font-size: 0.8rem !important;
+    font-size: var(--step--2) !important;
     color: var(--color-text-muted) !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
+    letter-spacing: 0.18em !important;
   }
 
   :global(.upcoming-time) {
     font-family: var(--font-mono) !important;
-    font-size: 0.75rem !important;
+    font-size: var(--step--2) !important;
     color: var(--color-accent) !important;
     font-weight: 600 !important;
   }
@@ -699,12 +693,12 @@ const calPath = seasonCalendarPath();
   }
 
   .upcoming-title {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: var(--step--2);
     color: var(--color-text-primary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
     line-height: 1.2;
   }
 
@@ -714,15 +708,15 @@ const calPath = seasonCalendarPath();
 
   .upcoming-date {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .upcoming-time {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--step--2);
     color: var(--color-accent);
     font-weight: 600;
   }
@@ -731,7 +725,7 @@ const calPath = seasonCalendarPath();
     color: var(--color-text-muted);
     font-style: italic;
     text-align: center;
-    margin: calc(var(--grid-unit) * 2) 0;
+    margin: var(--space-s) 0;
   }
 
   .sidebar-actions {
@@ -739,33 +733,31 @@ const calPath = seasonCalendarPath();
     flex-direction: column;
     gap: calc(var(--grid-unit));
     border-top: 1px solid var(--color-border);
-    padding-top: calc(var(--grid-unit) * 2);
+    padding-top: var(--space-s);
   }
 
   .action-link {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--color-accent);
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    padding: calc(var(--grid-unit)) var(--space-xs);
     border: 2px solid var(--color-accent);
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
     text-decoration: none;
     text-align: center;
-    font-size: 0.85rem;
+    font-size: var(--step--2);
   }
 
   .action-link:hover {
     background-color: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
   }
 
   @media (max-width: 1024px) {
     .calendar-container {
       grid-template-columns: 1fr;
-      gap: calc(var(--grid-unit) * 3);
+      gap: var(--space-m);
     }
 
     .calendar-sidebar {
@@ -782,16 +774,16 @@ const calPath = seasonCalendarPath();
   @media (max-width: 768px) {
     .calendar-header {
       flex-direction: column;
-      gap: calc(var(--grid-unit) * 2);
+      gap: var(--space-s);
       align-items: flex-start;
     }
 
     .calendar-month-header {
-      padding: calc(var(--grid-unit) * 1.5);
+      padding: var(--space-xs);
     }
 
     .calendar-month-header h2 {
-      font-size: 1.25rem;
+      font-size: var(--step-0);
     }
 
     .month-nav-btn {
