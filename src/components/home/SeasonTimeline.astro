@@ -83,25 +83,31 @@ const fillPercent =
     background-color: var(--color-accent);
   }
 
+  /* A two-column grid rather than a flex row: labels run from one word to
+     three, and as a flex row a wrapping label squeezes the date into a sliver
+     beside it. Explicit placement keeps the date on its own line under the
+     label no matter how the label wraps. */
   .timeline__link {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-2xs);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: var(--space-2xs);
+    row-gap: 2px;
+    align-items: start;
     text-decoration: none;
     color: var(--color-text-secondary);
   }
 
   .timeline__dot {
+    grid-column: 1;
+    grid-row: 1;
     box-sizing: border-box;
     width: 12px;
     height: 12px;
     border-radius: 50%;
     background-color: transparent;
     border: 2px solid var(--color-border);
-    flex-shrink: 0;
     /* Pinned to the first line rather than the shared baseline, so the rail
-       above and below it lines up predictably even when the row wraps. */
-    align-self: flex-start;
+       above and below it lines up predictably even when the label wraps. */
     margin-top: 0.34em;
     transition: background-color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
   }
@@ -114,12 +120,17 @@ const fillPercent =
   }
 
   .timeline__label {
+    grid-column: 2;
+    grid-row: 1;
     font-family: var(--font-heading-primary);
     font-weight: 700;
+    line-height: 1.25;
     color: var(--color-accent);
   }
 
   .timeline__date {
+    grid-column: 2;
+    grid-row: 2;
     font-family: var(--font-mono);
     font-size: var(--step--2);
     color: var(--color-text-muted);
@@ -161,17 +172,30 @@ const fillPercent =
       transition: width var(--dur-slow) var(--ease-out);
     }
 
+    /* One column here: dot, then label, then date, stacked. */
     .timeline__link {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--space-3xs);
+      grid-template-columns: 1fr;
+      row-gap: var(--space-3xs);
       padding-right: var(--space-s);
+    }
+
+    .timeline__dot {
+      grid-column: 1;
+      grid-row: 1;
+      margin-top: -6px;
+    }
+
+    .timeline__date {
+      grid-column: 1;
+      grid-row: 3;
     }
 
     /* Labels vary from one word to three, so reserve two lines. Without this
        the dates sit at different heights depending on whether their label
        wrapped, and the row reads as ragged. */
     .timeline__label {
+      grid-column: 1;
+      grid-row: 2;
       line-height: 1.25;
       min-height: 2.5em;
     }
