@@ -141,17 +141,25 @@
     display: none;
   }
 
-  /* Show/hide icons based on theme */
-  [data-theme="light"] .moon-icon,
-  [data-theme="light"] .glow-icon,
-  [data-theme="dark"] .sun-icon,
-  [data-theme="dark"] .glow-icon,
-  [data-theme="glow"] .sun-icon,
-  [data-theme="glow"] .moon-icon {
+  /* Show/hide icons based on theme.
+     The ancestor [data-theme] selector targets <html>, which is outside
+     this component, so it must be wrapped in :global() — otherwise
+     Astro's scoping appends this component's scope attribute to the
+     ancestor too, and since <html> never carries that attribute the
+     rule can never match. Unwrapped, this silently left every icon
+     visible at once in every theme (confirmed: both sun and moon
+     rendered simultaneously), which was quietly inflating the
+     toggle's width. */
+  :global([data-theme="light"]) .moon-icon,
+  :global([data-theme="light"]) .glow-icon,
+  :global([data-theme="dark"]) .sun-icon,
+  :global([data-theme="dark"]) .glow-icon,
+  :global([data-theme="glow"]) .sun-icon,
+  :global([data-theme="glow"]) .moon-icon {
     display: none;
   }
 
-  [data-theme="glow"] .glow-icon {
+  :global([data-theme="glow"]) .glow-icon {
     display: block;
     animation: bounce 0.6s ease-in-out infinite alternate;
   }
@@ -159,6 +167,16 @@
   @keyframes bounce {
     from { transform: translateY(0px); }
     to { transform: translateY(-3px); }
+  }
+
+  /* Icon buttons in the header have no room to render at full size once
+     the desktop nav is hidden and everything (hamburger, logo, controls)
+     has to share a 320-360px row. Shrink the hit area to match the other
+     icon buttons in Header.astro's matching breakpoint. */
+  @media (max-width: 480px) {
+    .theme-toggle {
+      padding: calc(var(--grid-unit) * 0.5);
+    }
   }
 
   /* Spore field styles */
