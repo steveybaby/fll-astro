@@ -1,0 +1,13 @@
+name = "fll-signups"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "fll-signups"
+database_id = "PLACEHOLDER_SET_IN_STEP_7" # filled in by `wrangler d1 create` at deploy time
+
+[vars]
+# Where the Worker reads the roster and valid meeting dates.
+CONFIG_URL = "https://fll.sharpers.com/signups-config.json"

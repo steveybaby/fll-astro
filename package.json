@@ -13,7 +13,10 @@
     "process-photos": "node scripts/process-photos-r2.js",
     "sync-photos": "node scripts/process-photos-r2.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:worker": "npm --prefix workers/signups test",
+    "worker:dev": "npm --prefix workers/signups run dev",
+    "worker:deploy": "npm --prefix workers/signups run deploy"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",
