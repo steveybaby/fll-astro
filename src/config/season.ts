@@ -26,8 +26,13 @@ export interface Season {
   defaults: SeasonDefaults;
 }
 
-// Coach names must match the Google Sheet column headers exactly — writes key
-// on them, and a mismatch fails with "not found in headers".
+// Names here are the signup primary key, so they must be exact and unique.
+// This file feeds /signups-config.json, which the Worker fetches to validate
+// writes, and D1 rows are keyed on (meeting_date, person, kind) with `person`
+// being the display name below. A name the Worker has not seen is rejected
+// with `400 unknown person`; two people sharing a name would share one row, so
+// buildSignupsConfig (src/lib/signups-config.ts) fails the build instead.
+// Renaming someone here orphans their existing rows.
 const COACHES_2026: CoachMember[] = [
   { name: 'Steve H', initials: 'SH' },
   { name: 'Steve S', initials: 'SS' },

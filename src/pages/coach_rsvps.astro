@@ -889,14 +889,28 @@ const formatMeetingISO = (date) => {
     };
 
     CoachRSVPGrid.prototype.updateRSVP = function(meetingDate, coachName, status) {
+      // Remember what was on screen so a rejected write can be undone. The
+      // backend can refuse a write this page cannot anticipate: a briefly
+      // unavailable roster (503), or a name or meeting date the Worker's
+      // five-minute roster cache has not caught up with yet (400). Leaving the
+      // optimistic tick up would report a signup that was never stored.
+      var previousStatusEl = document.getElementById('status-' + meetingDate + '-' + coachName);
+      var previousStatus = previousStatusEl && previousStatusEl.textContent !== '❓'
+        ? previousStatusEl.textContent
+        : '';
+
       this.updateCellOptimistically(meetingDate, coachName, status);
       this.setCellButtonsDisabled(meetingDate, coachName, true);
       this.showUpdating();
       var self = this;
+      function revert(){
+        self.updateCellOptimistically(meetingDate, coachName, previousStatus);
+        self.showTemporaryMessage('⚠️ Could not save — please try again');
+      }
       try {
         sendRSVPUpdate(meetingDate, coachName, status)
           .then(function(result){
-            if (result.success) {
+            if (result && result.success) {
               var cached = self.getCached();
               if (cached) {
                 var idx = -1;
@@ -912,12 +926,15 @@ const formatMeetingISO = (date) => {
                   self.setCached(cached);
                 }
               }
+            } else {
+              revert();
             }
             self.hideUpdating();
           })
-          .catch(function(){ self.hideUpdating(); })
+          .catch(function(){ revert(); self.hideUpdating(); })
           .finally(function(){ self.setCellButtonsDisabled(meetingDate, coachName, false); });
       } catch (e) {
+        revert();
         this.hideUpdating();
         this.setCellButtonsDisabled(meetingDate, coachName, false);
       }
@@ -1012,10 +1029,24 @@ const formatMeetingISO = (date) => {
       document.getElementById('rsvp-grid-container').style.display = 'none';
     };
     CoachRSVPGrid.prototype.showError = function(message){
+      clearTimeout(this._tempMessageTimer);
       document.getElementById('rsvp-error-message-global').textContent = message;
       document.getElementById('rsvp-loading-global').style.display = 'none';
       document.getElementById('rsvp-error-global').style.display = 'block';
       document.getElementById('rsvp-grid-container').style.display = 'none';
+    };
+    // Same banner as showError, but the grid stays up: a write that failed is
+    // not a reason to hide the data the reader is looking at.
+    CoachRSVPGrid.prototype.showTemporaryMessage = function(message){
+      var banner = document.getElementById('rsvp-error-global');
+      var msg = document.getElementById('rsvp-error-message-global');
+      if (!banner || !msg) return;
+      msg.textContent = message;
+      banner.style.display = 'block';
+      clearTimeout(this._tempMessageTimer);
+      this._tempMessageTimer = setTimeout(function(){
+        banner.style.display = 'none';
+      }, 4000);
     };
     CoachRSVPGrid.prototype.showContent = function(){
       document.getElementById('rsvp-loading-global').style.display = 'none';

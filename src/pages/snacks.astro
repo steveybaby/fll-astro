@@ -929,16 +929,35 @@ const formatMeetingISO = (date) => {
           return;
         }
 
-        // If API call failed, UI is already updated optimistically
-        console.warn('API call failed, keeping optimistic update');
+        // The write was rejected. Put the row back the way it was and say so:
+        // a 🍰 that stands for nothing sends a family to the shop for a meeting
+        // nobody has them down for.
+        console.warn('Snack assignment rejected, reverting optimistic update');
+        this.revertSnackAssignment(meetingDate, existingAssignment);
         this.hideUpdating();
         this.removeSavingState(meetingDate);
-        
+
       } catch (error) {
         console.error('Failed to assign snack:', error);
+        this.revertSnackAssignment(meetingDate, existingAssignment);
         this.hideUpdating();
         this.removeSavingState(meetingDate);
       }
+    }
+
+    /**
+     * Undoes an optimistic assignment. `previousAssignment` is whatever the
+     * grid showed before the click — null when the meeting was unclaimed, and
+     * otherwise only ever this same child, since assignSnack refuses outright
+     * when someone else already has it.
+     */
+    revertSnackAssignment(meetingDate, previousAssignment) {
+      if (previousAssignment) {
+        this.updateMeetingSnackAssignment(meetingDate, previousAssignment);
+      } else {
+        this.clearMeetingSnackAssignment(meetingDate);
+      }
+      this.showTemporaryMessage('⚠️ Could not save — please try again');
     }
 
     async removeSnackAssignment(meetingDate, childName) {
@@ -1101,10 +1120,25 @@ const formatMeetingISO = (date) => {
     }
 
     showError(message) {
+      clearTimeout(this._tempMessageTimer);
       document.getElementById('snack-error-message-global').textContent = message;
       document.getElementById('snack-loading-global').style.display = 'none';
       document.getElementById('snack-error-global').style.display = 'block';
       document.getElementById('snack-grid-container').style.display = 'none';
+    }
+
+    // Same banner as showError, but the grid stays up: a write that failed is
+    // not a reason to hide the data the reader is looking at.
+    showTemporaryMessage(message) {
+      const banner = document.getElementById('snack-error-global');
+      const msg = document.getElementById('snack-error-message-global');
+      if (!banner || !msg) return;
+      msg.textContent = message;
+      banner.style.display = 'block';
+      clearTimeout(this._tempMessageTimer);
+      this._tempMessageTimer = setTimeout(() => {
+        banner.style.display = 'none';
+      }, 4000);
     }
 
     showContent() {

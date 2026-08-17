@@ -504,11 +504,23 @@ const children = season.roster.map((m) => m.name);
     }
 
     async updateRSVP(childName, status) {
+      // Remember what was on screen so a rejected write can be undone. The
+      // backend can legitimately refuse a write the page has no way to
+      // anticipate — a roster that is briefly unavailable (503), or a kid
+      // added to season.ts within the last five minutes, whose name the
+      // Worker's roster cache has not picked up yet (400). Leaving the
+      // optimistic tick in place would tell the parent their child is signed
+      // up when nothing was stored, and the tick would vanish on next load.
+      const previousStatusEl = document.getElementById(`status-${childName}`);
+      const previousStatus = previousStatusEl
+        ? (previousStatusEl.textContent === '❓' ? '' : previousStatusEl.textContent)
+        : '';
+
       // Update UI immediately (optimistically) and disable buttons
       this.updateUIOptimistically(childName, status);
       this.setButtonsDisabled(true);
       this.showUpdating();
-      
+
       try {
         console.log('Updating RSVP:', { meetingDate: this.meetingDate, kidName: childName, status });
         
@@ -528,14 +540,18 @@ const children = season.roster.map((m) => m.name);
           return;
         }
 
-        // If API call failed, UI is already updated optimistically
-        console.warn('API call failed, keeping optimistic update');
+        // The write was rejected. Put the row back the way it was and say so,
+        // rather than leaving a tick that stands for nothing.
+        console.warn('RSVP write rejected, reverting optimistic update');
+        this.updateUIOptimistically(childName, previousStatus);
         this.hideUpdating();
-        
+        this.showTemporaryMessage('⚠️ Could not save — please try again');
+
       } catch (error) {
         console.error('Failed to update RSVP:', error);
-        // UI is already updated optimistically
+        this.updateUIOptimistically(childName, previousStatus);
         this.hideUpdating();
+        this.showTemporaryMessage('⚠️ Could not save — please try again');
       } finally {
         this.setButtonsDisabled(false);
       }
