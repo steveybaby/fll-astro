@@ -87,7 +87,7 @@ const formatMeetingISO = (date) => {
 
     <div class="snack-loading-global" id="snack-loading-global">
       <div class="loading-spinner-global"></div>
-      <span>Loading snack signup data from Google Sheets...</span>
+      <span>Loading snack signup data...</span>
     </div>
 
     <div class="snack-error-global" id="snack-error-global" style="display: none;">
@@ -987,13 +987,16 @@ const formatMeetingISO = (date) => {
           return;
         }
 
-        // If API call failed, don't update UI
+        // The removal was rejected. Nothing was assigned optimistically, so
+        // there is no UI to revert — but say so, or the click looks dead.
         console.warn('API call failed');
         this.hideUpdating();
-        
+        this.showTemporaryMessage('⚠️ Could not remove — please try again');
+
       } catch (error) {
         console.error('Failed to remove snack assignment:', error);
         this.hideUpdating();
+        this.showTemporaryMessage('⚠️ Could not remove — please try again');
       }
     }
 
