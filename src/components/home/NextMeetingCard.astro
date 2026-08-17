@@ -1,0 +1,148 @@
+---
+/**
+ * The green card in the split hero. The single most important object on the
+ * site: a parent should be able to answer "when, where, and have I replied?"
+ * without scrolling.
+ *
+ * Date resolution mirrors NextMeetingBanner.astro so there is exactly one way
+ * meeting times are computed.
+ */
+import { formatMeetingTimeOrTBD } from '../../utils/meeting-time.ts';
+import { getMeetingDateTime } from '../../utils/calendar.ts';
+import { getSeasonContent } from '../../utils/season';
+import { getCurrentSeason } from '../../config/season';
+
+const season = getCurrentSeason();
+const meetingsRaw = await getSeasonContent('meetings');
+
+const fmtISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' });
+const fmtDay = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'America/Los_Angeles',
+});
+
+const now = new Date();
+const next = meetingsRaw
+  .map((m) => {
+    const { date } = getMeetingDateTime(m.data.date, m.data.startTime, m.data.duration);
+    return { ...m, _date: date };
+  })
+  .filter((m) => m._date >= now)
+  .sort((a, b) => a._date.getTime() - b._date.getTime())[0] ?? null;
+
+const location = next?.data.location ?? season.defaults.location;
+---
+
+<div class="meeting-card" data-reveal data-reveal-delay="1">
+  {next ? (
+    <>
+      <span class="eyebrow meeting-card__eyebrow">Next meeting</span>
+      <p class="meeting-card__date">
+        <time datetime={fmtISO.format(next._date)}>{fmtDay.format(next._date)}</time>
+      </p>
+      <p class="meeting-card__time">
+        {formatMeetingTimeOrTBD(next.data.startTime, next.data.duration, next.data.timeTBD)}
+      </p>
+      <p class="meeting-card__where">{location}</p>
+      <div class="meeting-card__actions">
+        <a href="/rsvps" class="btn-action">RSVP</a>
+        <a href={`/meetings/${next.slug}/`} class="btn-quiet">Details</a>
+      </div>
+    </>
+  ) : (
+    <>
+      <span class="eyebrow meeting-card__eyebrow">Season status</span>
+      <p class="meeting-card__date">No meetings scheduled</p>
+      <p class="meeting-card__where">
+        The {season.challenge} season calendar is up to date. Check back for the next date.
+      </p>
+      <div class="meeting-card__actions">
+        <a href="/calendar" class="btn-action">View calendar</a>
+      </div>
+    </>
+  )}
+</div>
+
+<style>
+  .meeting-card {
+    background-color: var(--color-accent);
+    color: var(--color-accent-contrast);
+    border-radius: var(--radius-l);
+    padding: var(--space-m);
+    box-shadow: var(--shadow-m);
+  }
+
+  .meeting-card__eyebrow {
+    color: var(--color-accent-contrast);
+    opacity: 0.75;
+    margin-bottom: var(--space-2xs);
+  }
+
+  .meeting-card__date {
+    font-family: var(--font-heading-primary);
+    font-size: var(--step-2);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--color-accent-contrast);
+    margin: 0 0 var(--space-3xs);
+    font-variation-settings: 'opsz' 60, 'SOFT' 30;
+  }
+
+  .meeting-card__time {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--color-accent-contrast);
+    margin: 0 0 var(--space-2xs);
+  }
+
+  .meeting-card__where {
+    font-size: var(--step--1);
+    color: var(--color-accent-contrast);
+    opacity: 0.8;
+    margin: 0 0 var(--space-s);
+    max-width: none;
+  }
+
+  .meeting-card__actions {
+    display: flex;
+    gap: var(--space-2xs);
+    flex-wrap: wrap;
+  }
+
+  .btn-action,
+  .btn-quiet {
+    font-family: var(--font-body);
+    font-size: var(--step--1);
+    font-weight: 700;
+    padding: var(--space-2xs) var(--space-s);
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .btn-action {
+    background-color: var(--color-action);
+    color: var(--color-action-contrast);
+  }
+
+  .btn-quiet {
+    background-color: transparent;
+    color: var(--color-accent-contrast);
+    border: 1.5px solid currentColor;
+  }
+
+  .btn-action:hover,
+  .btn-quiet:hover,
+  .btn-action:focus,
+  .btn-quiet:focus {
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-action:hover,
+    .btn-quiet:hover { transform: none; }
+  }
+</style>
