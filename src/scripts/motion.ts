@@ -63,10 +63,20 @@ function initParallax(): void {
   const apply = () => {
     queued = false;
     const mid = window.innerHeight / 2;
+
+    // Two passes to avoid layout thrashing: all reads (getBoundingClientRect)
+    // happen before any writes (style.transform). Interleaving them would
+    // force a synchronous layout recalculation on every iteration once two or
+    // more layers are active at once.
+    const updates: { el: HTMLElement; offset: number }[] = [];
     for (const el of active) {
       const rate = parseFloat(el.dataset.parallax ?? '0');
       if (!rate) continue;
       const offset = (el.getBoundingClientRect().top - mid) * rate;
+      updates.push({ el, offset });
+    }
+
+    for (const { el, offset } of updates) {
       el.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
     }
   };
