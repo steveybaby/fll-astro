@@ -1,253 +1,234 @@
 ---
+/**
+ * Every photo from the current season, grouped by the meeting it came from.
+ *
+ * This page used to explain how the photo pipeline works and contained no
+ * photos at all, while the homepage's "Recently" strip linked here as "All
+ * photos" — so the one link promising pictures led to a page about plumbing.
+ *
+ * It deliberately does not reuse R2PhotoGallery: that component hardcodes DOM
+ * ids (`r2-photo-lightbox`, `r2-photo-grid`) and global handler functions, so
+ * one instance per meeting would collide sixteen ways. Meeting pages keep it;
+ * here each thumbnail links to its full-size image instead.
+ */
 import Layout from '../components/Layout.astro';
+import manifest from '../data/photo-manifest.json';
+import { getSeasonContent } from '../utils/season';
+import { getCurrentSeason } from '../config/season';
+
+const season = getCurrentSeason();
+const meetings = await getSeasonContent('meetings');
+
+const byMeeting: Record<string, { thumbnail: string; fullImage: string }[]> =
+  (manifest as any).photosByMeeting ?? {};
+
+const fmtDate = new Intl.DateTimeFormat('en-US', {
+  weekday: 'short',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+// Join the manifest's date keys to this season's meetings, so each group gets a
+// title and a link rather than a bare date. Keys belonging to other seasons
+// fall away here, which is what keeps archive photos off this page.
+const groups = meetings
+  .map((m) => {
+    const key = m.data.date.toISOString().slice(0, 10);
+    return {
+      key,
+      slug: m.slug,
+      title: m.data.title,
+      date: m.data.date,
+      photos: byMeeting[key] ?? [],
+    };
+  })
+  .filter((g) => g.photos.length > 0)
+  .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+const totalPhotos = groups.reduce((n, g) => n + g.photos.length, 0);
+const hasArchivedPhotos = Object.entries(byMeeting).some(
+  ([key, photos]) => photos.length > 0 && !groups.some((g) => g.key === key)
+);
 ---
 
-<Layout title="Photos" description="How team photos are organized and shared">
-  <div class="photos-page">
-    <header class="page-header">
-      <h1 class="page-title">📷 Team Photos</h1>
-      <p class="page-description">Visual documentation of our FLL Challenge journey</p>
-      <hr class="page-rule" />
+<Layout
+  title="Photos"
+  description={`Every photo from the ${season.teamName}'s ${season.challenge} season, grouped by meeting.`}
+  showSidebar={false}
+>
+  <div class="shell">
+    <header class="head">
+      <span class="eyebrow" data-reveal>Season {season.id} · {season.challenge}</span>
+      <h1 data-reveal>Photos</h1>
+      {totalPhotos > 0 && (
+        <p class="head__count" data-reveal data-reveal-delay="1">
+          {totalPhotos} {totalPhotos === 1 ? 'photo' : 'photos'} from {groups.length}
+          {groups.length === 1 ? ' meeting' : ' meetings'} so far
+        </p>
+      )}
     </header>
 
-    <div class="photos-content">
-      <section class="photos-section">
-        <h2>🗂️ How Photos Are Organized</h2>
-        <p>
-          Photos are automatically integrated into each meeting page, making it easy to see
-          the visual story of our progress alongside meeting notes and assignments.
-        </p>
-
-        <div class="photo-organization">
-          <div class="org-item">
-            <h3>📁 Meeting Documentation</h3>
-            <p>Each meeting page includes a photo gallery showing pictures from that specific session.</p>
+    {groups.length > 0 ? (
+      groups.map((group, gi) => (
+        <section class="group" aria-labelledby={`g-${group.slug}`}>
+          <div class="group__head" data-reveal>
+            <h2 id={`g-${group.slug}`} class="group__title">
+              <a href={`/meetings/${group.slug}/`}>{group.title}</a>
+            </h2>
+            <p class="group__meta">
+              <time datetime={group.key}>{fmtDate.format(group.date)}</time>
+              <span aria-hidden="true"> · </span>
+              {group.photos.length} {group.photos.length === 1 ? 'photo' : 'photos'}
+            </p>
           </div>
 
-          <div class="org-item">
-            <h3>🖼️ Interactive Galleries</h3>
-            <p>Click any photo to open it in full-screen lightbox mode with navigation controls.</p>
-          </div>
+          <ul class="grid">
+            {group.photos.map((photo, i) => (
+              <li data-reveal data-reveal-delay={String(Math.min((gi === 0 ? i : 0) + 1, 4))}>
+                <a href={photo.fullImage} class="tile" target="_blank" rel="noopener">
+                  <img
+                    src={photo.thumbnail}
+                    alt={`Photo from ${group.title}, ${fmtDate.format(group.date)}`}
+                    loading="lazy"
+                    decoding="async"
+                    width="400"
+                    height="300"
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    ) : (
+      <p class="empty">
+        No photos yet this season. They appear here automatically once they are
+        synced from a meeting.
+      </p>
+    )}
 
-          <div class="org-item">
-            <h3>⌨️ Keyboard Navigation</h3>
-            <p>Use arrow keys to navigate between photos and Escape to close the lightbox.</p>
-          </div>
-        </div>
-      </section>
+    {hasArchivedPhotos && (
+      <p class="archive-note">
+        Looking for earlier seasons? Those photos live on their meeting pages in
+        the <a href="/2025/">2025 archive</a>.
+      </p>
+    )}
 
-      <section class="photos-section">
-        <h2>🎯 Finding Photos</h2>
-        <p>
-          To view photos from our team meetings and activities, visit the individual meeting pages:
-        </p>
-
-        <div class="photo-links">
-          <a href="/2025/meetings/2025-08-10-season-kickoff/" class="photo-link">
-            📅 Season Kickoff Meeting
-          </a>
-
-          <a href="/2025/meetings/2025-08-17-challenge-review/" class="photo-link">
-            🔧 Challenge Review Meeting
-          </a>
-
-          <a href="/meeting-plans/" class="photo-link">
-            📋 View All Meetings
-          </a>
-        </div>
-      </section>
-
-      <section class="photos-section">
-        <h2>☁️ Photo Storage System</h2>
-        <p>Our photos are automatically stored and served from Cloudflare R2 for fast, reliable access:</p>
-
-        <div class="photo-organization">
-          <div class="org-item">
-            <h3>🔄 Automatic Processing</h3>
-            <p>Photos are automatically resized, optimized, and organized by meeting date using EXIF data.</p>
-          </div>
-
-          <div class="org-item">
-            <h3>🖼️ Smart Thumbnails</h3>
-            <p>4:3 aspect ratio thumbnails are generated for consistent gallery display with full-size images available.</p>
-          </div>
-
-          <div class="org-item">
-            <h3>📱 Fast Loading</h3>
-            <p>Photos are served from Cloudflare's global CDN for lightning-fast loading on all devices.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="photos-section">
-        <h2>📸 Photo Guidelines</h2>
-        <div class="guidelines">
-          <div class="guideline">
-            <h4>🎭 Team Members</h4>
-            <p>We follow privacy guidelines and get permission before posting photos with team members.</p>
-          </div>
-
-          <div class="guideline">
-            <h4>🤖 Robot Progress</h4>
-            <p>Document robot building progress, design iterations, and successful mission runs.</p>
-          </div>
-
-          <div class="guideline">
-            <h4>🎉 Team Activities</h4>
-            <p>Capture team meetings, brainstorming sessions, and Core Values moments.</p>
-          </div>
-
-          <div class="guideline">
-            <h4>🏆 Competitions</h4>
-            <p>Document tournament experiences, presentations, and celebrations.</p>
-          </div>
-        </div>
-      </section>
-    </div>
+    <section class="about" aria-labelledby="about-photos">
+      <h2 id="about-photos" class="about__title">About team photos</h2>
+      <p>
+        Photos are synced automatically after each meeting and appear on that
+        meeting's page as well as here. Click any photo to open it full size.
+      </p>
+      <p>
+        We follow privacy guidelines and get permission before posting photos
+        that include team members.
+      </p>
+    </section>
   </div>
 </Layout>
 
 <style>
-  .photos-page {
-    max-width: 800px;
+  .shell {
+    max-width: var(--max-width);
     margin: 0 auto;
-    line-height: 1.7;
+    padding: var(--space-xl) var(--content-padding) var(--space-2xl);
   }
 
-  .page-header {
-    text-align: center;
+  .head { margin-bottom: var(--space-xl); }
+  .head h1 { margin-bottom: var(--space-2xs); }
+
+  .head__count {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    margin-bottom: 0;
+  }
+
+  .group { margin-bottom: var(--space-2xl); }
+
+  .group__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-s);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-2xs);
+    border-bottom: 1.5px solid var(--color-border);
+    margin-bottom: var(--space-m);
+  }
+
+  .group__title {
+    font-size: var(--step-1);
+    margin-bottom: 0;
+  }
+
+  .group__title a { color: var(--color-accent); }
+
+  .group__meta {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+  }
+
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2xs);
+  }
+
+  .grid li { margin: 0; }
+
+  .tile {
+    display: block;
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+  }
+
+  .tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin: 0;
+    border-radius: 0;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .tile:hover img,
+  .tile:focus-visible img { transform: scale(1.04); }
+
+  .empty,
+  .archive-note {
+    color: var(--color-text-muted);
     margin-bottom: var(--space-xl);
   }
 
-  .page-title {
-    font-family: var(--font-heading-primary);
-    font-size: var(--step-3);
-    font-weight: 700;
-    color: var(--color-accent);
-    line-height: 1.1;
-    margin-bottom: var(--space-s);
+  .about {
+    border-top: 1.5px solid var(--color-border);
+    padding-top: var(--space-m);
   }
 
-  .page-description {
-    font-size: 1.1rem;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-m) 0;
-  }
+  .about__title { font-size: var(--step-0); }
 
-  .page-rule {
-    height: 4px;
-    background-color: var(--color-accent);
-    border: none;
-    width: 120px;
-    margin: 0 auto;
-  }
-
-  .photos-content {
-    display: grid;
-    gap: calc(var(--grid-unit) * 5);
-    margin-top: var(--space-xl);
-  }
-
-  .photos-section {
-    background: var(--color-surface);
-    padding: var(--space-l);
-    border-radius: var(--radius-m);
-    border-left: 4px solid var(--color-accent);
-  }
-
-  .photos-section h2 {
-    font-family: var(--font-heading-secondary);
-    margin: 0 0 calc(var(--grid-unit) * 2.5) 0;
-    color: var(--color-text-primary);
-    font-size: var(--step-1);
-  }
-
-  .photos-section p {
+  .about p {
     color: var(--color-text-secondary);
-    margin-bottom: var(--space-s);
-  }
-
-  .photo-organization {
-    display: grid;
-    gap: calc(var(--grid-unit) * 2.5);
-    margin-top: calc(var(--grid-unit) * 2.5);
-  }
-
-  .org-item {
-    background: var(--color-background);
-    padding: calc(var(--grid-unit) * 2.5);
-    border-radius: var(--radius-m);
-    border: 1px solid var(--color-border);
-  }
-
-  .org-item h3 {
-    margin: 0 0 calc(var(--grid-unit) * 1.25) 0;
-    color: var(--color-text-primary);
-    font-size: 1.1em;
-  }
-
-  .org-item p {
-    color: var(--color-text-muted);
-    margin: 0;
-  }
-
-  .photo-links {
-    display: grid;
-    gap: var(--space-s);
-    margin-top: calc(var(--grid-unit) * 2.5);
-  }
-
-  .photo-link {
-    display: block;
-    background: var(--color-background);
-    padding: var(--space-s) calc(var(--grid-unit) * 2.5);
-    border-radius: var(--radius-m);
-    border: 1px solid var(--color-border);
-    color: var(--color-accent);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all var(--dur-fast) var(--ease-out);
-  }
-
-  .photo-link:hover {
-    background: var(--color-accent);
-    color: var(--color-background);
-    transform: translateX(5px);
-  }
-
-  .guidelines {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: calc(var(--grid-unit) * 2.5);
-    margin-top: calc(var(--grid-unit) * 2.5);
-  }
-
-  .guideline {
-    background: var(--color-background);
-    padding: calc(var(--grid-unit) * 2.5);
-    border-radius: var(--radius-m);
-    border: 1px solid var(--color-border);
-  }
-
-  .guideline h4 {
-    margin: 0 0 calc(var(--grid-unit) * 1.25) 0;
-    color: var(--color-text-primary);
-    font-size: 1.1em;
-  }
-
-  .guideline p {
-    color: var(--color-text-muted);
     font-size: var(--step--1);
-    margin: 0;
+    max-width: 68ch;
   }
 
-  @media (max-width: 600px) {
-    .photos-section {
-      padding: calc(var(--grid-unit) * 2.5);
-    }
+  @media (min-width: 720px) {
+    .grid { grid-template-columns: repeat(4, 1fr); gap: var(--space-s); }
+  }
 
-    .guidelines {
-      grid-template-columns: 1fr;
-    }
+  @media (prefers-reduced-motion: reduce) {
+    .tile:hover img,
+    .tile:focus-visible img { transform: none; }
   }
 </style>
