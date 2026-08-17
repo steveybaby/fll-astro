@@ -41,3 +41,6 @@ temp-photos/
 !public/images/**/*.jpeg
 !public/images/**/*.png
 !public/images/**/*.webp
+
+# Brainstorming mockups (superpowers visual companion)
+.superpowers/
