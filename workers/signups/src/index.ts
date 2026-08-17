@@ -7,7 +7,7 @@
  * strand its UI on.
  */
 import { type Env, CORS, json } from './http';
-import { getSignups, putRsvp, putSnack, clearSnack } from './handlers';
+import { getSignups, getAllSignups, putRsvp, putSnack, clearSnack } from './handlers';
 
 export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
@@ -20,6 +20,10 @@ export default {
     try {
       if (url.pathname === '/health') {
         return json({ ok: true });
+      }
+
+      if (url.pathname === '/signups/all' && request.method === 'GET') {
+        return getAllSignups(env);
       }
 
       if (url.pathname === '/signups' && request.method === 'GET') {

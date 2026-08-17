@@ -51,6 +51,54 @@ export async function getSignups(env: Env, date: string): Promise<Response> {
   });
 }
 
+/**
+ * Every meeting in one response, for the season-wide grids.
+ *
+ * The old Apps Script backend supported this as its "no date" mode; the client
+ * pages that render a full-season table (rsvps.astro, coach_rsvps.astro,
+ * snacks.astro) still call the seam that way. One query, grouped in JS — not
+ * one query per meeting, which would multiply round-trips by the season length
+ * for no benefit.
+ *
+ * Same degrade behaviour as getSignups: a missing config still returns 200,
+ * built from whatever rows are actually stored rather than the configured
+ * roster/dates.
+ */
+export async function getAllSignups(env: Env): Promise<Response> {
+  const config = await loadConfig(env);
+
+  const { results } = await env.DB.prepare(
+    'SELECT meeting_date, person, kind, value FROM signups'
+  ).all<Row & { meeting_date: string }>();
+
+  const rows = results ?? [];
+  const byDate = new Map<string, Array<Row & { meeting_date: string }>>();
+  for (const row of rows) {
+    const list = byDate.get(row.meeting_date);
+    if (list) list.push(row);
+    else byDate.set(row.meeting_date, [row]);
+  }
+
+  const dates = config ? config.meetingDates : [...byDate.keys()];
+
+  const meetings = dates.map((date) => {
+    const dateRows = byDate.get(date) ?? [];
+    const statuses = new Map(
+      dateRows.filter((r) => r.kind === 'rsvp').map((r) => [r.person, r.value])
+    );
+    const snackRow = dateRows.find((r) => r.kind === 'snack');
+    const people = config ? config.people : [...statuses.keys()];
+
+    return {
+      meetingDate: date,
+      rsvps: people.map((name) => ({ name, status: statuses.get(name) ?? '' })),
+      snack: snackRow ? snackRow.person : null,
+    };
+  });
+
+  return json({ meetings });
+}
+
 interface WriteParams {
   date: string;
   name: string;
