@@ -107,3 +107,83 @@
   --sidebar-width: 320px;
   --content-padding: var(--space-m);
 }
+
+/* ---- Bioluminescent Night (dark theme) ----
+   Not a dimmed Canopy Daylight. Dark mode is the direction that lost the
+   light-theme vote, kept here so it carries its own identity. */
+[data-theme="dark"] {
+  --color-background: var(--bio-teal-abyss);
+  --color-surface: var(--bio-teal-surface);
+  --color-surface-raised: #123A47;
+  --color-text-primary: #E8F5E0;
+  --color-text-secondary: #9DC4AA;
+  --color-text-muted: #5FA57F;
+  --color-border: #1C5164;
+  --color-border-strong: var(--bio-spring);
+  --color-accent: var(--bio-light-green);
+  --color-accent-contrast: var(--bio-teal-abyss);
+  --color-action: var(--bio-glow-yellow);
+  --color-action-contrast: var(--bio-teal-abyss);
+  --color-canopy: #123A2A;
+  --canopy-opacity: 0.5;
+  --hero-gradient: radial-gradient(120% 90% at 50% 0%, #12414F 0%, var(--bio-teal-abyss) 70%);
+  --shadow-s: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-m: 0 4px 12px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Glow. The easter-egg third mode, replacing the retired llama theme. ---- */
+[data-theme="glow"] {
+  --color-background: #06131A;
+  --color-surface: #0A2028;
+  --color-surface-raised: #103C49;
+  --color-text-primary: var(--bio-light-green);
+  --color-text-secondary: #8FD9B4;
+  --color-text-muted: #5E9A86;
+  --color-border: #1C4D5C;
+  --color-border-strong: var(--bio-glow-yellow);
+  --color-accent: var(--bio-glow-yellow);
+  --color-accent-contrast: #06131A;
+  --color-action: var(--bio-light-green);
+  --color-action-contrast: #06131A;
+  --color-canopy: #0D2E24;
+  --canopy-opacity: 0.65;
+  --hero-gradient: radial-gradient(120% 90% at 50% 0%, #0F3A47 0%, #06131A 72%);
+  --shadow-s: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-m: 0 4px 12px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* Archived seasons keep their original identity. 2025-26 was red-on-white.
+   Colours only: the archive inherits the new type and layout deliberately,
+   because a page still running Oswald beside a redesigned page reads as a bug. */
+[data-season="2025-26"] {
+  --color-accent-red: #dc2626;
+  --color-accent: var(--color-accent-red);
+  --color-background: #ffffff;
+  --color-surface: #f9fafb;
+  --color-surface-raised: #ffffff;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #374151;
+  --color-text-muted: #6b7280;
+  --color-border: #9ca3af;
+  --color-border-strong: #6b7280;
+  --color-accent-contrast: #ffffff;
+  --color-action: #dc2626;
+  --color-action-contrast: #ffffff;
+  --color-light-gray: #f3f4f6;
+  --color-medium-gray: #6b7280;
+  --canopy-opacity: 0;
+  --hero-gradient: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+}
+
+[data-season="2025-26"][data-theme="dark"] {
+  --color-accent: #ff3333;
+  --color-background: #111827;
+  --color-surface: #1f2937;
+  --color-surface-raised: #374151;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-muted: #9ca3af;
+  --color-border: #374151;
+  --color-border-strong: #6b7280;
+  --hero-gradient: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+}

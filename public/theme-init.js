@@ -1,18 +1,29 @@
-// Initialize theme before page render to prevent flash of unstyled content
-(function() {
-  const stored = localStorage.getItem('theme');
-  const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  const theme = stored || system;
+// Runs before first paint. Sets the theme attribute to avoid a flash, adds the
+// `js` class that gates all reveal styling, and migrates the retired `llama`
+// theme id to `glow`. Kept dependency-free and non-module so it can be inlined.
+(function () {
+  var LEGACY = { llama: 'glow' };
+  var VALID = { light: 1, dark: 1, glow: 1 };
+
+  var stored = null;
+  try { stored = localStorage.getItem('theme'); } catch (e) { stored = null; }
+
+  if (stored && LEGACY[stored]) {
+    stored = LEGACY[stored];
+    try { localStorage.setItem('theme', stored); } catch (e) { /* private mode */ }
+  }
+  if (stored && !VALID[stored]) stored = null;
+
+  var system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  var theme = stored || system;
+
   document.documentElement.dataset.theme = theme;
-  
-  // If llama theme is set, initialize llama rain after page loads
-  if (theme === 'llama') {
-    document.addEventListener('DOMContentLoaded', function() {
-      // Delay slightly to ensure theme toggle component is loaded
-      setTimeout(function() {
-        if (typeof window.startLlamaRain === 'function') {
-          window.startLlamaRain();
-        }
+  document.documentElement.classList.add('js');
+
+  if (theme === 'glow') {
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(function () {
+        if (typeof window.startSpores === 'function') window.startSpores();
       }, 100);
     });
   }

@@ -5,7 +5,7 @@
 <button
   id="theme-toggle"
   aria-label="Toggle theme mode"
-  title="Toggle between light, dark, and llama mode"
+  title="Toggle between light, dark, and glow mode"
   class="theme-toggle"
 >
   <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -15,67 +15,67 @@
   <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M21 12.79A9 9 0 1 1 11.21 3 A7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
   </svg>
-  <div class="llama-icon">🦙</div>
+  <div class="glow-icon">✨</div>
 </button>
 
 <script>
   const toggle = document.getElementById('theme-toggle');
-  
+
   function setTheme(theme: string) {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('theme', theme);
   }
-  
-  // Llama rain animation functions
-  function startLlamaRain() {
-    // Create llama rain container if it doesn't exist
-    let rainContainer = document.getElementById('llama-rain');
+
+  // Spore drift animation functions
+  function startSpores() {
+    // Create spore field container if it doesn't exist
+    let rainContainer = document.getElementById('spore-field');
     if (!rainContainer) {
       rainContainer = document.createElement('div');
-      rainContainer.id = 'llama-rain';
-      rainContainer.className = 'llama-rain';
+      rainContainer.id = 'spore-field';
+      rainContainer.className = 'spore-field';
       document.body.appendChild(rainContainer);
     }
-    
-    // Clear any existing llamas
+
+    // Clear any existing spores
     rainContainer.innerHTML = '';
-    
-    // Start creating falling llamas
-    const createLlama = () => {
-      const llama = document.createElement('div');
-      llama.className = 'falling-llama';
-      llama.textContent = '🦙';
-      llama.style.left = Math.random() * 100 + 'vw';
-      llama.style.animationDuration = (Math.random() * 3 + 2) + 's'; // 2-5 seconds
-      llama.style.animationDelay = Math.random() * 2 + 's';
-      rainContainer.appendChild(llama);
-      
-      // Remove llama after animation
+
+    // Start creating drifting spores
+    const createSpore = () => {
+      const spore = document.createElement('div');
+      spore.className = 'spore';
+      spore.textContent = '✦';
+      spore.style.left = Math.random() * 100 + 'vw';
+      spore.style.animationDuration = (Math.random() * 3 + 2) + 's'; // 2-5 seconds
+      spore.style.animationDelay = Math.random() * 2 + 's';
+      rainContainer.appendChild(spore);
+
+      // Remove spore after animation
       setTimeout(() => {
-        if (llama.parentNode) {
-          llama.parentNode.removeChild(llama);
+        if (spore.parentNode) {
+          spore.parentNode.removeChild(spore);
         }
       }, 7000);
     };
-    
-    // Create initial burst of llamas
+
+    // Create initial burst of spores
     for (let i = 0; i < 15; i++) {
-      setTimeout(createLlama, i * 200);
+      setTimeout(createSpore, i * 200);
     }
-    
-    // Continue creating llamas at intervals
-    window.llamaRainInterval = setInterval(createLlama, 500);
+
+    // Continue creating spores at intervals
+    window.sporeInterval = setInterval(createSpore, 500);
   }
-  
-  function stopLlamaRain() {
-    // Stop creating new llamas
-    if (window.llamaRainInterval) {
-      clearInterval(window.llamaRainInterval);
-      window.llamaRainInterval = null;
+
+  function stopSpores() {
+    // Stop creating new spores
+    if (window.sporeInterval) {
+      clearInterval(window.sporeInterval);
+      window.sporeInterval = null;
     }
-    
-    // Remove existing llamas with fade out
-    const rainContainer = document.getElementById('llama-rain');
+
+    // Remove existing spores with fade out
+    const rainContainer = document.getElementById('spore-field');
     if (rainContainer) {
       rainContainer.style.opacity = '0';
       setTimeout(() => {
@@ -85,37 +85,37 @@
       }, 1000);
     }
   }
-  
+
   toggle?.addEventListener('click', () => {
     const current = document.documentElement.dataset.theme || 'light';
     let next: string;
-    
+
     switch (current) {
       case 'light':
         next = 'dark';
         break;
       case 'dark':
-        next = 'llama';
+        next = 'glow';
         break;
-      case 'llama':
+      case 'glow':
       default:
         next = 'light';
         break;
     }
-    
+
     setTheme(next);
-    
-    // Toggle llama rain animation
-    if (next === 'llama') {
-      startLlamaRain();
+
+    // Toggle spore drift animation
+    if (next === 'glow') {
+      startSpores();
     } else {
-      stopLlamaRain();
+      stopSpores();
     }
   });
-  
+
   // Make functions globally available
-  window.startLlamaRain = startLlamaRain;
-  window.stopLlamaRain = stopLlamaRain;
+  window.startSpores = startSpores;
+  window.stopSpores = stopSpores;
 </script>
 
 <style>
@@ -135,7 +135,7 @@
     color: var(--color-accent);
   }
 
-  .llama-icon {
+  .glow-icon {
     font-size: 18px;
     line-height: 1;
     display: none;
@@ -143,15 +143,15 @@
 
   /* Show/hide icons based on theme */
   [data-theme="light"] .moon-icon,
-  [data-theme="light"] .llama-icon,
+  [data-theme="light"] .glow-icon,
   [data-theme="dark"] .sun-icon,
-  [data-theme="dark"] .llama-icon,
-  [data-theme="llama"] .sun-icon,
-  [data-theme="llama"] .moon-icon {
+  [data-theme="dark"] .glow-icon,
+  [data-theme="glow"] .sun-icon,
+  [data-theme="glow"] .moon-icon {
     display: none;
   }
 
-  [data-theme="llama"] .llama-icon {
+  [data-theme="glow"] .glow-icon {
     display: block;
     animation: bounce 0.6s ease-in-out infinite alternate;
   }
@@ -161,8 +161,8 @@
     to { transform: translateY(-3px); }
   }
 
-  /* Llama rain styles */
-  :global(.llama-rain) {
+  /* Spore field styles */
+  :global(.spore-field) {
     position: fixed;
     top: 0;
     left: 0;
@@ -174,34 +174,25 @@
     transition: opacity 1s ease-out;
   }
 
-  :global(.falling-llama) {
+  :global(.spore) {
     position: absolute;
-    top: -50px;
-    font-size: 72px;
+    top: -40px;
+    font-size: 20px;
     line-height: 1;
-    animation: fall linear forwards;
+    color: var(--bio-light-green);
+    text-shadow: 0 0 12px rgba(195, 227, 154, 0.9);
+    animation: drift linear forwards;
     pointer-events: none;
-    transform-origin: center;
   }
 
-  @keyframes fall {
-    from {
-      transform: translateY(-50px) rotate(0deg);
-      opacity: 1;
-    }
-    to {
-      transform: translateY(calc(100vh + 50px)) rotate(360deg);
-      opacity: 0.7;
-    }
+  @keyframes drift {
+    from { transform: translateY(-40px) translateX(0); opacity: 0; }
+    10%  { opacity: 1; }
+    to   { transform: translateY(calc(100vh + 40px)) translateX(40px); opacity: 0; }
   }
 
-  /* Add some variety with different rotation speeds */
-  :global(.falling-llama:nth-child(odd)) {
-    animation: fall linear forwards, spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.spore-field) { display: none; }
+    .glow-icon { animation: none; }
   }
 </style>
