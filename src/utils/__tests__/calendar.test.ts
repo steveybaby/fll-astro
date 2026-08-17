@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getMeetingDateTime } from '../calendar';
+import { getMeetingDateTime, formatICSUtcStamp } from '../calendar';
 
 // Helper: the UTC hour a Pacific-local meeting time maps to.
 const utcHour = (isoDate: string, startTime: string) =>
@@ -38,5 +38,24 @@ describe('getMeetingDateTime DST handling', () => {
   it('preserves the explicit duration', () => {
     const { duration } = getMeetingDateTime(new Date('2026-08-16T00:00:00Z'), '14:00', 2);
     expect(duration).toBe(2);
+  });
+});
+
+describe('formatICSUtcStamp', () => {
+  it('formats a UTC-midnight meeting date', () => {
+    expect(formatICSUtcStamp(new Date('2026-08-16T00:00:00Z'))).toBe('20260816T000000Z');
+  });
+
+  it('keeps the time component when there is one', () => {
+    expect(formatICSUtcStamp(new Date('2026-11-01T22:30:45Z'))).toBe('20261101T223045Z');
+  });
+
+  it('drops milliseconds rather than emitting them', () => {
+    expect(formatICSUtcStamp(new Date('2026-08-16T00:00:00.789Z'))).toBe('20260816T000000Z');
+  });
+
+  it('is stable for the same input', () => {
+    const d = new Date('2026-12-13T00:00:00Z');
+    expect(formatICSUtcStamp(d)).toBe(formatICSUtcStamp(d));
   });
 });

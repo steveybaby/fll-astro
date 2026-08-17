@@ -1,4 +1,4 @@
-import { getMeetingDateTime } from '../utils/calendar.ts';
+import { getMeetingDateTime, formatICSUtcStamp } from '../utils/calendar.ts';
 import { getSeasonContent } from '../utils/season';
 import { getCurrentSeason } from '../config/season';
 
@@ -49,6 +49,7 @@ export async function GET() {
       return [
         'BEGIN:VEVENT',
         `UID:${uid}`,
+        `DTSTAMP:${formatICSUtcStamp(meeting.data.date)}`,
         `DTSTART;TZID=America/Los_Angeles:${formatDate(meetingDateTime)}`,
         `DTEND;TZID=America/Los_Angeles:${formatDate(endDateTime)}`,
         `SUMMARY:${summary}`,

@@ -96,3 +96,15 @@ export function createCalendarLink(title: string, date: Date, duration: number, 
   const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
   return URL.createObjectURL(blob);
 }
+
+/**
+ * Format a Date as an RFC 5545 UTC DATE-TIME, e.g. `20260816T000000Z`.
+ *
+ * Used for DTSTAMP, which RFC 5545 requires in every VEVENT. We derive it from
+ * the meeting's own date rather than the build time on purpose: a build-time
+ * stamp would change on every deploy, making the feed's bytes churn and
+ * prompting subscribers' clients to treat unchanged events as revised.
+ */
+export function formatICSUtcStamp(date: Date): string {
+  return `${date.toISOString().slice(0, 19).replace(/[-:]/g, '')}Z`;
+}
