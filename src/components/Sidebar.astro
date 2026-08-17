@@ -17,7 +17,6 @@ const base = import.meta.env.BASE_URL;
 
 const blogPosts = (await getSeasonContent('blog', season)).filter(({ data }) => data.draft !== true);
 const meetings = await getSeasonContent('meetings', season);
-const newsletters = await getSeasonContent('newsletter', season);
 
 // Combine all content types, adding a type field
 const allContent = [
@@ -30,11 +29,6 @@ const allContent = [
     ...meeting,
     type: 'meeting',
     url: `${prefix}/meetings/${meeting.slug}/`
-  })),
-  ...newsletters.map(newsletter => ({
-    ...newsletter,
-    type: 'newsletter',
-    url: `${prefix}/newsletters/${newsletter.slug}/`
   }))
 ];
 

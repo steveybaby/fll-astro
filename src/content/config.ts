@@ -39,18 +39,4 @@ const meetings = defineCollection({
   }),
 });
 
-const newsletter = defineCollection({
-  type: 'content',
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    description: z.string().optional(),
-    author: z.string().default('FLL Coaches'),
-    draft: z.boolean().default(false),
-    excerpt: z.string().optional(),
-    tags: z.array(z.string()).default([]),
-    season: z.string().default(CURRENT_SEASON),
-  }),
-});
-
-export const collections = { blog, meetings, newsletter };
+export const collections = { blog, meetings };

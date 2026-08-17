@@ -12,9 +12,8 @@ const season = getCurrentSeason();
 
 const blogPosts = (await getSeasonContent('blog')).filter(({ data }) => data.draft !== true);
 const meetings = await getSeasonContent('meetings');
-const newsletters = (await getSeasonContent('newsletter')).filter(({ data }) => data.draft !== true);
 
-const TYPE_LABEL = { blog: 'Blog post', meeting: 'Meeting notes', newsletter: 'Newsletter' } as const;
+const TYPE_LABEL = { blog: 'Blog post', meeting: 'Meeting notes' } as const;
 
 // Frontmatter dates are date-only strings (e.g. `2026-08-16`), which
 // z.coerce.date() parses as UTC midnight. Comparing that against a Pacific
@@ -26,7 +25,6 @@ const todayPacific = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_A
 const recentContent = [
   ...blogPosts.map((p) => ({ ...p, type: 'blog' as const, url: `/blog/${p.slug}/` })),
   ...meetings.map((m) => ({ ...m, type: 'meeting' as const, url: `/meetings/${m.slug}/` })),
-  ...newsletters.map((n) => ({ ...n, type: 'newsletter' as const, url: `/newsletters/${n.slug}/` })),
 ]
   .filter((item) => item.data.date.toISOString().slice(0, 10) <= todayPacific)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
@@ -65,7 +63,7 @@ const work = [
     <div class="shell">
       <div class="updates__head" data-reveal>
         <h2 id="updates-heading">Latest updates</h2>
-        <a href="/newsletters" class="updates__all">All newsletters →</a>
+        <a href="/meeting-plans" class="updates__all">All meetings →</a>
       </div>
 
       {recentContent.length > 0 ? (

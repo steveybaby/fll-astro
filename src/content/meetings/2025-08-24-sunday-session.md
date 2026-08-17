@@ -23,7 +23,7 @@ Here's a new Llama logo from chatGPT!
 
 
 ## Reminders:
-Please subscribe to the LEGO team website and sync the meeting calendar to your own calendar to stay up to date. Weekly newsletters and practice photos will also be posted on the [website](https://fll.sharpers.com/newsletters/) 
+Please subscribe to the LEGO team website and sync the meeting calendar to your own calendar to stay up to date. Weekly newsletters and practice photos will also be posted on the [website](https://fll.sharpers.com/) 
 
 Don’t forget to sign up for your child’s [availability for upcoming meetings](https://fll.sharpers.com/rsvps/).
 

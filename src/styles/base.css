@@ -72,7 +72,6 @@ p {
  * avoids both regressions.
  */
 .meeting-content p,
-.newsletter-content p,
 .post-content p,
 .content-section p {
   max-width: 68ch;
