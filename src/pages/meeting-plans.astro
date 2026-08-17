@@ -302,7 +302,7 @@ const calPath = seasonCalendarPath();
     background: var(--color-surface);
     border: 2px solid var(--color-accent);
     border-radius: var(--radius-m);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-m);
     z-index: 1000;
     max-width: 500px;
     margin: 0 auto;
@@ -465,20 +465,20 @@ const calPath = seasonCalendarPath();
 
   .meeting-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-m);
     border-color: var(--color-accent);
   }
 
   /* Next Meeting Highlight */
   .next-meeting-card {
-    background: linear-gradient(135deg, var(--color-surface) 0%, rgba(220, 38, 38, 0.05) 100%);
+    background: linear-gradient(135deg, var(--color-surface) 0%, color-mix(in srgb, var(--color-accent) 5%, transparent) 100%);
     border-left: 8px solid var(--color-accent);
-    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--color-accent) 15%, transparent);
   }
 
   .next-meeting-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.25);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-accent) 25%, transparent);
   }
 
   /* Compact Cards */
