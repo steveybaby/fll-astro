@@ -107,7 +107,7 @@ const calPath = seasonCalendarPath();
     {nextMeeting && (
       <section class="next-meeting-section">
         <h2 class="section-title">🎯 Next Meeting</h2>
-        <article class="meeting-card next-meeting-card">
+        <article class="meeting-card next-meeting-card" data-reveal>
           <div class="meeting-card-content">
             <header class="meeting-card-header">
               <h3>
@@ -158,8 +158,8 @@ const calPath = seasonCalendarPath();
       <section class="upcoming-meetings-section">
         <h2 class="section-title">📅 Upcoming Meetings</h2>
         <div class="meetings-list upcoming">
-          {upcomingMeetings.map((meeting) => (
-            <article class="meeting-card compact-card">
+          {upcomingMeetings.map((meeting, i) => (
+            <article class="meeting-card compact-card" data-reveal data-reveal-delay={String(Math.min(i + 1, 4))}>
               <header class="compact-header">
                 <h3>
                   <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
@@ -190,8 +190,8 @@ const calPath = seasonCalendarPath();
       <section class="past-meetings-section">
         <h2 class="section-title">📚 Past Meetings</h2>
         <div class="meetings-list past">
-          {pastMeetings.map((meeting) => (
-            <article class="meeting-card compact-card past-card">
+          {pastMeetings.map((meeting, i) => (
+            <article class="meeting-card compact-card past-card" data-reveal data-reveal-delay={String(Math.min(i + 1, 4))}>
               <header class="compact-header">
                 <h3>
                   <a href={`/meetings/${meeting.slug}/`}>{meeting.data.title}</a>
@@ -233,8 +233,8 @@ const calPath = seasonCalendarPath();
 
   .page-header {
     text-align: center;
-    margin-bottom: calc(var(--grid-unit) * 6);
-    padding-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-m);
     border-bottom: 6px solid var(--color-accent);
   }
 
@@ -243,36 +243,32 @@ const calPath = seasonCalendarPath();
     font-size: 3rem;
     font-weight: 900;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     line-height: 1.1;
-    margin: 0 0 calc(var(--grid-unit) * 3) 0;
+    margin: 0 0 var(--space-m) 0;
   }
 
   .page-header p {
     color: var(--color-text-secondary);
-    font-size: 1.25rem;
+    font-size: var(--step-0);
     line-height: 1.5;
     font-style: italic;
-    margin: 0 0 calc(var(--grid-unit) * 4) 0;
+    margin: 0 0 var(--space-l) 0;
   }
 
   .calendar-subscription {
-    margin-top: calc(var(--grid-unit) * 4);
+    margin-top: var(--space-l);
   }
 
   .calendar-subscribe-button {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: white;
+    color: var(--color-accent-contrast);
     background-color: var(--color-accent);
-    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
+    padding: var(--space-xs) var(--space-m);
     border: 2px solid var(--color-accent);
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    font-size: 1rem;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--1);
     cursor: pointer;
     display: inline-block;
   }
@@ -286,10 +282,10 @@ const calPath = seasonCalendarPath();
 
   .subscription-note {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
     margin: calc(var(--grid-unit)) 0 0 0;
     font-style: normal !important;
   }
@@ -300,12 +296,12 @@ const calPath = seasonCalendarPath();
 
   .main-calendar-popup {
     position: absolute;
-    top: calc(100% + calc(var(--grid-unit) * 2));
+    top: calc(100% + var(--space-s));
     left: 0;
     right: 0;
     background: var(--color-surface);
     border: 2px solid var(--color-accent);
-    border-radius: 8px;
+    border-radius: var(--radius-m);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     max-width: 500px;
@@ -313,55 +309,51 @@ const calPath = seasonCalendarPath();
   }
 
   .calendar-popup-content {
-    padding: calc(var(--grid-unit) * 3);
+    padding: var(--space-m);
   }
 
   .calendar-popup-content h4 {
     font-family: var(--font-heading-secondary);
-    font-size: 1.25rem;
+    font-size: var(--step-0);
     font-weight: 700;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    margin: 0 0 var(--space-s) 0;
   }
 
   .calendar-popup-content p {
     color: var(--color-text-secondary);
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    margin: 0 0 var(--space-s) 0;
     line-height: 1.5;
   }
 
   .url-copy-container {
     display: flex;
     gap: calc(var(--grid-unit));
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .calendar-url-input {
     flex: 1;
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 1.5);
+    padding: calc(var(--grid-unit)) var(--space-xs);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: var(--radius-s);
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     background: var(--color-background);
     color: var(--color-text-primary);
   }
 
   .copy-button {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     background: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     border: none;
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
-    border-radius: 4px;
+    padding: calc(var(--grid-unit)) var(--space-s);
+    border-radius: var(--radius-s);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.85rem;
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--2);
   }
 
   .copy-button:hover,
@@ -371,22 +363,20 @@ const calPath = seasonCalendarPath();
   }
 
   .calendar-instructions {
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .calendar-instructions h5 {
     font-family: var(--font-heading-secondary);
-    font-size: 1rem;
+    font-size: var(--step--1);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     margin: 0 0 calc(var(--grid-unit)) 0;
   }
 
   .calendar-instructions ul {
     margin: 0;
-    padding-left: calc(var(--grid-unit) * 3);
+    padding-left: var(--space-m);
     color: var(--color-text-secondary);
     line-height: 1.6;
   }
@@ -399,12 +389,12 @@ const calPath = seasonCalendarPath();
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
   }
 
   .download-fallback {
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     text-decoration: underline;
   }
 
@@ -413,18 +403,16 @@ const calPath = seasonCalendarPath();
   }
 
   .close-button {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     background: transparent;
     color: var(--color-text-muted);
     border: 1px solid var(--color-border);
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit) * 1.5);
-    border-radius: 4px;
+    padding: calc(var(--grid-unit) / 2) var(--space-xs);
+    border-radius: var(--radius-s);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.8rem;
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: var(--step--2);
   }
 
   .close-button:hover,
@@ -435,26 +423,24 @@ const calPath = seasonCalendarPath();
 
   .meetings-list {
     display: grid;
-    gap: calc(var(--grid-unit) * 4);
+    gap: var(--space-l);
   }
 
   .meetings-list.upcoming {
-    gap: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
   }
 
   .meetings-list.past {
-    gap: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
   }
 
   .section-title {
     font-family: var(--font-heading-primary);
-    font-size: 2.5rem;
+    font-size: var(--step-3);
     font-weight: 900;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     line-height: 1.1;
-    margin: calc(var(--grid-unit) * 8) 0 calc(var(--grid-unit) * 4) 0;
+    margin: var(--space-2xl) 0 var(--space-l) 0;
     text-align: center;
   }
 
@@ -465,16 +451,16 @@ const calPath = seasonCalendarPath();
   .next-meeting-section,
   .upcoming-meetings-section,
   .past-meetings-section {
-    margin-bottom: calc(var(--grid-unit) * 8);
+    margin-bottom: var(--space-2xl);
   }
 
   .meeting-card {
     background: var(--color-surface);
-    border-radius: 8px;
-    padding: calc(var(--grid-unit) * 4);
+    border-radius: var(--radius-m);
+    padding: var(--space-l);
     border-left: 4px solid var(--color-accent);
     border: 2px solid var(--color-border);
-    transition: all 0.2s;
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .meeting-card:hover {
@@ -505,17 +491,15 @@ const calPath = seasonCalendarPath();
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: calc(var(--grid-unit) * 1.5);
-    gap: calc(var(--grid-unit) * 2);
+    margin-bottom: var(--space-xs);
+    gap: var(--space-s);
   }
 
   .compact-header h3 {
     font-family: var(--font-heading-secondary);
-    font-size: 1.25rem;
+    font-size: var(--step-0);
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     margin: 0;
     flex: 1;
   }
@@ -523,7 +507,7 @@ const calPath = seasonCalendarPath();
   .compact-header a {
     color: inherit;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color var(--dur-fast) var(--ease-out);
   }
 
   .compact-header a:hover {
@@ -532,10 +516,10 @@ const calPath = seasonCalendarPath();
 
   .compact-header time {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
     flex-shrink: 0;
   }
 
@@ -545,12 +529,12 @@ const calPath = seasonCalendarPath();
 
   .compact-meta {
     display: flex;
-    gap: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
     flex-wrap: wrap;
   }
 
   .compact-meta .meta-item {
-    font-size: 0.8rem;
+    font-size: var(--step--2);
   }
 
   /* Past Meeting Cards */
@@ -563,7 +547,7 @@ const calPath = seasonCalendarPath();
   }
 
   .meeting-card-header {
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .meeting-card-header h2,
@@ -572,15 +556,13 @@ const calPath = seasonCalendarPath();
     font-size: 1.75rem;
     font-weight: 700;
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
     margin: 0 0 calc(var(--grid-unit)) 0;
   }
 
   .meeting-card-header a {
     color: inherit;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color var(--dur-fast) var(--ease-out);
   }
 
   .meeting-card-header a:hover {
@@ -589,10 +571,10 @@ const calPath = seasonCalendarPath();
 
   .meeting-card-header time {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .meeting-time-info {
@@ -602,12 +584,12 @@ const calPath = seasonCalendarPath();
   }
 
   .start-time {
-    font-family: var(--font-heading-secondary);
-    font-size: 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 700;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .compact-time-info {
@@ -618,26 +600,24 @@ const calPath = seasonCalendarPath();
   }
 
   .compact-start-time {
-    font-family: var(--font-heading-secondary);
-    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 600;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .meeting-preview {
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .meeting-preview h4 {
     font-family: var(--font-heading-secondary);
     font-weight: 600;
-    font-size: 1rem;
+    font-size: var(--step--1);
     color: var(--color-text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 calc(var(--grid-unit) * 2) 0;
+    margin: 0 0 var(--space-s) 0;
   }
 
   .agenda-preview {
@@ -647,7 +627,7 @@ const calPath = seasonCalendarPath();
   }
 
   .agenda-preview li {
-    padding-left: calc(var(--grid-unit) * 3);
+    padding-left: var(--space-m);
     margin-bottom: calc(var(--grid-unit));
     position: relative;
     color: var(--color-text-secondary);
@@ -669,47 +649,45 @@ const calPath = seasonCalendarPath();
 
   .meeting-meta {
     display: flex;
-    gap: calc(var(--grid-unit) * 3);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    gap: var(--space-m);
+    margin-bottom: var(--space-m);
     flex-wrap: wrap;
   }
 
   .meta-item {
     font-family: var(--font-mono);
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--step--2);
     display: flex;
     align-items: center;
     gap: calc(var(--grid-unit));
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .read-more {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--color-accent);
-    padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+    padding: calc(var(--grid-unit)) var(--space-s);
     border: 2px solid var(--color-accent);
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
     display: inline-block;
     text-decoration: none;
   }
 
   .read-more:hover {
     background-color: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     text-decoration: none;
   }
 
   .read-more.primary {
     background-color: var(--color-accent);
-    color: white;
-    font-size: 1rem;
-    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
+    color: var(--color-accent-contrast);
+    font-size: var(--step--1);
+    padding: var(--space-xs) var(--space-m);
   }
 
   .read-more.primary:hover {
@@ -720,7 +698,7 @@ const calPath = seasonCalendarPath();
 
   .no-meetings {
     text-align: center;
-    padding: calc(var(--grid-unit) * 8) calc(var(--grid-unit) * 3);
+    padding: var(--space-2xl) var(--space-m);
     color: var(--color-text-muted);
   }
 
@@ -736,36 +714,36 @@ const calPath = seasonCalendarPath();
     }
     
     .section-title {
-      font-size: 2rem;
-      margin: calc(var(--grid-unit) * 6) 0 calc(var(--grid-unit) * 3) 0;
+      font-size: var(--step-3);
+      margin: var(--space-xl) 0 var(--space-m) 0;
     }
-    
+
     .meeting-card {
-      padding: calc(var(--grid-unit) * 3);
+      padding: var(--space-m);
     }
-    
+
     .compact-card {
-      padding: calc(var(--grid-unit) * 2);
+      padding: var(--space-s);
     }
-    
+
     .meeting-card-header h2,
     .meeting-card-header h3 {
-      font-size: 1.5rem;
+      font-size: var(--step-1);
     }
-    
+
     .compact-header {
       flex-direction: column;
       gap: calc(var(--grid-unit));
       align-items: flex-start;
     }
-    
+
     .compact-header h3 {
       font-size: 1.1rem;
     }
-    
+
     .compact-header time {
       order: -1;
-      font-size: 0.75rem;
+      font-size: var(--step--2);
     }
     
     .meeting-meta,

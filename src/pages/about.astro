@@ -1,5 +1,6 @@
 ---
 import Layout from '../components/Layout.astro';
+import Canopy from '../components/Canopy.astro';
 import { config } from '../config';
 
 const { title, description, author, social } = config;
@@ -8,12 +9,13 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
 
 <Layout title={`About | ${title}`} description={pageDescription}>
   <div class="about-page">
-    <header class="page-header">
+    <header class="page-header" data-reveal>
+      <Canopy variant="top" rate={0.24} />
       <h1 class="page-title">About</h1>
       <hr class="page-rule" />
     </header>
 
-    <div class="author-section">
+    <div class="author-section" data-reveal>
       <div class="author-avatar">
         {author.avatar ? (
           <img src={author.avatar} alt={author.name} />
@@ -74,7 +76,7 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
       </div>
     </div>
 
-    <div class="content-section">
+    <div class="content-section" data-reveal>
       <h2>About {title}</h2>
       <p>{description}</p>
     </div>
@@ -88,8 +90,10 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
   }
 
   .page-header {
+    position: relative;
+    overflow: hidden;
     text-align: center;
-    margin-bottom: calc(var(--grid-unit) * 6);
+    margin-bottom: var(--space-xl);
   }
 
   .page-title {
@@ -97,10 +101,10 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
     font-size: 3.5rem;
     font-weight: 700;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
     line-height: 1.1;
-    margin-bottom: calc(var(--grid-unit) * 4);
+    margin-bottom: var(--space-l);
+    position: relative;
+    z-index: 1;
   }
 
   .page-rule {
@@ -109,18 +113,20 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
     border: none;
     width: 120px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
   }
 
   .author-section {
     text-align: center;
     margin-bottom: calc(var(--grid-unit) * 10);
-    padding: calc(var(--grid-unit) * 6) calc(var(--grid-unit) * 4);
+    padding: var(--space-xl) var(--space-l);
     background-color: var(--color-surface);
-    border-radius: calc(var(--grid-unit));
+    border-radius: var(--radius-m);
   }
 
   .author-avatar {
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .author-avatar img {
@@ -140,38 +146,36 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-medium-gray);
+    color: var(--color-text-muted);
     margin: 0 auto;
   }
 
   .author-name {
     font-family: var(--font-heading-secondary);
-    font-size: 2.5rem;
+    font-size: var(--step-3);
     font-weight: 700;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: calc(var(--grid-unit) * 2);
+    margin-bottom: var(--space-s);
   }
 
   .author-bio {
-    font-size: 1.25rem;
+    font-size: var(--step-0);
     line-height: 1.6;
     color: var(--color-text-secondary);
     max-width: 600px;
-    margin: 0 auto calc(var(--grid-unit) * 4);
+    margin: 0 auto var(--space-l);
   }
 
   .social-links {
     display: flex;
-    gap: calc(var(--grid-unit) * 3);
+    gap: var(--space-m);
     justify-content: center;
     align-items: center;
   }
 
   .social-links a {
     color: var(--color-text-secondary);
-    transition: color 0.2s ease, transform 0.2s ease;
+    transition: color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   }
 
   .social-links a:hover {
@@ -193,27 +197,25 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
     font-size: 1.875rem;
     font-weight: 700;
     color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-top: calc(var(--grid-unit) * 6);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-m);
   }
 
   .content-section p {
-    font-size: 1.125rem;
+    font-size: var(--step-0);
     line-height: 1.6;
     color: var(--color-text-primary);
-    margin-bottom: calc(var(--grid-unit) * 3);
+    margin-bottom: var(--space-m);
   }
 
   .content-section ul {
-    margin: calc(var(--grid-unit) * 2) 0;
-    padding-left: calc(var(--grid-unit) * 3);
+    margin: var(--space-s) 0;
+    padding-left: var(--space-m);
   }
 
   .content-section li {
-    margin-bottom: calc(var(--grid-unit) * 2);
-    font-size: 1.125rem;
+    margin-bottom: var(--space-s);
+    font-size: var(--step-0);
     line-height: 1.6;
   }
 
@@ -223,19 +225,19 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
 
   @media (max-width: 768px) {
     .page-title {
-      font-size: 2.5rem;
+      font-size: var(--step-3);
     }
 
     .author-section {
-      padding: calc(var(--grid-unit) * 4) calc(var(--grid-unit) * 3);
+      padding: var(--space-l) var(--space-m);
     }
 
     .author-name {
-      font-size: 2rem;
+      font-size: var(--step-3);
     }
 
     .author-bio {
-      font-size: 1.125rem;
+      font-size: var(--step-0);
     }
 
     .author-avatar img {
@@ -249,16 +251,16 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
     }
 
     .social-links {
-      gap: calc(var(--grid-unit) * 2);
+      gap: var(--space-s);
     }
 
     .content-section h2 {
-      font-size: 1.5rem;
+      font-size: var(--step-1);
     }
 
     .content-section p,
     .content-section li {
-      font-size: 1rem;
+      font-size: var(--step--1);
     }
   }
 </style>
