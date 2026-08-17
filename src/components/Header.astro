@@ -323,12 +323,13 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
 
 <style>
   .site-header {
-    background-color: var(--color-surface);
-    border-bottom: 2px solid var(--color-border);
-    padding: calc(var(--grid-unit) * 3) 0;
+    padding: var(--space-m) 0;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+    background-color: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    border-bottom: 1.5px solid var(--color-border);
   }
 
   .header-content {
@@ -339,7 +340,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
   }
 
   .site-title a {
@@ -358,7 +359,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   .header-controls {
     display: flex;
     align-items: center;
-    gap: calc(var(--grid-unit) * 3);
+    gap: var(--space-m);
     flex-shrink: 0;
   }
 
@@ -368,7 +369,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     color: var(--color-text-primary);
     padding: calc(var(--grid-unit) / 2);
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: color var(--dur-fast) var(--ease-out);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -390,7 +391,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: opacity var(--dur-base) var(--ease-out), visibility var(--dur-base) var(--ease-out);
   }
 
   .search-overlay.active {
@@ -400,7 +401,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
 
   .search-container {
     max-width: 800px;
-    margin: calc(var(--grid-unit) * 10) auto calc(var(--grid-unit) * 4) auto;
+    margin: calc(var(--grid-unit) * 10) auto var(--space-l) auto;
     padding: 0 var(--content-padding);
   }
 
@@ -409,8 +410,8 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     align-items: center;
     background: var(--color-background);
     border: 2px solid var(--color-border);
-    border-radius: 8px;
-    padding: calc(var(--grid-unit) * 3);
+    border-radius: var(--radius-m);
+    padding: var(--space-m);
     margin-bottom: calc(var(--grid-unit) * 5);
   }
 
@@ -419,9 +420,9 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     border: none;
     background: none;
     font-family: var(--font-body);
-    font-size: 1.125rem;
+    font-size: var(--step-0);
     color: var(--color-text-primary);
-    padding: calc(var(--grid-unit) * 2) calc(var(--grid-unit) * 3);
+    padding: var(--space-s) var(--space-m);
     outline: none;
   }
 
@@ -435,7 +436,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     color: var(--color-text-muted);
     padding: calc(var(--grid-unit) / 2);
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: color var(--dur-fast) var(--ease-out);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -452,10 +453,10 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     min-height: 40vh;
     overflow-y: auto;
     background: var(--color-background);
-    border-radius: 8px;
+    border-radius: var(--radius-m);
     border: 1px solid var(--color-border);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: calc(var(--grid-unit) * 3) calc(var(--grid-unit) * 4) calc(var(--grid-unit) * 4) calc(var(--grid-unit) * 4);
+    padding: var(--space-m) var(--space-l) var(--space-l) var(--space-l);
   }
 
   .search-results:empty {
@@ -463,8 +464,8 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   }
 
   .search-results-header {
-    padding: calc(var(--grid-unit) * 3) calc(var(--grid-unit) * 4);
-    margin: calc(var(--grid-unit) * -3) calc(var(--grid-unit) * -4) calc(var(--grid-unit) * 3) calc(var(--grid-unit) * -4);
+    padding: var(--space-m) var(--space-l);
+    margin: calc(var(--space-m) * -1) calc(var(--space-l) * -1) var(--space-m) calc(var(--space-l) * -1);
     border-bottom: 1px solid var(--color-border);
     background: var(--color-surface);
     position: sticky;
@@ -475,17 +476,17 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   .search-results-header p {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .search-result {
-    padding: calc(var(--grid-unit) * 6) calc(var(--grid-unit) * 6);
-    margin-bottom: calc(var(--grid-unit) * 2);
+    padding: var(--space-xl) var(--space-xl);
+    margin-bottom: var(--space-s);
     border-bottom: 1px solid var(--color-border);
-    transition: background-color 0.2s ease;
+    transition: background-color var(--dur-fast) var(--ease-out);
   }
 
   .search-result:hover {
@@ -498,11 +499,9 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
 
   .search-result-title {
     font-family: var(--font-heading-secondary);
-    font-size: 1.25rem;
+    font-size: var(--step-0);
     font-weight: 700;
-    margin-bottom: calc(var(--grid-unit) * 3);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    margin-bottom: var(--space-m);
   }
 
   .search-result-title a {
@@ -517,12 +516,10 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
 
   .search-result-date {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     display: block;
-    margin-bottom: calc(var(--grid-unit) * 4);
+    margin-bottom: var(--space-l);
   }
 
   .search-result-excerpt {
@@ -535,20 +532,20 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     display: flex;
     flex-wrap: wrap;
     gap: calc(var(--grid-unit) * 2.5);
-    margin-top: calc(var(--grid-unit) * 3);
+    margin-top: var(--space-m);
   }
 
   .search-category {
     background-color: #e8a100;
     color: var(--color-text-primary);
-    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 2.5);
-    font-size: 0.8rem;
+    padding: var(--space-xs) calc(var(--grid-unit) * 2.5);
     font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-radius: 3px;
-    transition: all 0.2s ease;
+    letter-spacing: 0.18em;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .search-category:hover {
@@ -565,12 +562,12 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
 
   :global([data-theme="dark"]) .search-category:hover {
     background-color: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     border-color: var(--color-accent);
   }
 
   .search-no-results {
-    padding: calc(var(--grid-unit) * 10) calc(var(--grid-unit) * 6);
+    padding: calc(var(--grid-unit) * 10) var(--space-xl);
     text-align: center;
   }
 
@@ -578,7 +575,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     color: var(--color-text-muted);
     font-style: italic;
     margin: 0;
-    font-size: 1.1rem;
+    font-size: var(--step--1);
   }
 
   .main-navigation {
@@ -590,18 +587,16 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: calc(var(--grid-unit) * 3);
+    gap: var(--space-m);
   }
 
   .nav-link {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--color-text-primary);
     padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
     border-bottom: 2px solid transparent;
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .nav-link:hover,
@@ -632,17 +627,18 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     left: 0;
     background: var(--color-background);
     border: 2px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-m);
     min-width: 200px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
     z-index: 1000;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
-  .nav-dropdown:hover .dropdown-menu {
+  .nav-dropdown:hover .dropdown-menu,
+  .nav-dropdown:focus-within .dropdown-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
@@ -650,15 +646,13 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
 
   .dropdown-link {
     display: block;
-    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 2);
-    font-family: var(--font-heading-secondary);
+    padding: var(--space-xs) var(--space-s);
+    font-family: var(--font-body);
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--color-text-primary);
     text-decoration: none;
     border-bottom: 1px solid var(--color-border);
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .dropdown-link:last-child {
@@ -693,7 +687,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   .mobile-controls {
     display: flex;
     align-items: center;
-    gap: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
   }
 
   /* Hide mobile-only hamburger by default */
@@ -707,7 +701,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     color: var(--color-text-primary);
     padding: calc(var(--grid-unit));
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: color var(--dur-fast) var(--ease-out);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -719,31 +713,29 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     color: var(--color-text-primary);
     padding: calc(var(--grid-unit));
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: color var(--dur-fast) var(--ease-out);
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
   }
-  
+
   .github-star-button {
     background: none;
     border: 2px solid var(--color-accent);
     color: var(--color-accent);
-    padding: calc(var(--grid-unit) * 0.75) calc(var(--grid-unit) * 2);
+    padding: calc(var(--grid-unit) * 0.75) var(--space-s);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: calc(var(--grid-unit));
     text-decoration: none;
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-body);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.875rem;
-    border-radius: 4px;
+    font-size: var(--step--1);
+    border-radius: var(--radius-s);
   }
   
   .github-star-button:hover,
@@ -777,7 +769,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     background-color: var(--color-background);
     z-index: 99;
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    transition: transform var(--dur-base) var(--ease-out);
     overflow-y: auto;
     padding-top: calc(var(--grid-unit) * 12);
   }
@@ -789,21 +781,19 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   .mobile-nav-list {
     list-style: none;
     margin: 0;
-    padding: calc(var(--grid-unit) * 4) 0;
+    padding: var(--space-l) 0;
   }
 
   .mobile-nav-link {
     display: block;
-    padding: calc(var(--grid-unit) * 3) calc(var(--grid-unit) * 4);
-    font-family: var(--font-heading-secondary);
+    padding: var(--space-m) var(--space-l);
+    font-family: var(--font-body);
     font-weight: 700;
-    font-size: 1.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: var(--step-0);
     color: var(--color-text-primary);
     text-decoration: none;
     border-bottom: 1px solid var(--color-border);
-    transition: all 0.2s ease;
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .mobile-nav-link:hover,
@@ -818,12 +808,12 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   }
 
   .mobile-nav-header {
-    padding: calc(var(--grid-unit) * 2) calc(var(--grid-unit) * 4);
-    font-family: var(--font-heading-secondary);
+    padding: var(--space-s) var(--space-l);
+    font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 1rem;
+    font-size: var(--step--2);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.18em;
     color: var(--color-accent);
     background-color: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
@@ -836,22 +826,26 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   }
 
   .mobile-nav-link.submenu {
-    padding-left: calc(var(--grid-unit) * 6);
-    font-size: 1.1rem;
+    padding-left: var(--space-xl);
+    font-size: var(--step--1);
     background-color: var(--color-surface);
   }
 
-  @media (max-width: 768px) {
+  /* Breakpoint raised from 768px to 1024px: the six-item desktop nav
+     (with dropdowns) does not fit in the 769-1024px range at any
+     achievable gap/font reduction, so the hamburger now covers that
+     whole range instead of letting the nav overflow the viewport. */
+  @media (max-width: 1024px) {
     .site-header {
-      padding: calc(var(--grid-unit) * 2) 0;
+      padding: var(--space-s) 0;
     }
 
     .header-content {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      gap: calc(var(--grid-unit) * 2);
-      padding: 0 calc(var(--grid-unit) * 2);
+      gap: var(--space-s);
+      padding: 0 var(--space-s);
     }
 
     /* Show mobile hamburger on far left */
@@ -890,9 +884,9 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     /* Show mobile controls on right */
     .mobile-controls {
       display: flex !important;
-      gap: calc(var(--grid-unit) * 1.5);
+      gap: var(--space-xs);
     }
-    
+
     .hamburger-toggle,
     .rss-toggle,
     .search-toggle {
@@ -900,42 +894,42 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     }
 
     .search-container {
-      margin: calc(var(--grid-unit) * 5) auto calc(var(--grid-unit) * 3) auto;
-      padding: 0 calc(var(--grid-unit) * 2);
+      margin: calc(var(--grid-unit) * 5) auto var(--space-m) auto;
+      padding: 0 var(--space-s);
     }
 
     .search-result {
-      padding: calc(var(--grid-unit) * 4) calc(var(--grid-unit) * 3);
-      margin-bottom: calc(var(--grid-unit) * 1.5);
+      padding: var(--space-l) var(--space-m);
+      margin-bottom: var(--space-xs);
     }
 
     .search-results {
-      padding: calc(var(--grid-unit) * 2) calc(var(--grid-unit) * 2.5) calc(var(--grid-unit) * 3) calc(var(--grid-unit) * 2.5);
+      padding: var(--space-s) calc(var(--grid-unit) * 2.5) var(--space-m) calc(var(--grid-unit) * 2.5);
     }
-    
+
     .search-results-header {
-      padding: calc(var(--grid-unit) * 2) calc(var(--grid-unit) * 2.5);
-      margin: calc(var(--grid-unit) * -2) calc(var(--grid-unit) * -2.5) calc(var(--grid-unit) * 2) calc(var(--grid-unit) * -2.5);
+      padding: var(--space-s) calc(var(--grid-unit) * 2.5);
+      margin: calc(var(--space-s) * -1) calc(var(--grid-unit) * -2.5) var(--space-s) calc(var(--grid-unit) * -2.5);
     }
-    
+
     .search-result-categories {
-      gap: calc(var(--grid-unit) * 2);
+      gap: var(--space-s);
     }
-    
+
     .search-category {
-      padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
+      padding: calc(var(--grid-unit)) var(--space-s);
     }
-    
+
     .search-result-title {
-      margin-bottom: calc(var(--grid-unit) * 2);
+      margin-bottom: var(--space-s);
     }
-    
+
     .search-result-date {
-      margin-bottom: calc(var(--grid-unit) * 3);
+      margin-bottom: var(--space-m);
     }
-    
+
     .search-result-excerpt {
-      margin-bottom: calc(var(--grid-unit) * 4);
+      margin-bottom: var(--space-l);
     }
     
     /* Adjust GitHub button for mobile */
