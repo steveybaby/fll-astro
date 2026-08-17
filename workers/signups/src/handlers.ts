@@ -50,3 +50,82 @@ export async function getSignups(env: Env, date: string): Promise<Response> {
     snack: snackRow ? snackRow.person : null,
   });
 }
+
+interface WriteParams {
+  date: string;
+  name: string;
+  status?: string;
+}
+
+/**
+ * Shared gate for every write. Unlike reads, a write must not proceed on a
+ * stale-or-absent roster: accepting an unvalidated name is how a signup table
+ * fills with typos and last season's players.
+ */
+async function validateWrite(
+  env: Env,
+  { date, name }: WriteParams
+): Promise<Response | null> {
+  if (!isValidDate(date)) {
+    return json({ error: 'invalid date format, expected YYYY-MM-DD' }, 400);
+  }
+  const config = await loadConfig(env);
+  if (!config) return json({ error: 'roster unavailable' }, 503);
+  if (!config.meetingDates.includes(date)) {
+    return json({ error: 'unknown meeting date' }, 400);
+  }
+  if (!config.people.includes(name)) {
+    return json({ error: 'unknown person' }, 400);
+  }
+  return null;
+}
+
+export async function putRsvp(env: Env, params: WriteParams): Promise<Response> {
+  const invalid = await validateWrite(env, params);
+  if (invalid) return invalid;
+
+  await env.DB.prepare(
+    `INSERT INTO signups (meeting_date, person, kind, value, updated_at)
+     VALUES (?, ?, 'rsvp', ?, ?)
+     ON CONFLICT (meeting_date, person, kind)
+     DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+  )
+    .bind(params.date, params.name, params.status ?? '', new Date().toISOString())
+    .run();
+
+  return json({ ok: true });
+}
+
+/**
+ * Snack duty is one person per meeting. Clearing and inserting go in a single
+ * batch so there is never a moment with two assignees or none.
+ */
+export async function putSnack(env: Env, params: WriteParams): Promise<Response> {
+  const invalid = await validateWrite(env, params);
+  if (invalid) return invalid;
+
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM signups WHERE meeting_date = ? AND kind = 'snack'").bind(
+      params.date
+    ),
+    env.DB.prepare(
+      `INSERT INTO signups (meeting_date, person, kind, value, updated_at)
+       VALUES (?, ?, 'snack', '1', ?)`
+    ).bind(params.date, params.name, new Date().toISOString()),
+  ]);
+
+  return json({ ok: true });
+}
+
+export async function clearSnack(env: Env, params: WriteParams): Promise<Response> {
+  const invalid = await validateWrite(env, params);
+  if (invalid) return invalid;
+
+  await env.DB.prepare(
+    "DELETE FROM signups WHERE meeting_date = ? AND person = ? AND kind = 'snack'"
+  )
+    .bind(params.date, params.name)
+    .run();
+
+  return json({ ok: true });
+}

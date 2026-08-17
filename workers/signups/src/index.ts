@@ -7,7 +7,7 @@
  * strand its UI on.
  */
 import { type Env, CORS, json } from './http';
-import { getSignups } from './handlers';
+import { getSignups, putRsvp, putSnack, clearSnack } from './handlers';
 
 export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
@@ -24,6 +24,23 @@ export default {
 
       if (url.pathname === '/signups' && request.method === 'GET') {
         return getSignups(env, url.searchParams.get('date') ?? '');
+      }
+
+      if (url.pathname === '/rsvp' && request.method === 'POST') {
+        const b = (await request.json()) as { date?: string; name?: string; status?: string } | null;
+        return putRsvp(env, { date: b?.date ?? '', name: b?.name ?? '', status: b?.status ?? '' });
+      }
+
+      if (url.pathname === '/snack' && request.method === 'POST') {
+        const b = (await request.json()) as { date?: string; name?: string } | null;
+        return putSnack(env, { date: b?.date ?? '', name: b?.name ?? '' });
+      }
+
+      if (url.pathname === '/snack' && request.method === 'DELETE') {
+        return clearSnack(env, {
+          date: url.searchParams.get('date') ?? '',
+          name: url.searchParams.get('name') ?? '',
+        });
       }
 
       return json({ error: 'not found' }, 404);
