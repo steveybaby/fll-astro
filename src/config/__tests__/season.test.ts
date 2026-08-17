@@ -48,8 +48,7 @@ describe('season config', () => {
 
   it('meeting defaults are Sunday 2pm for two hours in Moraga', () => {
     expect(getCurrentSeason().defaults).toEqual({
-      startTime: '14:00',
-      duration: 2,
+      startTime: '14:00',      duration: 2.5,
       location: '188 Calle La Montana, Moraga, CA, 94556',
     });
   });

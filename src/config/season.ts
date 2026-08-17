@@ -63,7 +63,7 @@ export const SEASONS: Record<string, Season> = {
       { name: 'Eli', initials: 'EB', returning: false },
     ],
     coaches: COACHES_2026,
-    defaults: { startTime: '14:00', duration: 2, location: MORAGA },
+    defaults: { startTime: '14:00', duration: 2.5, location: MORAGA },
   },
   '2025-26': {
     id: '2025-26',
