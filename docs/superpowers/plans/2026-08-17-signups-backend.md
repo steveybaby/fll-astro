@@ -60,6 +60,7 @@ Expected: on `feat/signups-worker`, clean tree.
 ## Task 1: Generated roster config endpoint
 
 **Files:**
+- Create: `src/lib/signups-config.ts`
 - Create: `src/pages/signups-config.json.ts`
 - Test: `src/lib/__tests__/signups-config.test.ts`
 
@@ -557,16 +558,25 @@ export async function loadConfig(env: Env): Promise<SignupsConfig | null> {
   }
 }
 
-/** Test seam: clears the module-level cache between cases. */
-export function resetConfigCache(): void {
-  cached = null;
-  cachedAt = 0;
-}
-
-/** Test seam: ages the cache past its TTL without waiting five minutes. */
-resetConfigCache.ttlExpire = function ttlExpire(): void {
-  cachedAt = 0;
-};
+/**
+ * Test seams. `Object.assign` with an explicit intersection type rather than
+ * assigning a property onto a plain function — TypeScript rejects the latter,
+ * because `() => void` has no such property.
+ *
+ * `resetConfigCache()` clears the cache between cases; `.ttlExpire()` ages it
+ * past its TTL without waiting five minutes.
+ */
+export const resetConfigCache: (() => void) & { ttlExpire: () => void } = Object.assign(
+  function resetConfigCache(): void {
+    cached = null;
+    cachedAt = 0;
+  },
+  {
+    ttlExpire(): void {
+      cachedAt = 0;
+    },
+  }
+);
 ```
 
 - [ ] **Step 4: Run the tests and confirm they pass**
