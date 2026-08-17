@@ -1,4 +1,5 @@
 ---
+import { seasonCalendarPath } from '../lib/ics';
 import Layout from './Layout.astro';
 import R2PhotoGallery from './R2PhotoGallery.astro';
 import RSVPComponent from './RSVPComponent.astro';
@@ -49,6 +50,8 @@ const displayWithDay = `${dayName}, ${display}`;
 // Check if meeting is in the future
 const now = new Date();
 const isFutureMeeting = raw >= now;
+/** Per-season feed URL; see seasonCalendarPath for why the year is in it. */
+const calPath = seasonCalendarPath();
 ---
 
 <Layout
@@ -87,7 +90,8 @@ const isFutureMeeting = raw >= now;
                 <input 
                   type="text" 
                   id="calendar-url" 
-                  value="https://fll.sharpers.com/calendar.ics" 
+                  value={`https://fll.sharpers.com${calPath}`}
+          data-cal-path={calPath} 
                   readonly
                   class="calendar-url-input"
                 />
@@ -104,7 +108,7 @@ const isFutureMeeting = raw >= now;
               </div>
               
               <div class="popup-actions">
-                <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+                <a href={calPath} class="download-fallback">Or download .ics file</a>
                 <button id="close-popup-btn" class="close-button">Close</button>
               </div>
             </div>
@@ -857,7 +861,7 @@ const isFutureMeeting = raw >= now;
     
     // Set the correct URL based on current domain
     if (urlInput) {
-      urlInput.value = `${window.location.origin}/calendar.ics`;
+      urlInput.value = `${window.location.origin}${urlInput.dataset.calPath || "/calendar.ics"}`;
     }
     
     // Show popup

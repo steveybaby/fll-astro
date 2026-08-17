@@ -1,4 +1,5 @@
 ---
+import { seasonCalendarPath } from '../lib/ics';
 import Layout from './Layout.astro';
 import { getSeasonContent } from '../utils/season';
 import { getSeason, CURRENT_SEASON } from '../config/season';
@@ -37,6 +38,8 @@ const processedMeetings = meetings.map(meeting => {
 
 // Sort meetings by date
 const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+/** Per-season feed URL; see seasonCalendarPath for why the year is in it. */
+const calPath = seasonCalendarPath();
 ---
 
 
@@ -67,7 +70,8 @@ const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime
               <input 
                 type="text" 
                 id="calendar-url" 
-                value="https://fll.sharpers.com/calendar.ics"
+                value={`https://fll.sharpers.com${calPath}`}
+          data-cal-path={calPath}
                 readonly
                 class="calendar-url-input"
               />
@@ -84,7 +88,7 @@ const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime
             </div>
             
             <div class="popup-actions">
-              <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+              <a href={calPath} class="download-fallback">Or download .ics file</a>
               <button id="close-popup-btn" class="close-button">Close</button>
             </div>
           </div>
@@ -840,7 +844,7 @@ const sortedMeetings = processedMeetings.sort((a, b) => new Date(a.date).getTime
     
     // Set the correct URL based on current domain
     if (urlInput) {
-      urlInput.value = `https://${window.location.host}/calendar.ics`;
+      urlInput.value = `${window.location.origin}${urlInput.dataset.calPath || "/calendar.ics"}`;
     }
     
     // Calendar state

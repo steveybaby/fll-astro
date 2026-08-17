@@ -1,4 +1,5 @@
 ---
+import { seasonCalendarPath } from '../lib/ics';
 // Calendar subscription component for embedding in content.
 // Deliberately does NOT name the team: this is embedded in archived newsletter
 // content, where naming the current team would retroactively rebrand the
@@ -9,6 +10,8 @@ interface Props {
 }
 
 const { size = 'medium', style = 'button' } = Astro.props;
+/** Per-season feed URL; see seasonCalendarPath for why the year is in it. */
+const calPath = seasonCalendarPath();
 ---
 
 <div class={`calendar-subscribe ${style} ${size}`}>
@@ -29,7 +32,8 @@ const { size = 'medium', style = 'button' } = Astro.props;
         <input 
           type="text" 
           class="calendar-url-input" 
-          value="https://fll.sharpers.com/calendar.ics" 
+          value={`https://fll.sharpers.com${calPath}`}
+          data-cal-path={calPath} 
           readonly
         />
         <button class="copy-button">Copy</button>
@@ -45,7 +49,7 @@ const { size = 'medium', style = 'button' } = Astro.props;
       </div>
       
       <div class="popup-actions">
-        <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+        <a href={calPath} class="download-fallback">Or download .ics file</a>
         <button class="close-popup-btn">Close</button>
       </div>
     </div>
@@ -282,7 +286,7 @@ const { size = 'medium', style = 'button' } = Astro.props;
       
       // Set the correct URL based on current domain
       if (urlInput) {
-        urlInput.value = `${window.location.origin}/calendar.ics`;
+        urlInput.value = `${window.location.origin}${urlInput.dataset.calPath || "/calendar.ics"}`;
       }
       
       // Show popup

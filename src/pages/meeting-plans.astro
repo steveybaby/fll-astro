@@ -1,4 +1,5 @@
 ---
+import { seasonCalendarPath } from '../lib/ics';
 import Layout from '../components/Layout.astro';
 import { formatMeetingTimeOrTBD } from '../utils/meeting-time.ts';
 import { getMeetingDateTime } from '../utils/calendar.ts';
@@ -51,6 +52,8 @@ const pastMeetings = sortedMeetings.filter(m => m._date < now).reverse(); // Mos
 
 const nextMeeting = futureMeetings[0] || null;
 const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meetings after the next one
+/** Per-season feed URL; see seasonCalendarPath for why the year is in it. */
+const calPath = seasonCalendarPath();
 ---
 
 <Layout title="Team Meetings" description="Documentation of our FLL Challenge team meetings, including agendas, notes, and photos.">
@@ -74,7 +77,8 @@ const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meeting
               <input 
                 type="text" 
                 id="main-calendar-url" 
-                value="https://fll.sharpers.com/calendar.ics"
+                value={`https://fll.sharpers.com${calPath}`}
+          data-cal-path={calPath}
                 readonly
                 class="calendar-url-input"
               />
@@ -91,7 +95,7 @@ const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meeting
             </div>
             
             <div class="popup-actions">
-              <a href="/calendar.ics" class="download-fallback">Or download .ics file</a>
+              <a href={calPath} class="download-fallback">Or download .ics file</a>
               <button id="main-close-btn" class="close-button">Close</button>
             </div>
           </div>
@@ -802,7 +806,7 @@ const upcomingMeetings = futureMeetings.slice(1, 6); // Show only next 5 meeting
     
     // Set the correct URL based on current domain
     if (mainUrlInput) {
-      mainUrlInput.value = `${window.location.origin}/calendar.ics`;
+      mainUrlInput.value = `${window.location.origin}${mainUrlInput.dataset.calPath || "/calendar.ics"}`;
     }
     
     // Show popup
