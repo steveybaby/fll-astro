@@ -1,0 +1,109 @@
+/* Design tokens. Palette primitives, semantic mapping, scales, themes.
+   Semantic tokens are the only ones components should reference. */
+
+:root {
+  /* ---- Palette primitives ---- */
+  --bio-paper: #FFFDF6;
+  --bio-canopy-cream: #F7EFDC;
+  --bio-cream: #F2E3C4;
+  --bio-leaf: #3E8E3E;
+  --bio-leaf-deep: #2E6B2E;
+  --bio-leaf-shadow: #14261B;
+  --bio-fern: #3F5A48;
+  --bio-moss: #6F8579;
+  --bio-bark: #D8CFAF;
+  --bio-deep-teal: #0F3A47;
+  --bio-teal-abyss: #08171E;
+  --bio-teal-surface: #0E2731;
+  --bio-light-green: #C3E39A;
+  --bio-spring: #7FC79A;
+  --bio-glow-yellow: #FFD21E;
+  --bio-signal-red: #EE2027;
+  --bio-near-black: #111A20;
+
+  /* ---- Legacy aliases. Sidebar.astro, about.astro and several pages
+         reference these names directly; they stay until those files are
+         migrated, and the archive override depends on some of them. ---- */
+  --color-white: #ffffff;
+  --color-light-gray: #e7efdd;
+  --color-medium-gray: var(--bio-moss);
+  --color-dark-gray: var(--bio-fern);
+  --color-black: var(--bio-near-black);
+  --color-deep-teal: var(--bio-deep-teal);
+  --color-light-green: var(--bio-light-green);
+  --color-leaf-green: var(--bio-leaf);
+  --color-leaf-green-deep: var(--bio-leaf-deep);
+  --color-cream: var(--bio-cream);
+  --color-glow-yellow: var(--bio-glow-yellow);
+  --color-signal-red: var(--bio-signal-red);
+  --color-near-black: var(--bio-near-black);
+
+  /* ---- Semantic tokens: Canopy Daylight (light theme) ----
+     Accent is the deep leaf variant, not the logo green: leaf green on cream
+     is 3.22:1, below the 4.5:1 AA floor for normal text. The deep variant
+     reaches 5.08:1. --color-canopy keeps the brand green for fills, where the
+     3:1 non-text threshold applies. */
+  --color-background: var(--bio-canopy-cream);
+  --color-surface: var(--bio-paper);
+  --color-surface-raised: #FFFFFF;
+  --color-text-primary: var(--bio-leaf-shadow);
+  --color-text-secondary: var(--bio-fern);
+  --color-text-muted: var(--bio-moss);
+  --color-border: var(--bio-bark);
+  --color-border-strong: var(--bio-leaf-deep);
+  --color-accent: var(--bio-leaf-deep);
+  --color-accent-contrast: #FFFFFF;
+  --color-action: var(--bio-glow-yellow);
+  --color-action-contrast: var(--bio-leaf-shadow);
+  --color-canopy: var(--bio-leaf);
+  --canopy-opacity: 0.24;
+  --hero-gradient: linear-gradient(170deg, var(--bio-paper) 0%, #EFE6CB 100%);
+
+  /* ---- Typography ---- */
+  --font-heading-primary: 'Fraunces Variable', Fraunces, Georgia, serif;
+  --font-heading-secondary: 'Fraunces Variable', Fraunces, Georgia, serif;
+  --font-body: 'Work Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Fluid type scale. Every step interpolates between 360px and 1280px. */
+  --step--2: clamp(0.69rem, 0.67rem + 0.09vw, 0.75rem);
+  --step--1: clamp(0.83rem, 0.79rem + 0.19vw, 0.94rem);
+  --step-0:  clamp(1rem, 0.94rem + 0.29vw, 1.19rem);
+  --step-1:  clamp(1.2rem, 1.11rem + 0.44vw, 1.48rem);
+  --step-2:  clamp(1.44rem, 1.31rem + 0.64vw, 1.85rem);
+  --step-3:  clamp(1.73rem, 1.54rem + 0.92vw, 2.31rem);
+  --step-4:  clamp(2.07rem, 1.81rem + 1.3vw, 2.89rem);
+  --step-5:  clamp(2.49rem, 2.12rem + 1.83vw, 3.61rem);
+
+  /* ---- Space scale, built on the existing 8px grid unit so that
+         existing calc(var(--grid-unit) * n) expressions stay valid. ---- */
+  --grid-unit: 8px;
+  --space-3xs: calc(var(--grid-unit) * 0.5);
+  --space-2xs: var(--grid-unit);
+  --space-xs:  calc(var(--grid-unit) * 1.5);
+  --space-s:   calc(var(--grid-unit) * 2);
+  --space-m:   calc(var(--grid-unit) * 3);
+  --space-l:   calc(var(--grid-unit) * 4);
+  --space-xl:  calc(var(--grid-unit) * 6);
+  --space-2xl: calc(var(--grid-unit) * 8);
+  --space-3xl: calc(var(--grid-unit) * 12);
+
+  /* ---- Shape and depth ---- */
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 16px;
+  --radius-pill: 999px;
+  --shadow-s: 0 1px 2px rgba(20, 38, 27, 0.06), 0 2px 8px rgba(20, 38, 27, 0.05);
+  --shadow-m: 0 4px 12px rgba(20, 38, 27, 0.08), 0 12px 32px rgba(20, 38, 27, 0.07);
+
+  /* ---- Motion ---- */
+  --dur-fast: 160ms;
+  --dur-base: 260ms;
+  --dur-slow: 520ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* ---- Layout ---- */
+  --max-width: 1200px;
+  --sidebar-width: 320px;
+  --content-padding: var(--space-m);
+}
