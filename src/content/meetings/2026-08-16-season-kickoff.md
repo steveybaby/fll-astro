@@ -2,6 +2,7 @@
 title: "Season Kickoff — BIOGLOW"
 date: 2026-08-16
 season: "2026-27"
+milestone: "Kickoff"
 startTime: "14:00"
 duration: 2
 location: "188 Calle La Montana, Moraga, CA, 94556"

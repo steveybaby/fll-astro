@@ -2,6 +2,7 @@
 title: "Practice Tournament — Robot Game"
 date: 2026-10-24
 season: "2026-27"
+milestone: "Practice 1"
 startTime: "09:00"
 duration: 2
 location: "PMS Campus"

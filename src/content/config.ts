@@ -26,6 +26,7 @@ const meetings = defineCollection({
     duration: z.number().optional(), // Duration in hours (e.g., 1.5)
     location: z.string().optional(), // Meeting location
     timeTBD: z.boolean().default(false), // True when startTime is a placeholder, not confirmed
+    milestone: z.string().optional(), // short timeline label; absent = not a milestone
     agenda: z.array(z.string()).default([]),
     assignments: z.array(z.object({
       name: z.string(),
