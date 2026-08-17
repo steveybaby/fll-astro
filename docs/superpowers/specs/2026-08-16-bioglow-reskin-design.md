@@ -148,7 +148,13 @@ Replaced by:
 
 Three mechanisms, in order of preference:
 
-1. **CSS-only.** The sticky logistics bar is `position: sticky`. No JavaScript.
+1. **CSS-only.** The site header is `position: sticky`, so navigation and the theme
+   toggle stay reachable at any scroll depth. No JavaScript.
+
+   Note: the *sticky logistics bar* explored during design belonged to the rejected "Trail"
+   hierarchy. Split Hero answers the same need differently — the meeting card is the first
+   thing on the page, and on narrow viewports it is ordered *above* the team identity. A
+   persistent bar would duplicate it.
 2. **IntersectionObserver.** `[data-reveal]` elements gain `.is-visible` on entry.
 3. **Throttled rAF scroll handler.** `[data-parallax="0.3"]` elements get
    `transform: translate3d(0, …, 0)` at the given rate. `will-change` is applied only
