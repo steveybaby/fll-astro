@@ -100,7 +100,7 @@ export async function buildSeasonCalendar(seasonId: string = CURRENT_SEASON): Pr
     // Most clients cache this at subscribe time and never re-read it, so
     // changing it only affects people who subscribe from now on.
     `X-WR-CALNAME:${teamName} Lego Team`,
-    'X-WR-CALDESC:FIRST Lego League team meeting schedule',
+    'X-WR-CALDESC:FIRST LEGO League team meeting schedule',
     `X-WR-TIMEZONE:${TIMEZONE}`,
     'BEGIN:VTIMEZONE',
     `TZID:${TIMEZONE}`,

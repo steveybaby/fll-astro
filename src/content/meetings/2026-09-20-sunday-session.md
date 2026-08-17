@@ -1,5 +1,5 @@
 ---
-title: "First Lego League Meeting"
+title: "FIRST LEGO League Meeting"
 date: 2026-09-20
 season: "2026-27"
 startTime: "14:00"
