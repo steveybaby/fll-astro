@@ -2454,6 +2454,65 @@ Expected: 71 tests passing; build exits 0.
 
 ---
 
+## Task 11c: Meeting and newsletter detail pages
+
+**Files:**
+- Modify: `src/components/MeetingDetail.astro`, `src/components/NewsletterDetail.astro`
+
+**Interfaces:**
+- Consumes: tokens (Task 1), the `data-reveal` contract (Task 3)
+- Produces: nothing new
+
+These render `/meetings/<slug>/` and `/newsletters/<slug>/`. They are the substance of the
+two sections the scope names, and the homepage's new meeting card links directly into a
+meeting detail page — so leaving them unrestyled puts a visible seam on the most-clicked
+path off the homepage.
+
+Both carry their own component-scoped `text-transform: uppercase` rules, so they do **not**
+inherit the new typography for free. That is the specific thing this task fixes.
+
+CSS only. Keep all markup, class names, ids, and JavaScript.
+
+- [ ] **Step 1: `MeetingDetail.astro`**
+
+Apply "The Restyle Substitution Table" from near the top of this plan to its `<style>` block.
+
+Specifically: the agenda list, the assignments table, and the photo grid all currently use
+hardcoded greys and rem sizes — move them onto `--color-border`, `--color-text-muted` and
+the step scale. Any heading carrying uppercase loses it; any *label* carrying uppercase
+(assignment status, photo count, date metadata) keeps it under override rule 1.
+
+Do not add `data-reveal` to the agenda or assignment items — this is a reference page
+someone opens to check one fact, and staggering it in fights that.
+
+- [ ] **Step 2: `NewsletterDetail.astro`**
+
+Apply "The Restyle Substitution Table" to its `<style>` block. This page is long-form prose,
+so it is the biggest beneficiary of the heading changes — confirm that headings inside the
+rendered MDX body come out sentence-case in Fraunces, not uppercase.
+
+- [ ] **Step 3: Verify**
+
+Load a meeting detail page and a newsletter detail page at 375px and 1280px in all three
+themes. Confirm no heading renders uppercase, prose line length stays comfortable, and no
+horizontal overflow at 320px.
+
+Then load one **archived** meeting under `/2025/` and confirm it still renders red-on-white
+— these components are shared with the archive, so a hardcoded colour left behind here
+would leak the BIOGLOW palette into the archive.
+
+- [ ] **Step 4: Run everything and commit**
+
+```bash
+npm test && npm run build
+git add src/components/MeetingDetail.astro src/components/NewsletterDetail.astro
+git commit -m "style: restyle the meeting and newsletter detail pages"
+```
+
+Expected: 71 tests passing; build exits 0.
+
+---
+
 ## Task 12: Cleanup and full verification
 
 **Files:**
@@ -2525,7 +2584,8 @@ Then specifically:
 - `/2025/` renders red-on-white in light and brighter-red-on-near-black in dark, with no foliage.
 - With OS reduced-motion on, the homepage shows all content immediately, nothing parallaxes, and no spores fall in glow mode.
 - With JavaScript disabled, the homepage renders all content — nothing stuck at `opacity: 0`.
-- A smoke check of the untouched pages `/rsvps`, `/snacks`, `/calculator`, `/resources`: they inherit Fraunces and the new tokens without broken layout.
+- A smoke check of the untouched pages `/rsvps`, `/snacks`, `/calculator`, `/resources`: they inherit Fraunces and the new tokens without broken layout. These keep their own uppercase labels by design — that is the spec's non-goals list, not a defect.
+- One meeting detail page and one newsletter detail page (Task 11c's output) at both widths.
 
 - [ ] **Step 8: Final commit**
 
