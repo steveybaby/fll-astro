@@ -149,21 +149,21 @@ const categories = [...new Set(blogPosts.flatMap((post: any) => post.data.catego
   .sidebar-content {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--grid-unit) * 4);
-    padding: calc(var(--grid-unit) * 3);
+    gap: var(--space-l);
+    padding: var(--space-m);
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: var(--radius-s);
   }
 
   .bio-section {
     text-align: center;
-    padding-bottom: calc(var(--grid-unit) * 2);
+    padding-bottom: var(--space-s);
     border-bottom: 1px solid var(--color-border);
   }
 
   .avatar-container {
-    margin-bottom: calc(var(--grid-unit) * 2);
+    margin-bottom: var(--space-s);
     display: flex;
     justify-content: center;
   }
@@ -181,38 +181,38 @@ const categories = [...new Set(blogPosts.flatMap((post: any) => post.data.catego
     height: 80px;
     border-radius: 50%;
     border: 2px solid var(--color-border);
-    background-color: var(--color-light-gray);
+    background-color: var(--color-surface);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-medium-gray);
+    color: var(--color-text-muted);
   }
 
   .author-name {
-    font-family: var(--font-heading-secondary);
-    font-size: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 700;
     color: var(--color-accent);
     margin-bottom: calc(var(--grid-unit));
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
   }
 
   .bio-text {
-    font-size: 0.95rem;
+    font-size: var(--step--1);
     color: var(--color-text-muted);
     line-height: 1.5;
     margin: 0;
   }
 
   .section-title {
-    font-family: var(--font-heading-secondary);
-    font-size: 1.1rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 700;
     color: var(--color-accent);
-    margin-bottom: calc(var(--grid-unit) * 1.5);
+    margin-bottom: var(--space-xs);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.18em;
     border-bottom: 2px solid var(--color-accent);
     padding-bottom: calc(var(--grid-unit) / 2);
   }
@@ -223,7 +223,7 @@ const categories = [...new Set(blogPosts.flatMap((post: any) => post.data.catego
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--grid-unit) * 1.5);
+    gap: var(--space-xs);
   }
 
   .category-list {
@@ -254,7 +254,7 @@ const categories = [...new Set(blogPosts.flatMap((post: any) => post.data.catego
   }
 
   .post-date {
-    font-size: 0.85rem;
+    font-size: var(--step--2);
     color: var(--color-text-muted);
     font-family: var(--font-mono);
   }
@@ -263,7 +263,7 @@ const categories = [...new Set(blogPosts.flatMap((post: any) => post.data.catego
     position: absolute;
     top: 0;
     right: 0;
-    font-size: 0.75rem;
+    font-size: var(--step--2);
   }
 
   .category-item {
@@ -275,12 +275,13 @@ const categories = [...new Set(blogPosts.flatMap((post: any) => post.data.catego
     padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2);
     background-color: var(--color-text-primary);
     color: var(--color-background);
-    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    border-radius: 3px;
-    transition: background-color 0.2s ease;
+    letter-spacing: 0.18em;
+    border-radius: var(--radius-s);
+    transition: background-color var(--dur-fast) var(--ease-out);
   }
 
   .category-link:hover,
@@ -299,13 +300,13 @@ const categories = [...new Set(blogPosts.flatMap((post: any) => post.data.catego
   :global([data-theme="dark"]) .category-link:hover,
   :global([data-theme="dark"]) .category-link:focus {
     background-color: var(--color-accent);
-    color: white;
+    color: var(--color-accent-contrast);
     border-color: var(--color-accent);
   }
 
   @media (max-width: 1023px) {
     .sidebar-content {
-      margin-bottom: calc(var(--grid-unit) * 3);
+      margin-bottom: var(--space-m);
     }
   }
 </style>

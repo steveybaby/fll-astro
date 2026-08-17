@@ -75,7 +75,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     background-color: var(--color-surface);
     border-top: 2px solid var(--color-border);
     margin-top: auto;
-    padding: calc(var(--grid-unit) * 4) 0;
+    padding: var(--space-l) 0;
   }
 
   .footer-content {
@@ -86,7 +86,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: calc(var(--grid-unit) * 2);
+    gap: var(--space-s);
   }
 
   .footer-info {
@@ -98,7 +98,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   .copyright,
   .archive-link {
     margin: 0 0 calc(var(--grid-unit) / 2) 0;
-    font-size: 0.9rem;
+    font-size: var(--step--1);
   }
 
   .archive-link a {
@@ -113,7 +113,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
 
   .theme-credit {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     color: var(--color-text-muted);
   }
 
@@ -129,7 +129,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
 
   .social-links {
     display: flex;
-    gap: calc(var(--grid-unit) * 1.5);
+    gap: var(--space-xs);
     align-items: center;
   }
 
@@ -141,8 +141,8 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     height: 40px;
     background-color: var(--color-text-primary);
     color: var(--color-background);
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-s);
+    transition: all var(--dur-fast) var(--ease-out);
   }
 
   .social-link:hover,
@@ -161,7 +161,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
     .footer-content {
       flex-direction: column;
       text-align: center;
-      gap: calc(var(--grid-unit) * 2);
+      gap: var(--space-s);
     }
 
     .footer-info {
