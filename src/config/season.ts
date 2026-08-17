@@ -26,7 +26,18 @@ export interface Season {
   defaults: SeasonDefaults;
 }
 
-const COACHES: CoachMember[] = [
+// Coach names must match the Google Sheet column headers exactly — writes key
+// on them, and a mismatch fails with "not found in headers".
+const COACHES_2026: CoachMember[] = [
+  { name: 'Steve H', initials: 'SH' },
+  { name: 'Steve S', initials: 'SS' },
+  // TODO: 'AD' is a placeholder — swap in Aditi's last initial when known.
+  { name: 'Aditi', initials: 'AD' },
+];
+
+// Esther coached the 2025-26 season and appears throughout its frozen
+// attendance history, so the archive keeps her.
+const COACHES_2025: CoachMember[] = [
   { name: 'Steve H', initials: 'SH' },
   { name: 'Steve S', initials: 'SS' },
   { name: 'Esther R', initials: 'ER' },
@@ -50,8 +61,11 @@ export const SEASONS: Record<string, Season> = {
       { name: 'Luca', initials: 'LS', returning: true },
       { name: 'Ishaan', initials: 'IA', returning: false },
       { name: 'Hudson', initials: 'HH', returning: false },
+      // TODO: 'EL' is a placeholder — swap in Eli's last initial when known.
+      // Every other member uses first + last initial (Jasper H = JH).
+      { name: 'Eli', initials: 'EL', returning: false },
     ],
-    coaches: COACHES,
+    coaches: COACHES_2026,
     defaults: { startTime: '14:00', duration: 2, location: MORAGA },
   },
   '2025-26': {
@@ -68,7 +82,7 @@ export const SEASONS: Record<string, Season> = {
       { name: 'Luca', initials: 'LS', returning: false },
       { name: 'Ethan', initials: 'EM', returning: false },
     ],
-    coaches: COACHES,
+    coaches: COACHES_2025,
     defaults: { startTime: '15:30', duration: 2.5, location: MORAGA },
   },
 };

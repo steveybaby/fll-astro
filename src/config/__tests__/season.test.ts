@@ -18,13 +18,14 @@ describe('season config', () => {
     expect(prev.archivePath).toBe('/2025');
   });
 
-  it('roster is five members in fixed order', () => {
+  it('roster is six members in fixed order', () => {
     expect(getCurrentSeason().roster.map((m) => m.name)).toEqual([
       'Jasper',
       'Ethan',
       'Luca',
       'Ishaan',
       'Hudson',
+      'Eli',
     ]);
   });
 
@@ -41,6 +42,7 @@ describe('season config', () => {
       Luca: true,
       Ishaan: false,
       Hudson: false,
+      Eli: false,
     });
   });
 
@@ -58,8 +60,23 @@ describe('season config', () => {
     expect(new Set(coaches.map((c) => c.initials)).size).toBe(coaches.length);
   });
 
-  it('coaches are the same across seasons', () => {
-    expect(getSeason('2025-26').coaches).toEqual(getCurrentSeason().coaches);
+  it('current season coaches include Aditi, not Esther', () => {
+    const names = getCurrentSeason().coaches.map((c) => c.name);
+    expect(names).toEqual(['Steve H', 'Steve S', 'Aditi']);
+  });
+
+  it('the archive keeps the coaches it actually had', () => {
+    // Esther coached 2025-26 and appears in that season's frozen attendance
+    // history, so the archive must not be retroactively re-staffed.
+    const names = getSeason('2025-26').coaches.map((c) => c.name);
+    expect(names).toEqual(['Steve H', 'Steve S', 'Esther R']);
+  });
+
+  it('every season has coaches with unique initials', () => {
+    for (const season of Object.values(SEASONS)) {
+      const initials = season.coaches.map((c) => c.initials);
+      expect(new Set(initials).size).toBe(initials.length);
+    }
   });
 
   it('getSeason throws on an unknown id', () => {
