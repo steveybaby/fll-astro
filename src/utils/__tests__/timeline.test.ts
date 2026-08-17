@@ -104,4 +104,33 @@ describe('deriveMilestones', () => {
 
     expect(result[0].label).toBe('Kickoff');
   });
+
+  it('does not mark a milestone done early in the Pacific evening before its day', () => {
+    // 5:30pm Pacific on Dec 4 — the evening before a Dec 5 milestone. The old
+    // `date.getTime() <= now.getTime()` comparison against a UTC-midnight
+    // frontmatter date would already call this done, up to 8 hours early.
+    const eveningBefore = new Date('2026-12-04T17:30:00-08:00');
+    const result = deriveMilestones(
+      [
+        meeting('other', '2026-08-16', 'Other', 'Kickoff'),
+        meeting('tournament', '2026-12-05', 'Tournament', 'Tournament'),
+      ],
+      eveningBefore
+    );
+
+    expect(result.find((m) => m.slug === 'tournament')?.done).toBe(false);
+  });
+
+  it('marks a milestone done on its own Pacific calendar day', () => {
+    const sameDay = new Date('2026-12-05T10:00:00-08:00');
+    const result = deriveMilestones(
+      [
+        meeting('other', '2026-08-16', 'Other', 'Kickoff'),
+        meeting('tournament', '2026-12-05', 'Tournament', 'Tournament'),
+      ],
+      sameDay
+    );
+
+    expect(result.find((m) => m.slug === 'tournament')?.done).toBe(true);
+  });
 });

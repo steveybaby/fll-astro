@@ -48,7 +48,7 @@ describe('theme-init', () => {
     expect(run('banana', true).theme).toBe('dark');
   });
 
-  it('adds the js class so reveal styles can apply', () => {
-    expect(run(null).classes.has('js')).toBe(true);
+  it('does not add the js reveal-gate class — motion.ts owns that now, since it is the module that actually clears it', () => {
+    expect(run(null).classes.has('js')).toBe(false);
   });
 });

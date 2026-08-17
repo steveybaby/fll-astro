@@ -533,8 +533,8 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   }
 
   .search-category {
-    background-color: #e8a100;
-    color: var(--color-text-primary);
+    background-color: var(--color-accent);
+    color: var(--color-accent-contrast);
     padding: var(--space-xs) calc(var(--grid-unit) * 2.5);
     font-family: var(--font-mono);
     font-size: var(--step--2);
@@ -548,19 +548,7 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
   .search-category:hover {
     background-color: var(--color-accent);
     color: var(--color-accent-contrast);
-  }
-
-  /* Dark mode search category styles */
-  :global([data-theme="dark"]) .search-category {
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
-  }
-
-  :global([data-theme="dark"]) .search-category:hover {
-    background-color: var(--color-accent);
-    color: var(--color-accent-contrast);
-    border-color: var(--color-accent);
+    opacity: 0.85;
   }
 
   .search-no-results {

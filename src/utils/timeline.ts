@@ -3,6 +3,8 @@
  * testable, matching the filterBySeason / getSeasonContent split in utils/season.ts.
  */
 
+import { isUpcomingMeeting } from './meeting-time';
+
 export interface Milestone {
   slug: string;
   label: string;
@@ -22,6 +24,24 @@ const NO_START_TIME = '99:99';
 /** Minimum milestones worth drawing a rail for. Below this the section is omitted. */
 const MIN_MILESTONES = 2;
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * True when a milestone's Pacific calendar day is today or earlier.
+ *
+ * `isUpcomingMeeting` treats a meeting as "upcoming" through the end of its
+ * own Pacific day (today counts as upcoming, matching the RSVP/signup use
+ * case it was written for). A milestone should read as done on that same
+ * day, so the two predicates are both true on the day itself — they aren't
+ * complements. To get "on or before today" out of a helper defined as "on
+ * or after some day", shift the reference day forward by one before negating:
+ * NOT(date >= today+1) is the same as date <= today.
+ */
+function isMilestoneDone(date: Date, now: Date): boolean {
+  const tomorrow = new Date(now.getTime() + ONE_DAY_MS);
+  return !isUpcomingMeeting(date, tomorrow);
+}
+
 /**
  * Extract explicitly-marked milestones in date order.
  *
@@ -37,7 +57,7 @@ export function deriveMilestones(meetings: MilestoneInput[], now: Date = new Dat
       label: m.data.milestone!.trim(),
       title: m.data.title,
       date: m.data.date,
-      done: m.data.date.getTime() <= now.getTime(),
+      done: isMilestoneDone(m.data.date, now),
       _startTime: m.data.startTime ?? NO_START_TIME,
     }))
     // Two milestones can share a date — the season tournament and the

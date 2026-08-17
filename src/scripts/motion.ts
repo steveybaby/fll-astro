@@ -6,6 +6,12 @@
  * `html.js` in CSS, so without JavaScript nothing is hidden in the first place;
  * when motion is disabled here, elements are marked visible immediately and no
  * scroll listener is ever attached.
+ *
+ * `initMotion()` itself adds the `js` class, rather than an earlier bootstrap
+ * script, so the class is only ever present when this module actually ran.
+ * If it never executes — no module support, a failed chunk fetch, an
+ * exception earlier in the bundle — [data-reveal] elements are simply never
+ * hidden, instead of being hidden forever.
  */
 
 export function motionEnabled(): boolean {
@@ -93,6 +99,8 @@ function initParallax(): void {
 }
 
 export function initMotion(): void {
+  document.documentElement.classList.add('js');
+
   if (!motionEnabled()) {
     revealAll();
     return;

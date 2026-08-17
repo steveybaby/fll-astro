@@ -98,7 +98,7 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
 
   .page-title {
     font-family: var(--font-heading-primary);
-    font-size: 3.5rem;
+    font-size: var(--step-5);
     font-weight: 700;
     color: var(--color-accent);
     line-height: 1.1;
@@ -224,16 +224,8 @@ const pageDescription = `Learn more about ${author.name} and the ${title} blog`;
   }
 
   @media (max-width: 768px) {
-    .page-title {
-      font-size: var(--step-3);
-    }
-
     .author-section {
       padding: var(--space-l) var(--space-m);
-    }
-
-    .author-name {
-      font-size: var(--step-3);
     }
 
     .author-bio {

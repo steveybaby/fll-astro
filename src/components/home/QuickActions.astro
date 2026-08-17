@@ -44,7 +44,7 @@ const actions = [
   }
 
   .quick__item:hover,
-  .quick__item:focus {
+  .quick__item:focus-visible {
     border-color: var(--color-border-strong);
     transform: translateY(-2px);
     text-decoration: none;
@@ -67,6 +67,7 @@ const actions = [
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .quick__item:hover { transform: none; }
+    .quick__item:hover,
+    .quick__item:focus-visible { transform: none; }
   }
 </style>

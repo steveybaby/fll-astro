@@ -6,6 +6,11 @@ import { selectStripPhotos } from '../../utils/photo-strip';
 const meetings = await getSeasonContent('meetings');
 const seasonDates = meetings.map((m) => m.data.date.toISOString().slice(0, 10));
 const photos = selectStripPhotos(manifest as any, seasonDates);
+
+// meetingDate is a "YYYY-MM-DD" key, not meant for display as-is — a screen
+// reader would read it digit by digit. Format it the way a person would say it.
+const fmtAltDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+const formatAltDate = (meetingDate: string) => fmtAltDate.format(new Date(`${meetingDate}T00:00:00Z`));
 ---
 
 {photos.length > 0 && (
@@ -20,7 +25,7 @@ const photos = selectStripPhotos(manifest as any, seasonDates);
         {photos.map((photo, i) => (
           <li data-reveal data-reveal-delay={String(Math.min(i + 1, 4))}>
             <a href="/photos" class="strip__item">
-              <img src={photo.thumbnail} alt={`Team photo from ${photo.meetingDate}`} loading="lazy" decoding="async" width="400" height="300" />
+              <img src={photo.thumbnail} alt={`Team photo from ${formatAltDate(photo.meetingDate)}`} loading="lazy" decoding="async" width="400" height="300" />
             </a>
           </li>
         ))}

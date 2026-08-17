@@ -8,11 +8,17 @@ const milestones = deriveMilestones(
 );
 
 const doneCount = milestones.filter((m) => m.done).length;
-// Fill reaches the last completed dot, not past it.
+
+// Dots sit inside a `grid-auto-columns: 1fr` track and are left-aligned
+// within their column (not centred), so dot i lands at (i / n) * 100% of the
+// rail's width, not at i / (n - 1) * 100% as an evenly-spaced 0/25/50/75/100%
+// layout would suggest. The fill bar and the grey track behind it both need
+// to target that same i/n position — the fill so it terminates on the last
+// completed dot, and the track so it doesn't run past the final dot into
+// empty space.
+const trackEndPercent = milestones.length > 0 ? ((milestones.length - 1) / milestones.length) * 100 : 0;
 const fillPercent =
-  milestones.length > 1 && doneCount > 0
-    ? ((doneCount - 1) / (milestones.length - 1)) * 100
-    : 0;
+  milestones.length > 1 && doneCount > 0 ? ((doneCount - 1) / milestones.length) * 100 : 0;
 ---
 
 {milestones.length > 0 && (
@@ -20,7 +26,7 @@ const fillPercent =
     <div class="timeline__inner">
       <h2 id="timeline-heading" class="timeline__heading" data-reveal>Key dates</h2>
 
-      <ol class="timeline__rail" style={`--fill:${fillPercent}%`}>
+      <ol class="timeline__rail" style={`--fill:${fillPercent}%; --track-end:${trackEndPercent}%`}>
         {milestones.map((m, i) => (
           <li class:list={['timeline__stop', { 'is-done': m.done }]} data-reveal data-reveal-delay={String(Math.min(i + 1, 4))}>
             <a href={`/meetings/${m.slug}/`} class="timeline__link">
@@ -161,7 +167,7 @@ const fillPercent =
 
     .timeline__rail::before {
       left: 0;
-      right: 0;
+      width: var(--track-end, 100%);
       background-color: var(--color-border);
     }
 

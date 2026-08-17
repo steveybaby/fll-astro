@@ -59,6 +59,22 @@ h6 { font-size: var(--step--1); }
 p {
   margin-bottom: var(--space-s);
   font-size: var(--step-0);
+}
+
+/*
+ * Long-form left-aligned prose gets a measure cap for readability. This is
+ * scoped to actual prose containers rather than applied to `p` globally:
+ * a global `max-width` with no auto margins left-flushes the box, which
+ * visibly off-centers text inside any `text-align: center` container
+ * (sidebar bio, page descriptions, subscription notes, etc.) — and adding
+ * `margin-inline: auto` to fix that instead re-indents left-aligned prose
+ * away from its container's true left edge. Capping only these containers
+ * avoids both regressions.
+ */
+.meeting-content p,
+.newsletter-content p,
+.post-content p,
+.content-section p {
   max-width: 68ch;
 }
 

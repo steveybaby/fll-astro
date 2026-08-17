@@ -1,6 +1,8 @@
 /* Motion layer.
-   Reveal styling is scoped to html.js — set by public/theme-init.js before
-   first paint — so a visitor without JavaScript never has content hidden. */
+   Reveal styling is scoped to html.js — set by initMotion() in
+   src/scripts/motion.ts once it actually runs — so a visitor without
+   JavaScript (or whose module bundle fails to execute) never has content
+   hidden. */
 
 html.js [data-reveal] {
   opacity: 0;
@@ -50,4 +52,10 @@ html.js [data-reveal-delay="4"] { transition-delay: 280ms; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* Reveals are scroll-triggered, so anything never scrolled into view would
+   otherwise print blank — always show it on the printed page. */
+@media print {
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
 }

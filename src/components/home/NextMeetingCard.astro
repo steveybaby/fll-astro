@@ -4,8 +4,8 @@
  * site: a parent should be able to answer "when, where, and have I replied?"
  * without scrolling.
  *
- * Date resolution mirrors NextMeetingBanner.astro so there is exactly one way
- * meeting times are computed.
+ * Date resolution goes through getMeetingDateTime() so there is exactly one
+ * way meeting times are computed.
  */
 import { formatMeetingTimeOrTBD } from '../../utils/meeting-time.ts';
 import { getMeetingDateTime } from '../../utils/calendar.ts';
@@ -40,7 +40,7 @@ const location = next?.data.location ?? season.defaults.location;
     <>
       <span class="eyebrow meeting-card__eyebrow">Next meeting</span>
       <p class="meeting-card__date">
-        <time datetime={fmtISO.format(next._date)}>{fmtDay.format(next._date)}</time>
+        <time datetime={fmtISO.format(next.data.date)}>{fmtDay.format(next._date)}</time>
       </p>
       <p class="meeting-card__time">
         {formatMeetingTimeOrTBD(next.data.startTime, next.data.duration, next.data.timeTBD)}
@@ -76,7 +76,7 @@ const location = next?.data.location ?? season.defaults.location;
 
   .meeting-card__eyebrow {
     color: var(--color-accent-contrast);
-    opacity: 0.75;
+    opacity: 0.8;
     margin-bottom: var(--space-2xs);
   }
 
@@ -135,14 +135,16 @@ const location = next?.data.location ?? season.defaults.location;
 
   .btn-action:hover,
   .btn-quiet:hover,
-  .btn-action:focus,
-  .btn-quiet:focus {
+  .btn-action:focus-visible,
+  .btn-quiet:focus-visible {
     transform: translateY(-2px);
     text-decoration: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .btn-action:hover,
-    .btn-quiet:hover { transform: none; }
+    .btn-quiet:hover,
+    .btn-action:focus-visible,
+    .btn-quiet:focus-visible { transform: none; }
   }
 </style>

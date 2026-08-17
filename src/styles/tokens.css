@@ -21,23 +21,6 @@
   --bio-signal-red: #EE2027;
   --bio-near-black: #111A20;
 
-  /* ---- Legacy aliases. Sidebar.astro, about.astro and several pages
-         reference these names directly; they stay until those files are
-         migrated, and the archive override depends on some of them. ---- */
-  --color-white: #ffffff;
-  --color-light-gray: #e7efdd;
-  --color-medium-gray: var(--bio-moss);
-  --color-dark-gray: var(--bio-fern);
-  --color-black: var(--bio-near-black);
-  --color-deep-teal: var(--bio-deep-teal);
-  --color-light-green: var(--bio-light-green);
-  --color-leaf-green: var(--bio-leaf);
-  --color-leaf-green-deep: var(--bio-leaf-deep);
-  --color-cream: var(--bio-cream);
-  --color-glow-yellow: var(--bio-glow-yellow);
-  --color-signal-red: var(--bio-signal-red);
-  --color-near-black: var(--bio-near-black);
-
   /* ---- Semantic tokens: Canopy Daylight (light theme) ----
      Accent is the deep leaf variant, not the logo green: leaf green on cream
      is 3.22:1, below the 4.5:1 AA floor for normal text. The deep variant
@@ -169,8 +152,6 @@
   --color-accent-contrast: #ffffff;
   --color-action: #dc2626;
   --color-action-contrast: #ffffff;
-  --color-light-gray: #f3f4f6;
-  --color-medium-gray: #6b7280;
   --canopy-opacity: 0;
   --hero-gradient: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
 }
