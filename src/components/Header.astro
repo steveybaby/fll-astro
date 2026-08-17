@@ -57,9 +57,16 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
             </ul>
           </li>
           <li><a href={base + "about"} class="nav-link">About</a></li>
-          {archiveLinks.map((link) => (
-            <li><a href={link.href} class="nav-link">{link.label}</a></li>
-          ))}
+          {archiveLinks.length > 0 && (
+            <li class="nav-dropdown">
+              <a href="#" class="nav-link dropdown-toggle">Archive</a>
+              <ul class="dropdown-menu">
+                {archiveLinks.map((link) => (
+                  <li><a href={link.href} class="dropdown-link">{link.label}</a></li>
+                ))}
+              </ul>
+            </li>
+          )}
         </ul>
       </nav>
       
@@ -107,9 +114,16 @@ const archiveLinks = ARCHIVED_SEASONS.map((s) => ({
       </ul>
     </li>
     <li><a href={base + "about"} class="mobile-nav-link">About</a></li>
-    {archiveLinks.map((link) => (
-      <li><a href={link.href} class="mobile-nav-link">{link.label}</a></li>
-    ))}
+    {archiveLinks.length > 0 && (
+      <li class="mobile-nav-section">
+        <div class="mobile-nav-header">Archive</div>
+        <ul class="mobile-nav-submenu">
+          {archiveLinks.map((link) => (
+            <li><a href={link.href} class="mobile-nav-link submenu">{link.label}</a></li>
+          ))}
+        </ul>
+      </li>
+    )}
   </ul>
 </nav>
 

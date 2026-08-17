@@ -1,16 +1,12 @@
 ---
 import Layout from '../components/Layout.astro';
-import { formatMeetingTimeOrTBD } from '../utils/meeting-time.ts';
+import { formatMeetingTimeOrTBD, isUpcomingMeeting } from '../utils/meeting-time.ts';
 import { getSeasonContent } from '../utils/season';
 import { getCurrentSeason } from '../config/season';
 
 // Get all meetings, filter for future meetings, and sort them chronologically
 const meetings = await getSeasonContent('meetings');
-const now = new Date();
-const futureMeetings = meetings.filter(meeting => {
-  const meetingDate = meeting.data.date instanceof Date ? meeting.data.date : new Date(`${meeting.data.date}T00:00:00Z`);
-  return meetingDate >= now;
-});
+const futureMeetings = meetings.filter(meeting => isUpcomingMeeting(meeting.data.date));
 const sortedMeetings = futureMeetings.sort((a, b) => {
   const dateA = a.data.date instanceof Date ? a.data.date : new Date(`${a.data.date}T00:00:00Z`);
   const dateB = b.data.date instanceof Date ? b.data.date : new Date(`${b.data.date}T00:00:00Z`);
