@@ -3,11 +3,50 @@ import { deriveMilestones } from '../timeline';
 
 const NOW = new Date('2026-10-01T12:00:00-07:00');
 
-function meeting(slug: string, date: string, title: string, milestone?: string) {
-  return { slug, data: { title, date: new Date(`${date}T12:00:00-07:00`), milestone } };
+function meeting(slug: string, date: string, title: string, milestone?: string, startTime?: string) {
+  return { slug, data: { title, date: new Date(`${date}T12:00:00-07:00`), milestone, startTime } };
 }
 
 describe('deriveMilestones', () => {
+  it('orders same-day milestones by start time, not collection order', () => {
+    // The tournament and the celebration that follows it share a date. Passed
+    // in reverse order on purpose: date alone ties, so only the start time can
+    // put them right.
+    const result = deriveMilestones(
+      [
+        meeting('celebration', '2026-12-05', 'Season Celebration', 'Celebration', '14:00'),
+        meeting('tournament', '2026-12-05', 'Community Tournament', 'Tournament', '08:00'),
+      ],
+      NOW
+    );
+
+    expect(result.map((m) => m.label)).toEqual(['Tournament', 'Celebration']);
+  });
+
+  it('sorts a milestone with no start time after same-day ones that have it', () => {
+    const result = deriveMilestones(
+      [
+        meeting('untimed', '2026-12-05', 'Untimed', 'Untimed'),
+        meeting('tournament', '2026-12-05', 'Community Tournament', 'Tournament', '08:00'),
+      ],
+      NOW
+    );
+
+    expect(result.map((m) => m.label)).toEqual(['Tournament', 'Untimed']);
+  });
+
+  it('does not leak the internal sort key onto returned milestones', () => {
+    const result = deriveMilestones(
+      [
+        meeting('a', '2026-08-16', 'A', 'Kickoff', '14:00'),
+        meeting('b', '2026-12-05', 'B', 'Tournament', '08:00'),
+      ],
+      NOW
+    );
+
+    expect(Object.keys(result[0]).sort()).toEqual(['date', 'done', 'label', 'slug', 'title']);
+  });
+
   it('keeps only meetings carrying a milestone label, in date order', () => {
     const result = deriveMilestones(
       [

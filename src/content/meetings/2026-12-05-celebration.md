@@ -1,6 +1,6 @@
 ---
 title: "Season Celebration"
-date: 2026-12-13
+date: 2026-12-05
 season: "2026-27"
 milestone: "Celebration"
 startTime: "14:00"

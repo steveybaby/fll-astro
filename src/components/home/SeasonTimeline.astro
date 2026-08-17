@@ -18,7 +18,7 @@ const fillPercent =
 {milestones.length > 0 && (
   <section class="timeline" aria-labelledby="timeline-heading">
     <div class="timeline__inner">
-      <h2 id="timeline-heading" class="timeline__heading" data-reveal>The season</h2>
+      <h2 id="timeline-heading" class="timeline__heading" data-reveal>Key dates</h2>
 
       <ol class="timeline__rail" style={`--fill:${fillPercent}%`}>
         {milestones.map((m, i) => (
@@ -166,6 +166,14 @@ const fillPercent =
       align-items: flex-start;
       gap: var(--space-3xs);
       padding-right: var(--space-s);
+    }
+
+    /* Labels vary from one word to three, so reserve two lines. Without this
+       the dates sit at different heights depending on whether their label
+       wrapped, and the row reads as ragged. */
+    .timeline__label {
+      line-height: 1.25;
+      min-height: 2.5em;
     }
 
     .timeline__dot {

@@ -2,7 +2,7 @@
 title: "Practice Tournament — Innovation Project"
 date: 2026-11-14
 season: "2026-27"
-milestone: "Practice 2"
+milestone: "Practice Innovation Project"
 startTime: "09:00"
 duration: 2
 location: "PHS Campus"

@@ -13,8 +13,11 @@ export interface Milestone {
 
 interface MilestoneInput {
   slug: string;
-  data: { title: string; date: Date; milestone?: string };
+  data: { title: string; date: Date; milestone?: string; startTime?: string };
 }
+
+/** Sorts last among same-day milestones when no startTime is given. */
+const NO_START_TIME = '99:99';
 
 /** Minimum milestones worth drawing a rail for. Below this the section is omitted. */
 const MIN_MILESTONES = 2;
@@ -35,8 +38,15 @@ export function deriveMilestones(meetings: MilestoneInput[], now: Date = new Dat
       title: m.data.title,
       date: m.data.date,
       done: m.data.date.getTime() <= now.getTime(),
+      _startTime: m.data.startTime ?? NO_START_TIME,
     }))
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
+    // Two milestones can share a date — the season tournament and the
+    // celebration that follows it, for instance. Falling back to collection
+    // order there would let the sequence flip between builds, so same-day
+    // milestones are ordered by start time. "HH:MM" is zero-padded, so a
+    // string compare is a time compare.
+    .sort((a, b) => a.date.getTime() - b.date.getTime() || a._startTime.localeCompare(b._startTime))
+    .map(({ _startTime, ...milestone }) => milestone);
 
   return marked.length < MIN_MILESTONES ? [] : marked;
 }
