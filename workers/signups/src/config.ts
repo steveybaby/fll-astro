@@ -24,6 +24,28 @@ export function isValidDate(value: string): boolean {
 }
 
 /**
+ * A 200 that parses as JSON is not yet a config.
+ *
+ * Without this check a truncated deploy, an HTML error page served as JSON, or
+ * a renamed field would be cached for the full TTL, and the first
+ * `config.meetingDates.includes(...)` would throw a TypeError that the router's
+ * top-level catch turns into a 500 on every read *and* every write. Rejecting
+ * the body instead keeps the "reads degrade gracefully" property: the caller
+ * throws, `loadConfig` catches, and we fall back to stale-or-null.
+ */
+function isSignupsConfig(value: unknown): value is SignupsConfig {
+  if (typeof value !== 'object' || value === null) return false;
+  const c = value as Record<string, unknown>;
+  return (
+    typeof c.season === 'string' &&
+    Array.isArray(c.people) &&
+    c.people.every((p) => typeof p === 'string') &&
+    Array.isArray(c.meetingDates) &&
+    c.meetingDates.every((d) => typeof d === 'string')
+  );
+}
+
+/**
  * The roster lives in season.ts and is published by the site as a static file.
  * The Worker never keeps its own copy — a second copy would drift at the first
  * season reset and nobody would notice until a real signup was rejected.
@@ -39,7 +61,9 @@ export async function loadConfig(env: Env): Promise<SignupsConfig | null> {
   try {
     const res = await fetch(env.CONFIG_URL, { cf: { cacheTtl: 60 } } as RequestInit);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    cached = (await res.json()) as SignupsConfig;
+    const body: unknown = await res.json();
+    if (!isSignupsConfig(body)) throw new Error('malformed config body');
+    cached = body;
     cachedAt = Date.now();
     return cached;
   } catch {

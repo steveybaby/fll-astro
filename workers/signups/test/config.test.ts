@@ -49,6 +49,30 @@ describe('loadConfig', () => {
     expect(await loadConfig(env)).toBeNull();
   });
 
+  it('rejects a 200 whose body is not a config, rather than caching it', async () => {
+    const env = envWith(async () => new Response(JSON.stringify({ nope: true })));
+    expect(await loadConfig(env)).toBeNull();
+  });
+
+  it('rejects a 200 with the right keys but the wrong types', async () => {
+    const env = envWith(
+      async () =>
+        new Response(JSON.stringify({ season: '2026-27', people: 'Jasper', meetingDates: [] }))
+    );
+    expect(await loadConfig(env)).toBeNull();
+  });
+
+  it('serves the stale cache rather than a malformed fresh body', async () => {
+    let good = true;
+    const env = envWith(async () =>
+      good ? new Response(JSON.stringify(CONFIG)) : new Response('<html>oops</html>')
+    );
+    await loadConfig(env);
+    resetConfigCache.ttlExpire();
+    good = false;
+    expect(await loadConfig(env)).toEqual(CONFIG);
+  });
+
   it('serves the stale cache when a later fetch fails', async () => {
     let ok = true;
     const env = envWith(async () =>

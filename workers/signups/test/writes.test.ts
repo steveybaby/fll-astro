@@ -49,6 +49,21 @@ describe('putRsvp', () => {
     expect(await rows('rsvp')).toEqual([]);
   });
 
+  it('rejects a status longer than the cap and writes nothing', async () => {
+    const res = await putRsvp(env as any, {
+      date: '2026-09-13',
+      name: 'Eli',
+      status: 'x'.repeat(9),
+    });
+    expect(res.status).toBe(400);
+    expect(await rows('rsvp')).toEqual([]);
+  });
+
+  it('accepts a status at the cap', async () => {
+    const res = await putRsvp(env as any, { date: '2026-09-13', name: 'Eli', status: 'x'.repeat(8) });
+    expect(res.status).toBe(200);
+  });
+
   it('refuses to write when the config is unavailable', async () => {
     resetConfigCache();
     globalThis.fetch = vi.fn(async () => new Response('nope', { status: 500 })) as any;
@@ -79,6 +94,30 @@ describe('snack duty', () => {
   it('clears an assignment', async () => {
     await putSnack(env as any, { date: '2026-09-13', name: 'Jasper' });
     await clearSnack(env as any, { date: '2026-09-13', name: 'Jasper' });
+    expect(await rows('snack')).toEqual([]);
+  });
+
+  // A kid who leaves the roster mid-season keeps whatever snack row they had.
+  // If clearing were roster-gated, that row would be permanently stuck: the UI
+  // shows "no one assigned" but D1 disagrees.
+  it('clears a row for someone no longer in the config', async () => {
+    await env.DB.prepare(
+      `INSERT INTO signups (meeting_date, person, kind, value, updated_at)
+       VALUES ('2026-09-13', 'DepartedKid', 'snack', '1', '2026-08-01T00:00:00.000Z')`
+    ).run();
+    const res = await clearSnack(env as any, { date: '2026-09-13', name: 'DepartedKid' });
+    expect(res.status).toBe(200);
+    expect(await rows('snack')).toEqual([]);
+  });
+
+  it('still rejects a bad date when clearing', async () => {
+    const res = await clearSnack(env as any, { date: '2030-01-01', name: 'Jasper' });
+    expect(res.status).toBe(400);
+  });
+
+  it('still refuses to ASSIGN someone not in the config', async () => {
+    const res = await putSnack(env as any, { date: '2026-09-13', name: 'DepartedKid' });
+    expect(res.status).toBe(400);
     expect(await rows('snack')).toEqual([]);
   });
 });
