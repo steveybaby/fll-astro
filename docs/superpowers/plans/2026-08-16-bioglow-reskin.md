@@ -91,6 +91,7 @@ so that any of them can be executed on its own, in any order.
 | `src/components/Footer.astro`, `Sidebar.astro` | Modify — restyle |
 | `src/pages/index.astro` | Rewrite — Split Hero assembly |
 | `src/pages/{about,meeting-plans,photos}.astro` | Modify — restyle |
+| `src/components/NewsletterList.astro`, `CalendarView.astro` | Modify — restyle; these are what `/newsletters` and `/calendar` actually render |
 
 ---
 
@@ -408,7 +409,16 @@ hr {
 }
 ```
 
-- [ ] **Step 4: Rewrite `src/styles/global.css` as a barrel**
+- [ ] **Step 4: Create a placeholder `src/styles/motion.css`**
+
+Task 3 fills this in. It must exist **before** the next step, because the barrel imports
+it and a missing import fails the build.
+
+```css
+/* Motion layer. Populated in Task 3. */
+```
+
+- [ ] **Step 5: Rewrite `src/styles/global.css` as a barrel**
 
 Replace the entire file with exactly this. Order matters — tokens must load before base.
 
@@ -418,14 +428,6 @@ Replace the entire file with exactly this. Order matters — tokens must load be
 @import './tokens.css';
 @import './base.css';
 @import './motion.css';
-```
-
-- [ ] **Step 5: Create a placeholder `src/styles/motion.css`**
-
-Task 3 fills this in. It must exist now or the `@import` fails the build.
-
-```css
-/* Motion layer. Populated in Task 3. */
 ```
 
 - [ ] **Step 6: Swap the font imports in `src/components/Layout.astro`**
@@ -640,6 +642,8 @@ Add below the `:root` block:
   --color-canopy: #0D2E24;
   --canopy-opacity: 0.65;
   --hero-gradient: radial-gradient(120% 90% at 50% 0%, #0F3A47 0%, #06131A 72%);
+  --shadow-s: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-m: 0 4px 12px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 ```
 
@@ -2375,7 +2379,7 @@ git commit -m "style: restyle the footer and sidebar to the token system"
 - Consumes: tokens (Task 1), `Canopy` (Task 4), the `data-reveal` contract (Task 3)
 - Produces: nothing new
 
-`newsletters.astro` and `calendar.astro` are 6 lines each — thin wrappers that delegate to components already restyled in earlier tasks. They need no edits; confirm they inherit correctly rather than changing them.
+`newsletters.astro` and `calendar.astro` are 6 lines each and need no edits themselves — but the components they delegate to are **not** restyled by any earlier task. Those are Task 11b. Do not touch `NewsletterList.astro` or `CalendarView.astro` here.
 
 - [ ] **Step 1: `about.astro`**
 
@@ -2393,7 +2397,7 @@ Apply "The Restyle Substitution Table". Give gallery thumbnails `border-radius: 
 
 - [ ] **Step 4: Verify each page**
 
-Load `/about`, `/meeting-plans`, `/photos`, `/newsletters`, and `/calendar` at 375px and 1280px in all three themes. Confirm no horizontal overflow at 320px on any of them.
+Load `/about`, `/meeting-plans`, and `/photos` at 375px and 1280px in all three themes. Confirm no horizontal overflow at 320px on any of them. `/newsletters` and `/calendar` will still look unrestyled at this point — that is expected, and Task 11b fixes them.
 
 - [ ] **Step 5: Run everything and commit**
 
@@ -2401,6 +2405,49 @@ Load `/about`, `/meeting-plans`, `/photos`, `/newsletters`, and `/calendar` at 3
 npm test && npm run build
 git add src/pages
 git commit -m "style: restyle the about, meeting plans, and photos pages"
+```
+
+Expected: 71 tests passing; build exits 0.
+
+---
+
+## Task 11b: Newsletter list and calendar view
+
+**Files:**
+- Modify: `src/components/NewsletterList.astro`, `src/components/CalendarView.astro`
+
+**Interfaces:**
+- Consumes: tokens (Task 1), the `data-reveal` contract (Task 3)
+- Produces: nothing new
+
+The spec names `/newsletters` and `/calendar` as in-scope pages. Both are 6-line wrappers whose entire appearance comes from these two components, so restyling the pages means restyling these. `CalendarView.astro` is 1050 lines — larger than `Header.astro` — which is why this is its own task rather than part of Task 11.
+
+Both keep their existing markup, class names, ids, and JavaScript. **CSS only**, exactly as in Task 9.
+
+- [ ] **Step 1: `NewsletterList.astro`**
+
+Apply "The Restyle Substitution Table" from near the top of this plan to its `<style>` block. Add `data-reveal` with `data-reveal-delay` cycling 1–4 to each newsletter list item.
+
+- [ ] **Step 2: `CalendarView.astro`**
+
+Apply "The Restyle Substitution Table" to its `<style>` block.
+
+Three calendar-specific rules on top of the table:
+
+- Day cells that currently signal state with a hardcoded colour move to tokens: the "today" highlight becomes `var(--color-action)` with `color: var(--color-action-contrast)`, and days holding a meeting use `var(--color-accent)`.
+- Do **not** add `data-reveal` to day cells. A calendar grid staggering in on scroll is exactly the kind of motion that fights someone scanning for a date.
+- Do not alter the month-navigation JavaScript, the grid-building logic, or any date computation. The `calendar` and `meeting-time` suites cover this behaviour and must still pass.
+
+- [ ] **Step 3: Verify**
+
+Load `/newsletters` and `/calendar` at 375px and 1280px in all three themes. On the calendar specifically: month navigation still works, today is visibly marked, meeting days are distinguishable from empty days, and the grid does not overflow horizontally at 320px.
+
+- [ ] **Step 4: Run everything and commit**
+
+```bash
+npm test && npm run build
+git add src/components/NewsletterList.astro src/components/CalendarView.astro
+git commit -m "style: restyle the newsletter list and calendar view"
 ```
 
 Expected: 71 tests passing; build exits 0.
