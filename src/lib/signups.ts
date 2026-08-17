@@ -76,25 +76,73 @@ function coalesce<T>(key: string, run: () => Promise<T>): Promise<T> {
   return promise;
 }
 
-function fetchMeeting(date: string): Promise<SignupsResponse> {
-  return coalesce(date, async () => {
+/**
+ * Every read is bounded. A flaky mobile connection can leave a request hanging
+ * with no TCP reset, and a `fetch` that never settles means the callers' catch
+ * branches — the ones that fall back to the localStorage cache — never run and
+ * the component spins forever.
+ */
+const DEFAULT_TIMEOUT_MS = 5000;
+
+/**
+ * GET + parse, bounded by `timeoutMs`.
+ *
+ * The timer both aborts the underlying request and rejects the returned
+ * promise. Rejecting independently matters: an abort only settles a fetch that
+ * honours the signal, and the point of this is to guarantee the caller hears
+ * back either way.
+ *
+ * The timeout covers reading the body as well as the response head, so a
+ * response that stalls mid-stream is caught too.
+ */
+async function requestJson<T>(url: string, timeoutMs: number): Promise<T> {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const expiry = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new Error(`Signups request timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  const request = (async () => {
+    const response = await fetch(url, {
+      method: 'GET',
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return (await response.json()) as T;
+  })();
+
+  try {
+    return await Promise.race([request, expiry]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * A timeout rejects the *shared* promise, which is what we want: `coalesce`'s
+ * `.finally` fires on rejection as well as fulfilment, so the map entry is
+ * evicted and the next caller starts a clean request. Both callers of a
+ * coalesced read see the same failure rather than one of them being stranded.
+ * The bound is set by whichever caller started the request.
+ */
+function fetchMeeting(date: string, timeoutMs: number): Promise<SignupsResponse> {
+  return coalesce(date, () => {
     const url = new URL('/signups', SIGNUP_API_URL);
     url.searchParams.set('date', date);
-
-    const response = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return (await response.json()) as SignupsResponse;
+    return requestJson<SignupsResponse>(url.toString(), timeoutMs);
   });
 }
 
 /** Bulk counterpart of `fetchMeeting`: every meeting in one request. */
-function fetchAll(): Promise<AllSignupsResponse> {
-  return coalesce(ALL_KEY, async () => {
+function fetchAll(timeoutMs: number): Promise<AllSignupsResponse> {
+  return coalesce(ALL_KEY, () => {
     const url = new URL('/signups/all', SIGNUP_API_URL);
-
-    const response = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return (await response.json()) as AllSignupsResponse;
+    return requestJson<AllSignupsResponse>(url.toString(), timeoutMs);
   });
 }
 
@@ -117,13 +165,18 @@ async function post(path: string, body: unknown): Promise<{ success: boolean }> 
  * With a date, returns that one meeting. With no date, returns every meeting
  * in the season — the old Apps Script backend's "no date" read mode, still
  * relied on by the season-wide grids in rsvps.astro and coach_rsvps.astro.
+ *
+ * `timeoutMs` bounds the request; the season-wide grids pass a longer one.
  */
-export async function getRSVPs(date?: string): Promise<MeetingRecord[]> {
+export async function getRSVPs(
+  date?: string,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
+): Promise<MeetingRecord[]> {
   if (date === undefined) {
-    const data = await fetchAll();
+    const data = await fetchAll(timeoutMs);
     return data.meetings.map((m) => ({ meetingDate: m.meetingDate, kids: m.rsvps }));
   }
-  const data = await fetchMeeting(date);
+  const data = await fetchMeeting(date, timeoutMs);
   return [{ meetingDate: data.meetingDate, kids: data.rsvps }];
 }
 
@@ -132,9 +185,12 @@ export async function getRSVPs(date?: string): Promise<MeetingRecord[]> {
  * which is how the sheet stored it. With no date, mirrors that mapping across
  * every meeting for the season-wide grid in snacks.astro.
  */
-export async function getSnacks(date?: string): Promise<MeetingRecord[]> {
+export async function getSnacks(
+  date?: string,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
+): Promise<MeetingRecord[]> {
   if (date === undefined) {
-    const data = await fetchAll();
+    const data = await fetchAll(timeoutMs);
     return data.meetings.map((m) => ({
       meetingDate: m.meetingDate,
       kids: m.rsvps.map((k) => ({
@@ -143,7 +199,7 @@ export async function getSnacks(date?: string): Promise<MeetingRecord[]> {
       })),
     }));
   }
-  const data = await fetchMeeting(date);
+  const data = await fetchMeeting(date, timeoutMs);
   return [
     {
       meetingDate: data.meetingDate,

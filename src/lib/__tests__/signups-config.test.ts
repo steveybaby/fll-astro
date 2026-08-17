@@ -20,6 +20,25 @@ describe('buildSignupsConfig', () => {
     expect(cfg.people).toEqual(['Jasper', 'Eli', 'Steve H']);
   });
 
+  it('throws on a duplicate name within the roster', () => {
+    const season = {
+      ...SEASON,
+      roster: [
+        { name: 'Ethan', initials: 'EM', returning: true },
+        { name: 'Ethan', initials: 'EK', returning: false },
+      ],
+    };
+    expect(() => buildSignupsConfig(season as any, [] as any)).toThrow(/Duplicate signup name/);
+  });
+
+  it('throws when a coach shares a name with a kid', () => {
+    const season = {
+      ...SEASON,
+      coaches: [{ name: 'Jasper', initials: 'JX' }],
+    };
+    expect(() => buildSignupsConfig(season as any, [] as any)).toThrow(/Jasper/);
+  });
+
   it('emits the season id', () => {
     const cfg = buildSignupsConfig(SEASON as any, [] as any);
     expect(cfg.season).toBe('2026-27');

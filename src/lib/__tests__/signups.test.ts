@@ -89,6 +89,59 @@ describe('reads', () => {
   });
 });
 
+describe('read timeout', () => {
+  /** A request that never settles and ignores the abort signal, as a stalled
+   *  mobile connection does. */
+  function mockHungFetch() {
+    const spy = vi.fn(() => new Promise<Response>(() => {}));
+    globalThis.fetch = spy as any;
+    return spy;
+  }
+
+  it('rejects a hung single-meeting read rather than hanging', async () => {
+    mockHungFetch();
+    await expect(getRSVPs('2026-09-13', 20)).rejects.toThrow(/timed out/);
+  });
+
+  it('rejects a hung bulk read rather than hanging', async () => {
+    mockHungFetch();
+    await expect(getRSVPs(undefined, 20)).rejects.toThrow(/timed out/);
+  });
+
+  it('rejects a hung snack read rather than hanging', async () => {
+    mockHungFetch();
+    await expect(getSnacks('2026-09-13', 20)).rejects.toThrow(/timed out/);
+  });
+
+  it('passes an abort signal so the underlying request is cancelled too', async () => {
+    const spy = mockHungFetch();
+    await expect(getRSVPs('2026-09-13', 20)).rejects.toThrow();
+    const [, init] = spy.mock.calls[0] as any;
+    expect(init.signal.aborted).toBe(true);
+  });
+
+  it('fails both callers of a coalesced read, and leaves the map usable', async () => {
+    mockHungFetch();
+    const both = Promise.all([getRSVPs('2026-09-13', 20), getSnacks('2026-09-13', 20)]);
+    await expect(both).rejects.toThrow(/timed out/);
+
+    // The timed-out entry must have been evicted, not left behind to serve a
+    // rejected promise to every later caller.
+    const spy = mockFetch();
+    expect(await getRSVPs('2026-09-13')).toEqual([
+      { meetingDate: '2026-09-13', kids: PAYLOAD.rsvps },
+    ]);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('defaults to a bounded read when no timeout is given', async () => {
+    const spy = mockFetch();
+    await getRSVPs('2026-09-13');
+    const [, init] = spy.mock.calls[0] as any;
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+  });
+});
+
 describe('bulk reads (no date)', () => {
   it('hits /signups/all and returns one MeetingRecord per meeting', async () => {
     const spy = mockFetch(ALL_PAYLOAD);
