@@ -9,6 +9,7 @@
 
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
+import { readdirSync } from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import ExifReader from 'exifreader';
@@ -42,34 +43,24 @@ const config = {
 };
 
 // Meeting dates for photo grouping
+/**
+ * Meeting dates, derived from the content files rather than hardcoded.
+ *
+ * This list used to be a hand-maintained array of 2025 dates. Combined with the
+ * 7-day proximity rule below, that meant photos from any later season were
+ * silently skipped — they matched no meeting and simply never uploaded. Reading
+ * the dates from src/content/meetings keeps this correct every season with no
+ * edit. Filenames are all `YYYY-MM-DD-slug.md`; several meetings can share a
+ * date (tournament runs), hence the dedupe.
+ */
 const MEETING_DATES = [
-  '2025-08-10',
-  '2025-08-17',
-  '2025-08-20',
-  '2025-08-21',
-  '2025-08-24',
-  '2025-08-28',
-  '2025-08-31',
-  '2025-09-04',
-  '2025-09-07',
-  '2025-09-11',
-  '2025-09-14',
-  '2025-09-17',
-  '2025-09-18',
-  '2025-09-21',
-  '2025-10-02',
-  '2025-10-05',
-  '2025-10-09',
-  '2025-10-12',
-  '2025-10-19',
-  '2025-10-25',
-  '2025-11-06',
-  '2025-11-09',
-  '2025-11-15',
-  '2025-12-04',
-  '2025-12-07',
-  '2025-12-13'
-];
+  ...new Set(
+    readdirSync(path.join(__dirname, '..', 'src', 'content', 'meetings'))
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => f.match(/^(\d{4}-\d{2}-\d{2})/)?.[1])
+      .filter(Boolean)
+  ),
+].sort();
 
 // Manual date assignments for photos without EXIF data
 // Format: filename (without extension) -> meeting date
