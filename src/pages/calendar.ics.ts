@@ -1,4 +1,4 @@
-import { getMeetingDateTime, formatICSUtcStamp } from '../utils/calendar.ts';
+import { getMeetingDateTime, formatICSUtcStamp, foldICSLine } from '../utils/calendar.ts';
 import { getSeasonContent } from '../utils/season';
 import { getCurrentSeason } from '../config/season';
 
@@ -56,7 +56,7 @@ export async function GET() {
         `DESCRIPTION:${description}`,
         `LOCATION:${location}`,
         'END:VEVENT'
-      ].join('\r\n');
+      ].map(foldICSLine).join('\r\n');
     });
     
     const icsContent = [
@@ -87,10 +87,8 @@ export async function GET() {
       'DTSTART:20071104T020000',
       'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU',
       'END:STANDARD',
-      'END:VTIMEZONE',
-      ...events,
-      'END:VCALENDAR'
-    ].join('\r\n');
+      'END:VTIMEZONE'
+    ].map(foldICSLine).concat(events, ['END:VCALENDAR']).join('\r\n');
     
     return new Response(icsContent, {
       headers: {

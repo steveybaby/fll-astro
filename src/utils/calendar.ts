@@ -108,3 +108,38 @@ export function createCalendarLink(title: string, date: Date, duration: number, 
 export function formatICSUtcStamp(date: Date): string {
   return `${date.toISOString().slice(0, 19).replace(/[-:]/g, '')}Z`;
 }
+
+/**
+ * Fold a single iCalendar content line per RFC 5545 §3.1.
+ *
+ * Lines longer than 75 octets must be split, with each continuation line
+ * beginning with a single space. Folding is measured in OCTETS, not characters,
+ * and a multi-byte UTF-8 character must never be split across a fold — this
+ * feed contains em dashes and bullets, so a naive substring would corrupt them.
+ */
+export function foldICSLine(line: string): string {
+  const encoder = new TextEncoder();
+  if (encoder.encode(line).length <= 75) return line;
+
+  const parts: string[] = [];
+  let current = '';
+  let bytes = 0;
+  // The first line gets 75 octets; continuations get 74, because the leading
+  // space they carry counts toward the limit.
+  let budget = 75;
+
+  for (const char of line) {
+    const size = encoder.encode(char).length;
+    if (bytes + size > budget) {
+      parts.push(current);
+      current = '';
+      bytes = 0;
+      budget = 74;
+    }
+    current += char;
+    bytes += size;
+  }
+  if (current) parts.push(current);
+
+  return parts.join('\r\n ');
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getMeetingDateTime, formatICSUtcStamp } from '../calendar';
+import { getMeetingDateTime, formatICSUtcStamp, foldICSLine } from '../calendar';
 
 // Helper: the UTC hour a Pacific-local meeting time maps to.
 const utcHour = (isoDate: string, startTime: string) =>
@@ -57,5 +57,43 @@ describe('formatICSUtcStamp', () => {
   it('is stable for the same input', () => {
     const d = new Date('2026-12-13T00:00:00Z');
     expect(formatICSUtcStamp(d)).toBe(formatICSUtcStamp(d));
+  });
+});
+
+describe('foldICSLine', () => {
+  const octets = (s: string) => new TextEncoder().encode(s).length;
+
+  it('leaves a short line alone', () => {
+    expect(foldICSLine('SUMMARY:Sunday Session')).toBe('SUMMARY:Sunday Session');
+  });
+
+  it('leaves a line of exactly 75 octets alone', () => {
+    const line = 'X'.repeat(75);
+    expect(foldICSLine(line)).toBe(line);
+  });
+
+  it('folds a long line with CRLF + single space', () => {
+    const folded = foldICSLine('X'.repeat(200));
+    expect(folded).toContain('\r\n ');
+    for (const seg of folded.split('\r\n')) {
+      expect(octets(seg)).toBeLessThanOrEqual(75);
+    }
+  });
+
+  it('unfolds back to the original content', () => {
+    const original = 'DESCRIPTION:' + 'abcdefghij'.repeat(30);
+    // Unfolding per RFC 5545: remove CRLF followed by a single space.
+    expect(foldICSLine(original).replace(/\r\n /g, '')).toBe(original);
+  });
+
+  it('never splits a multi-byte character', () => {
+    // Em dash and bullet are 3 bytes each in UTF-8.
+    const original = 'DESCRIPTION:' + '— • '.repeat(40);
+    const folded = foldICSLine(original);
+    expect(folded.replace(/\r\n /g, '')).toBe(original);
+    for (const seg of folded.split('\r\n')) {
+      expect(octets(seg)).toBeLessThanOrEqual(75);
+      expect(seg).not.toContain('�');
+    }
   });
 });
