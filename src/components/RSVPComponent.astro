@@ -64,11 +64,6 @@ const children = season.roster.map((m) => m.name);
               👎
             </button>
           </div>
-          <div class="rsvp-hover-option">
-            <button class="rsvp-btn rsvp-hover-btn" aria-label="Change response">
-              ❓
-            </button>
-          </div>
         </div>
       ))}
     </div>
@@ -253,21 +248,12 @@ const children = season.roster.map((m) => m.name);
     gap: calc(var(--grid-unit));
   }
 
-  .rsvp-hover-option {
-    position: relative;
-    display: none;
-  }
-
   /* Show buttons when no answer is selected (default state) */
   .rsvp-item:not(.has-answer) .rsvp-buttons {
     display: flex;
   }
 
   .rsvp-item:not(.has-answer) .child-status {
-    display: none;
-  }
-
-  .rsvp-item:not(.has-answer) .rsvp-hover-option {
     display: none;
   }
 
@@ -280,17 +266,17 @@ const children = season.roster.map((m) => m.name);
     display: block;
   }
 
-  .rsvp-item.has-answer .rsvp-hover-option {
-    display: none;
-  }
-
-  /* Show hover option when hovering over answered item (but not while saving) */
+  /* Hovering an answered row reveals BOTH options with the current one
+     highlighted — the same control set an unanswered row shows. Previously it
+     swapped the status glyph for a single button bearing the OPPOSITE value,
+     so hovering a 👍 displayed 👎 and read as though the answer had already
+     changed. */
   .rsvp-item.has-answer:hover:not(.saving) .child-status {
     display: none;
   }
 
-  .rsvp-item.has-answer:hover:not(.saving) .rsvp-hover-option {
-    display: block;
+  .rsvp-item.has-answer:hover:not(.saving) .rsvp-buttons {
+    display: flex;
   }
 
   /* Ensure status stays visible while saving */
@@ -298,7 +284,7 @@ const children = season.roster.map((m) => m.name);
     display: block !important;
   }
 
-  .rsvp-item.saving .rsvp-hover-option {
+  .rsvp-item.saving .rsvp-buttons {
     display: none !important;
   }
 
@@ -436,19 +422,8 @@ const children = season.roster.map((m) => m.name);
 
       // RSVP buttons
       document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('rsvp-btn') || e.target.classList.contains('rsvp-hover-btn')) {
-          const child = e.target.dataset.child;
-          let status = e.target.dataset.status;
-          
-          // Handle hover button clicks - determine opposite status
-          if (e.target.classList.contains('rsvp-hover-btn')) {
-            const rsvpItem = e.target.closest('.rsvp-item');
-            const statusElement = rsvpItem.querySelector('.child-status');
-            const currentStatus = statusElement.textContent;
-            status = currentStatus === '👍' ? '👎' : '👍';
-          }
-          
-          this.updateRSVP(child, status);
+        if (e.target.classList.contains('rsvp-btn')) {
+          this.updateRSVP(e.target.dataset.child, e.target.dataset.status);
         }
       });
       
@@ -604,13 +579,6 @@ const children = season.roster.map((m) => m.name);
           rsvpItem.classList.add('status-not-attending', 'has-answer');
         }
         
-        // Update hover button to show opposite option
-        const hoverBtn = rsvpItem.querySelector('.rsvp-hover-btn');
-        if (hoverBtn) {
-          hoverBtn.textContent = status === '👍' ? '👎' : '👍';
-          hoverBtn.dataset.child = childName;
-        }
-        
         // Add a saving class to prevent hover effects during save
         rsvpItem.classList.add('saving');
       }
@@ -631,12 +599,18 @@ const children = season.roster.map((m) => m.name);
       
       errorMsg.textContent = message;
       errorDiv.style.display = 'block';
-      
-      setTimeout(() => {
+
+      // Keep a handle on the timer. Without one, a message shown while an
+      // earlier timer is still pending gets hidden when that older timer
+      // fires — so a second failure within two seconds would blank its own
+      // banner, and a hard error raised in that window would be wiped along
+      // with its styling.
+      clearTimeout(this._tempMessageTimer);
+      this._tempMessageTimer = setTimeout(() => {
         errorDiv.style.display = 'none';
         errorMsg.style.color = 'var(--color-accent)';
         errorMsg.style.fontWeight = 'normal';
-      }, 2000); // Reduced from 3 seconds to 2 seconds
+      }, 2000);
     }
 
     renderRSVPData(kidsData) {
@@ -673,12 +647,6 @@ const children = season.roster.map((m) => m.name);
             rsvpItem.classList.add('status-not-attending', 'has-answer');
           }
           
-          // Update hover button to show opposite option
-          const hoverBtn = rsvpItem.querySelector('.rsvp-hover-btn');
-          if (hoverBtn && (kid.status === '👍' || kid.status === '👎')) {
-            hoverBtn.textContent = kid.status === '👍' ? '👎' : '👍';
-            hoverBtn.dataset.child = kid.name;
-          }
         }
       });
     }
@@ -706,7 +674,14 @@ const children = season.roster.map((m) => m.name);
     }
 
     showError(message) {
-      document.getElementById('rsvp-error-message').textContent = message;
+      // A pending temp-message timer would otherwise hide this banner. Cancel
+      // it — and since that timer was also what restored the default styling,
+      // restore it here rather than inheriting a temp message's amber or green.
+      clearTimeout(this._tempMessageTimer);
+      const errorMsg = document.getElementById('rsvp-error-message');
+      errorMsg.style.color = 'var(--color-accent)';
+      errorMsg.style.fontWeight = 'normal';
+      errorMsg.textContent = message;
       document.getElementById('rsvp-loading').style.display = 'none';
       document.getElementById('rsvp-updating').style.display = 'none';
       document.getElementById('rsvp-error').style.display = 'block';

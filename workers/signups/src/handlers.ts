@@ -207,6 +207,13 @@ export async function clearSnack(env: Env, params: WriteParams): Promise<Respons
   const invalid = await validateWriteDate(env, params.date);
   if (invalid) return invalid;
 
+  // An absent name is a malformed request, not an off-roster one. Dropping the
+  // roster check must not also drop this: the route coerces a missing `name`
+  // query param to '', which would otherwise delete nothing and report success.
+  if (!params.name) {
+    return json({ error: 'missing name' }, 400);
+  }
+
   await env.DB.prepare(
     "DELETE FROM signups WHERE meeting_date = ? AND person = ? AND kind = 'snack'"
   )

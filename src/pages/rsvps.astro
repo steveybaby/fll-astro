@@ -162,11 +162,6 @@ const formatMeetingISO = (date) => {
                       👎
                     </button>
                   </div>
-                  <div class="cell-hover-option">
-                    <button class="cell-btn cell-hover-btn" aria-label="Change response">
-                      ❓
-                    </button>
-                  </div>
                 </div>
               ))}
             </div>
@@ -490,25 +485,12 @@ const formatMeetingISO = (date) => {
     gap: calc(var(--grid-unit) / 2);
   }
 
-  .cell-hover-option {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 5;
-    display: none;
-  }
-
   /* Show buttons when no answer is selected (default state) */
   .rsvp-cell:not(.has-answer) .cell-buttons {
     display: flex;
   }
 
   .rsvp-cell:not(.has-answer) .cell-status {
-    display: none;
-  }
-
-  .rsvp-cell:not(.has-answer) .cell-hover-option {
     display: none;
   }
 
@@ -521,17 +503,17 @@ const formatMeetingISO = (date) => {
     display: block;
   }
 
-  .rsvp-cell.has-answer .cell-hover-option {
-    display: none;
-  }
-
-  /* Show hover option when hovering over answered cell (but not while saving) */
+  /* Hovering an answered cell reveals BOTH options with the current one
+     highlighted — the same control set an unanswered cell shows. Previously
+     it swapped the status glyph for a single button bearing the OPPOSITE
+     value, so hovering a 👍 displayed 👎 and read as though the answer had
+     already changed. */
   .rsvp-cell.has-answer:hover:not(.saving) .cell-status {
     display: none;
   }
 
-  .rsvp-cell.has-answer:hover:not(.saving) .cell-hover-option {
-    display: block;
+  .rsvp-cell.has-answer:hover:not(.saving) .cell-buttons {
+    display: flex;
   }
 
   /* Ensure status stays visible while saving */
@@ -539,7 +521,7 @@ const formatMeetingISO = (date) => {
     display: block !important;
   }
 
-  .rsvp-cell.saving .cell-hover-option {
+  .rsvp-cell.saving .cell-buttons {
     display: none !important;
   }
 
@@ -827,17 +809,8 @@ const formatMeetingISO = (date) => {
       }
 
       document.addEventListener('click', function(e){
-        if (e.target.classList.contains('cell-btn') || e.target.classList.contains('cell-hover-btn')) {
-          var child = e.target.dataset.child;
-          var meetingDate = e.target.dataset.meetingDate;
-          var status = e.target.dataset.status;
-          if (e.target.classList.contains('cell-hover-btn')) {
-            var rsvpCell = e.target.closest('.rsvp-cell');
-            var statusElement = rsvpCell.querySelector('.cell-status');
-            var currentStatus = statusElement.textContent;
-            status = currentStatus === '👍' ? '👎' : '👍';
-          }
-          self.updateRSVP(meetingDate, child, status);
+        if (e.target.classList.contains('cell-btn')) {
+          self.updateRSVP(e.target.dataset.meetingDate, e.target.dataset.child, e.target.dataset.status);
         }
       });
 
@@ -884,6 +857,16 @@ const formatMeetingISO = (date) => {
     };
 
     RSVPGrid.prototype.updateRSVP = function(meetingDate, childName, status) {
+      // Ignore a click on a cell that is already saving. Only `.cell-btn` gets
+      // the `disabled` attribute, so the status-glyph and hover-button paths
+      // could otherwise fire mid-flight — and the second click would capture
+      // the OPTIMISTIC value as its "previous", so a failure would revert to a
+      // state the server never confirmed. Guarding here rather than in each
+      // handler covers every entry point.
+      var cellKey = meetingDate + '|' + childName;
+      this._pendingCells = this._pendingCells || {};
+      if (this._pendingCells[cellKey]) return;
+
       // Remember what was on screen so a rejected write can be undone. The
       // backend can refuse a write this page cannot anticipate: a briefly
       // unavailable roster (503), or a name or meeting date the Worker's
@@ -949,12 +932,6 @@ const formatMeetingISO = (date) => {
         rsvpCell.classList.remove('status-attending', 'status-not-attending', 'has-answer');
         if (status === '👍') rsvpCell.classList.add('status-attending', 'has-answer');
         else if (status === '👎') rsvpCell.classList.add('status-not-attending', 'has-answer');
-        var hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
-        if (hoverBtn) {
-          hoverBtn.textContent = status === '👍' ? '👎' : '👍';
-          hoverBtn.dataset.child = childName;
-          hoverBtn.dataset.meetingDate = meetingDate;
-        }
       }
     };
 
@@ -995,18 +972,18 @@ const formatMeetingISO = (date) => {
             rsvpCell.classList.remove('status-attending', 'status-not-attending', 'has-answer');
             if (status === '👍') rsvpCell.classList.add('status-attending', 'has-answer');
             else if (status === '👎') rsvpCell.classList.add('status-not-attending', 'has-answer');
-            var hoverBtn = rsvpCell.querySelector('.cell-hover-btn');
-            if (hoverBtn && (status === '👍' || status === '👎')) {
-              hoverBtn.textContent = status === '👍' ? '👎' : '👍';
-              hoverBtn.dataset.child = child;
-              hoverBtn.dataset.meetingDate = d;
-            }
           }
         }
       }
     };
 
     RSVPGrid.prototype.setCellButtonsDisabled = function(meetingDate, childName, disabled) {
+      // This already runs exactly when a write starts and finishes, so it is
+      // also the right place to hold the in-flight flag updateRSVP checks.
+      this._pendingCells = this._pendingCells || {};
+      if (disabled) this._pendingCells[meetingDate + '|' + childName] = true;
+      else delete this._pendingCells[meetingDate + '|' + childName];
+
       var buttons = document.querySelectorAll('[data-child="' + childName + '"][data-meeting-date="' + meetingDate + '"]' + '.cell-btn');
       for (var i=0;i<buttons.length;i++) buttons[i].disabled = disabled;
       if (!disabled) {

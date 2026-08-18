@@ -115,6 +115,13 @@ describe('snack duty', () => {
     expect(res.status).toBe(400);
   });
 
+  it('rejects a clear with no name instead of reporting a no-op as success', async () => {
+    await putSnack(env as any, { date: '2026-09-13', name: 'Jasper' });
+    const res = await clearSnack(env as any, { date: '2026-09-13', name: '' });
+    expect(res.status).toBe(400);
+    expect(await rows('snack')).toEqual([{ person: 'Jasper', value: '1' }]);
+  });
+
   it('still refuses to ASSIGN someone not in the config', async () => {
     const res = await putSnack(env as any, { date: '2026-09-13', name: 'DepartedKid' });
     expect(res.status).toBe(400);

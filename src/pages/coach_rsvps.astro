@@ -889,6 +889,16 @@ const formatMeetingISO = (date) => {
     };
 
     CoachRSVPGrid.prototype.updateRSVP = function(meetingDate, coachName, status) {
+      // Ignore a click on a cell that is already saving. Only `.cell-btn` gets
+      // the `disabled` attribute, so the status-glyph and hover-button paths
+      // could otherwise fire mid-flight — and the second click would capture
+      // the OPTIMISTIC value as its "previous", so a failure would revert to a
+      // state the server never confirmed. Guarding here rather than in each
+      // handler covers every entry point.
+      var cellKey = meetingDate + '|' + coachName;
+      this._pendingCells = this._pendingCells || {};
+      if (this._pendingCells[cellKey]) return;
+
       // Remember what was on screen so a rejected write can be undone. The
       // backend can refuse a write this page cannot anticipate: a briefly
       // unavailable roster (503), or a name or meeting date the Worker's
@@ -1015,6 +1025,12 @@ const formatMeetingISO = (date) => {
     };
 
     CoachRSVPGrid.prototype.setCellButtonsDisabled = function(meetingDate, coachName, disabled) {
+      // This already runs exactly when a write starts and finishes, so it is
+      // also the right place to hold the in-flight flag updateRSVP checks.
+      this._pendingCells = this._pendingCells || {};
+      if (disabled) this._pendingCells[meetingDate + '|' + coachName] = true;
+      else delete this._pendingCells[meetingDate + '|' + coachName];
+
       var buttons = document.querySelectorAll('[data-child="' + coachName + '"][data-meeting-date="' + meetingDate + '"].cell-btn');
       for (var i=0;i<buttons.length;i++) buttons[i].disabled = disabled;
       if (!disabled) {
