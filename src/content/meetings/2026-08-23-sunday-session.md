@@ -6,9 +6,9 @@ startTime: "14:00"
 duration: 2.5
 location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:
-  - "Tutorial Activities (optional)"
-  - "Training Camp 1: Driving Around"
-  - "Explore Project Sparks"
+  - "Review the missions"
+  - "Score them on difficulty, reliability, and travel"
+  - "Build attachments in small teams"
 assignments: []
 ---
 
@@ -16,11 +16,11 @@ assignments: []
 
 ## Meeting Agenda
 
-### Tutorial Activities (optional)
+### Review the missions
 
-### Training Camp 1: Driving Around
+### Score them on difficulty, reliability, and travel
 
-### Explore Project Sparks
+### Build attachments in small teams
 
 ## Meeting Notes
 
