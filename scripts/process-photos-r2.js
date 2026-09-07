@@ -359,7 +359,13 @@ async function getExistingPhotos() {
 /**
  * Process photos and upload to R2
  */
-async function processPhotos({ sourceDir = config.sourcePhotosDir, forceMeetingDate = null } = {}) {
+/**
+ * @param posterDir Optional dir of prebuilt video posters named `<base>.jpg`.
+ *   When a video has one, it is treated as already web-ready: the poster is used
+ *   as-is and the file is uploaded without ffmpeg. The Immich sync uses this so
+ *   it can run on a box with no ffmpeg.
+ */
+async function processPhotos({ sourceDir = config.sourcePhotosDir, forceMeetingDate = null, posterDir = null } = {}) {
   console.log('🦙 Starting R2 photo processing...');
 
   validateConfig();
@@ -388,15 +394,32 @@ async function processPhotos({ sourceDir = config.sourcePhotosDir, forceMeetingD
     return;
   }
 
+  // A video needs local ffmpeg unless a prebuilt poster was supplied for it (in
+  // which case it is already web-ready and just gets uploaded as-is).
+  const posterFor = async (filename) => {
+    if (!posterDir) return null;
+    const poster = path.join(posterDir, `${path.parse(filename).name}.jpg`);
+    try {
+      await fs.access(poster);
+      return poster;
+    } catch {
+      return null;
+    }
+  };
+
   // Fail loudly rather than uploading an unplayable original: without ffmpeg we
   // cannot normalise video, and a raw phone capture is HEVC that Chrome and
   // Firefox refuse to play.
   const videoFiles = mediaFiles.filter(isVideoFile);
-  if (videoFiles.length > 0 && !(await hasFfmpeg())) {
-    console.error(`\n❌ ${videoFiles.length} video file(s) found but ffmpeg is not installed.`);
+  const videosNeedingFfmpeg = [];
+  for (const v of videoFiles) {
+    if (!(await posterFor(v))) videosNeedingFfmpeg.push(v);
+  }
+  if (videosNeedingFfmpeg.length > 0 && !(await hasFfmpeg())) {
+    console.error(`\n❌ ${videosNeedingFfmpeg.length} video file(s) found but ffmpeg is not installed.`);
     console.error('   Videos need transcoding to H.264 or most browsers cannot play them.');
     console.error('   Install it with: brew install ffmpeg');
-    console.error(`   Affected: ${videoFiles.join(', ')}\n`);
+    console.error(`   Affected: ${videosNeedingFfmpeg.join(', ')}\n`);
     process.exit(1);
   }
   
@@ -521,8 +544,19 @@ async function processPhotos({ sourceDir = config.sourcePhotosDir, forceMeetingD
       let fullImageUrl;
       
       if (isVideo) {
-        console.log(`  🎬 Processing video file...`);
-        const { videoBuffer, posterBuffer } = await processVideo(filePath, baseName);
+        let videoBuffer;
+        let posterBuffer;
+        const prebuiltPoster = await posterFor(filename);
+        if (prebuiltPoster) {
+          console.log(`  🎬 Video already web-ready, using supplied poster...`);
+          [videoBuffer, posterBuffer] = await Promise.all([
+            fs.readFile(filePath),
+            fs.readFile(prebuiltPoster),
+          ]);
+        } else {
+          console.log(`  🎬 Processing video file...`);
+          ({ videoBuffer, posterBuffer } = await processVideo(filePath, baseName));
+        }
 
         console.log(`  ☁️  Uploading to R2...`);
         thumbnailUrl = await uploadToR2(posterBuffer, thumbnailKey, 'image/jpeg');

@@ -106,21 +106,31 @@ export async function fetchAssetsInWindow({ baseUrl, apiKey, takenAfter, takenBe
 /**
  * Decide how to fetch an asset.
  *
- * sharp's bundled libheif has no HEVC decoder, so HEIC/HEIF originals cannot be
- * processed locally. Immich has already rendered a JPEG preview server-side, so
- * for those we pull the preview instead. Everything else (normal images, and
- * videos which ffmpeg transcodes) comes down as the untouched original.
+ * This box has neither ffmpeg nor a HEVC-capable libheif, so we lean on Immich's
+ * server-side transcodes:
+ *   - HEIC/HEIF image → its rendered JPEG preview (sharp can't decode HEVC).
+ *   - video → its H.264 playback stream, plus a preview JPEG to use as the
+ *     poster, so no local transcoding is needed.
+ *   - anything else (normal JPEG/PNG) → the untouched original.
  *
- * Returns { path, outName }: the Immich API path to fetch and the filename to
- * save it under (extension normalised to .jpg when we take the preview).
+ * Returns { path, outName } and, for videos, an extra `posterPath` to fetch the
+ * poster image. `outName` normalises the extension (.jpg for previews, .mp4 for
+ * playback).
  */
 export function planAssetDownload(asset) {
   const name = asset.originalFileName || `${asset.id}`;
-  const isHeif = /\.(heic|heif)$/i.test(name);
+  const stem = name.replace(/\.[^.]+$/, '');
+  const preview = `/api/assets/${asset.id}/thumbnail?size=preview`;
 
-  if (asset.type === 'IMAGE' && isHeif) {
-    const stem = name.replace(/\.[^.]+$/, '');
-    return { path: `/api/assets/${asset.id}/thumbnail?size=preview`, outName: `${stem}.jpg` };
+  if (asset.type === 'VIDEO') {
+    return {
+      path: `/api/assets/${asset.id}/video/playback`,
+      outName: `${stem}.mp4`,
+      posterPath: preview,
+    };
+  }
+  if (asset.type === 'IMAGE' && /\.(heic|heif)$/i.test(name)) {
+    return { path: preview, outName: `${stem}.jpg` };
   }
   return { path: `/api/assets/${asset.id}/original`, outName: name };
 }

@@ -24,11 +24,12 @@ describe('planAssetDownload', () => {
     });
   });
 
-  it('downloads the original for a video so ffmpeg can transcode it', () => {
-    const plan = planAssetDownload({ id: 'c1', type: 'VIDEO', originalFileName: 'clip.mov' });
+  it('pulls the Immich playback stream + poster for a video (box has no ffmpeg/HEVC)', () => {
+    const plan = planAssetDownload({ id: 'c1', type: 'VIDEO', originalFileName: 'IMG_5197.MOV' });
     expect(plan).toEqual({
-      path: '/api/assets/c1/original',
-      outName: 'clip.mov',
+      path: '/api/assets/c1/video/playback',
+      outName: 'IMG_5197.mp4',
+      posterPath: '/api/assets/c1/thumbnail?size=preview',
     });
   });
 });

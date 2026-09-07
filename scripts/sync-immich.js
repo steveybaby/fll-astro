@@ -70,18 +70,32 @@ async function main() {
   console.log(`   Found ${assets.length} asset(s).`);
 
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'fll-immich-'));
+  const posterDir = path.join(tmpDir, '_posters');
+  await fs.mkdir(posterDir);
   try {
     const used = new Set();
     for (const asset of assets) {
-      const { path: apiPath, outName } = planAssetDownload(asset);
+      const { path: apiPath, outName, posterPath } = planAssetDownload(asset);
       const filename = uniqueName(outName, used);
-      const via = apiPath.includes('/original') ? 'original' : 'preview';
+      const via = apiPath.includes('/original')
+        ? 'original'
+        : apiPath.includes('/video/playback')
+          ? 'playback'
+          : 'preview';
       console.log(`   ⬇️  ${filename} (${via})`);
       const bytes = await downloadAsset({ baseUrl, apiKey, path: apiPath });
       await fs.writeFile(path.join(tmpDir, filename), bytes);
+
+      // Videos arrive already web-ready; grab Immich's preview as the poster so
+      // the pipeline never needs ffmpeg to make one.
+      if (posterPath) {
+        const posterBytes = await downloadAsset({ baseUrl, apiKey, path: posterPath });
+        const posterName = `${path.parse(filename).name}.jpg`;
+        await fs.writeFile(path.join(posterDir, posterName), posterBytes);
+      }
     }
 
-    await processPhotos({ sourceDir: tmpDir, forceMeetingDate: date });
+    await processPhotos({ sourceDir: tmpDir, forceMeetingDate: date, posterDir });
   } finally {
     await fs.rm(tmpDir, { recursive: true, force: true });
   }
