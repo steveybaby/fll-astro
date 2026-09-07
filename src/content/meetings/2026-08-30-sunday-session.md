@@ -21,4 +21,12 @@ assignments: []
 
 ## Meeting Notes
 
-*Notes will be added here*
+A big day of firsts! The team completed our **first mission** on the
+competition table — a great milestone this early in the season and a real
+confidence boost for everyone.
+
+The kids designed and built their own **attachments** for the robot, learning
+how different mechanisms help tackle specific missions.
+
+We also dug into **coding**, with the kids getting hands-on with **Python** and
+**Pybricks** to program the robot and bring their attachments to life.
