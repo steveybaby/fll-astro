@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-24T03:51:20.748Z",
+  "lastUpdated": "2026-09-07T20:50:35.530Z",
   "r2Config": {
     "bucketName": "site-images",
     "publicUrl": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev"
@@ -2180,6 +2180,40 @@
         "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-08-23/IMG_5124.mp4",
         "dateFound": "2026-08-23",
         "uploadedAt": "2026-08-24T03:51:20.748Z"
+      }
+    ],
+    "2026-09-06": [
+      {
+        "filename": "IMG_5235.jpg",
+        "type": "image",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-06/thumbnails/thumb_IMG_5235.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-06/IMG_5235.jpg",
+        "dateFound": "2026-09-06",
+        "uploadedAt": "2026-09-07T20:50:34.349Z"
+      },
+      {
+        "filename": "IMG_5236.jpg",
+        "type": "image",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-06/thumbnails/thumb_IMG_5236.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-06/IMG_5236.jpg",
+        "dateFound": "2026-09-06",
+        "uploadedAt": "2026-09-07T20:50:34.914Z"
+      },
+      {
+        "filename": "IMG_5237.jpg",
+        "type": "image",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-06/thumbnails/thumb_IMG_5237.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-06/IMG_5237.jpg",
+        "dateFound": "2026-09-06",
+        "uploadedAt": "2026-09-07T20:50:35.530Z"
+      },
+      {
+        "filename": "camphoto_1804928587.jpg",
+        "type": "image",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-06/thumbnails/thumb_camphoto_1804928587.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-06/camphoto_1804928587.jpg",
+        "dateFound": "2026-09-06",
+        "uploadedAt": "2026-09-07T20:50:35.530Z"
       }
     ]
   }

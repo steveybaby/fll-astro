@@ -359,22 +359,22 @@ async function getExistingPhotos() {
 /**
  * Process photos and upload to R2
  */
-async function processPhotos() {
+async function processPhotos({ sourceDir = config.sourcePhotosDir, forceMeetingDate = null } = {}) {
   console.log('🦙 Starting R2 photo processing...');
-  
+
   validateConfig();
-  
+
   // Check if source directory exists
   try {
-    await fs.access(config.sourcePhotosDir);
+    await fs.access(sourceDir);
   } catch {
-    console.error(`Source photos directory not found: ${config.sourcePhotosDir}`);
+    console.error(`Source photos directory not found: ${sourceDir}`);
     console.log('Please create this directory and add your photos to it.');
     return;
   }
-  
+
   // Get list of photos to process
-  const files = await fs.readdir(config.sourcePhotosDir);
+  const files = await fs.readdir(sourceDir);
   console.log(`Found files: ${files.join(', ')}`);
   
   const mediaFiles = files.filter(file => 
@@ -420,31 +420,41 @@ async function processPhotos() {
   const processedBasenames = new Set();
   
   for (const filename of mediaFiles) {
-    const filePath = path.join(config.sourcePhotosDir, filename);
-    
+    const filePath = path.join(sourceDir, filename);
+
     try {
       console.log(`\\nProcessing: ${filename}`);
-      
-      // Extract photo date and assign to meeting
-      let photoDate = await extractPhotoDate(filePath, filename);
+
+      // Extract photo date and assign to meeting. When the caller already knows
+      // the meeting (the Immich flow queries a single day), skip detection and
+      // use it directly.
+      let photoDate;
       let meetingDate;
-      
-      if (photoDate === null) {
-        // Still no date found - check manual assignments as last resort
-        const baseName = path.parse(filename).name;
-        if (MANUAL_DATE_ASSIGNMENTS[baseName]) {
-          meetingDate = MANUAL_DATE_ASSIGNMENTS[baseName];
-          photoDate = meetingDate; // Use meeting date as photo date
-          console.log(`  📋 Using manual assignment: ${baseName} → ${meetingDate}`);
-        } else {
-          console.log(`  ❌ No date found and no manual assignment for ${filename}, skipping`);
-          skipCount++;
-          continue;
-        }
+
+      if (forceMeetingDate) {
+        meetingDate = forceMeetingDate;
+        photoDate = forceMeetingDate;
+        console.log(`  📌 Using caller-supplied meeting date: ${meetingDate}`);
       } else {
-        meetingDate = findClosestMeetingDate(photoDate);
+        photoDate = await extractPhotoDate(filePath, filename);
+
+        if (photoDate === null) {
+          // Still no date found - check manual assignments as last resort
+          const baseName = path.parse(filename).name;
+          if (MANUAL_DATE_ASSIGNMENTS[baseName]) {
+            meetingDate = MANUAL_DATE_ASSIGNMENTS[baseName];
+            photoDate = meetingDate; // Use meeting date as photo date
+            console.log(`  📋 Using manual assignment: ${baseName} → ${meetingDate}`);
+          } else {
+            console.log(`  ❌ No date found and no manual assignment for ${filename}, skipping`);
+            skipCount++;
+            continue;
+          }
+        } else {
+          meetingDate = findClosestMeetingDate(photoDate);
+        }
       }
-      
+
       console.log(`  Date: ${photoDate} → Meeting: ${meetingDate}`);
       
       // Generate file paths - preserve original extension for videos, normalize to .jpg for images

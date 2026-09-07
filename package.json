@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "process-photos": "node scripts/process-photos-r2.js",
     "sync-photos": "node scripts/process-photos-r2.js",
+    "sync-immich": "node scripts/sync-immich.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:worker": "npm --prefix workers/signups test",
