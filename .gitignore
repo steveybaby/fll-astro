@@ -23,6 +23,9 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
+# local Claude Code settings
+.claude/settings.json
+
 # Large photo files (stored in R2, not in Git)
 source-photos/
 temp-photos/
