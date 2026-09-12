@@ -6,6 +6,7 @@ startTime: "14:00"
 duration: 2.5
 location: "188 Calle La Montana, Moraga, CA, 94556"
 agenda:
+  - "Review Innovation Project and brainstorm ideas"
   - "Guided Mission"
   - "Research Project Solutions"
 assignments: []
@@ -14,6 +15,8 @@ assignments: []
 # Sunday Session
 
 ## Meeting Agenda
+
+### Review Innovation Project and brainstorm ideas
 
 ### Guided Mission
 
