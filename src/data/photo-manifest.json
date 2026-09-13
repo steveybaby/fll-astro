@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-07T21:09:45.464Z",
+  "lastUpdated": "2026-09-13T23:28:05.352Z",
   "r2Config": {
     "bucketName": "site-images",
     "publicUrl": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev"
@@ -2286,6 +2286,32 @@
         "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-08-30/IMG_5197.mp4",
         "dateFound": "2026-08-30",
         "uploadedAt": "2026-09-07T21:09:45.464Z"
+      }
+    ],
+    "2026-09-13": [
+      {
+        "filename": "IMG_5284.jpg",
+        "type": "image",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-13/thumbnails/thumb_IMG_5284.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-13/IMG_5284.jpg",
+        "dateFound": "2026-09-13",
+        "uploadedAt": "2026-09-13T23:28:00.951Z"
+      },
+      {
+        "filename": "IMG_5285.jpg",
+        "type": "image",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-13/thumbnails/thumb_IMG_5285.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-13/IMG_5285.jpg",
+        "dateFound": "2026-09-13",
+        "uploadedAt": "2026-09-13T23:28:03.085Z"
+      },
+      {
+        "filename": "IMG_5286.jpg",
+        "type": "image",
+        "thumbnail": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-13/thumbnails/thumb_IMG_5286.jpg",
+        "fullImage": "https://pub-4848ede0c3554434a35070d129e817f9.r2.dev/meetings/2026-09-13/IMG_5286.jpg",
+        "dateFound": "2026-09-13",
+        "uploadedAt": "2026-09-13T23:28:05.352Z"
       }
     ]
   }
