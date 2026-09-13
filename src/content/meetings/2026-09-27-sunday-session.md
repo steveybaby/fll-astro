@@ -1,5 +1,5 @@
 ---
-title: "Lego League Meeting #6"
+title: "Lego League Meeting #6 - (Steve H OUT)"
 date: 2026-09-27
 season: "2026-27"
 startTime: "14:00"
