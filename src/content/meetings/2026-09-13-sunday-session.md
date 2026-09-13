@@ -24,4 +24,10 @@ assignments: []
 
 ## Meeting Notes
 
-*Notes will be added here*
+- Reviewed the Innovation Project brief together.
+- Used the LEGO missions as inspiration to identify real-world problems behind each one.
+- Worked in pairs to pick the problems we liked most.
+- Each pair presented their favorite problems back to the team — Ethan and Eli even wrote a rap.
+- The team then voted on their favorites.
+
+**Decision:** We're focusing our Innovation Project on how to better disperse seeds to promote biodiversity.
