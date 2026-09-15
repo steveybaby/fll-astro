@@ -11,7 +11,7 @@ agenda:
 assignments: []
 ---
 
-# Sunday Session
+# Saturday Session
 
 ## Meeting Agenda
 
